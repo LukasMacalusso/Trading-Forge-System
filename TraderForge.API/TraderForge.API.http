@@ -5,6 +5,18 @@ Accept: application/json
 
 ###
 
+### Get Market Prices via POST
+POST http://localhost:5116/api/prices
+Content-Type: application/json
+Accept: application/json
+
+{
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT"
+  ]
+}
 POST http://localhost:5116/api/identity/register
 Content-Type: application/json
 
