@@ -1,14 +1,15 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TraderForge.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace TraderForge.Infrastructure.Persistence;
-
 
 public class ApplicationDbContext : IdentityDbContext<Account>
 {
     public DbSet<Trader> Traders { get; set; }
     public DbSet<Administrator> Administrators { get; set; }
+    public DbSet<MarketAsset> MarketAssets { get; set; }
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }

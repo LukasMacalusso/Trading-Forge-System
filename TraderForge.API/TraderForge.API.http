@@ -17,6 +17,7 @@ Accept: application/json
     "SOLUSDT"
   ]
 }
+###
 POST http://localhost:5116/api/identity/register
 Content-Type: application/json
 
@@ -38,7 +39,7 @@ Content-Type: application/json
 ###
 
 GET http://localhost:5116/api/identity/vip-lounge
-Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMjYwZjE1MS0xOTdiLTRjNTUtYmJlYy1hOTcwY2YwYmI4YzMiLCJlbWFpbCI6InRlc3QxNUB0cmFkZXJmb3JnZS5jb20iLCJyb2xlIjoiVHJhZGVyIiwibmJmIjoxNzc2ODk2MzQ3LCJleHAiOjE3NzY5MDM1NDcsImlhdCI6MTc3Njg5NjM0NywiaXNzIjoiVHJhZGVyRm9yZ2VBUEkiLCJhdWQiOiJUcmFkZXJGb3JnZVJlYWN0QXBwIn0.oKDoGQnAtIvpydz4ZyMF76D5tI1p9QmpiSalBvEIUfk
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlM2YxYWUzYi1jNDQ4LTQ4NWEtOGZkNC1mYzhlMzEwNmRjNjEiLCJlbWFpbCI6InRlc3QxNUB0cmFkZXJmb3JnZS5jb20iLCJyb2xlIjoiVHJhZGVyIiwibmJmIjoxNzc4Mjc4MTE5LCJleHAiOjE3NzgyODUzMTksImlhdCI6MTc3ODI3ODExOSwiaXNzIjoiVHJhZGVyRm9yZ2VBUEkiLCJhdWQiOiJUcmFkZXJGb3JnZVJlYWN0QXBwIn0.VmKkiT4EmFPy5n5hLXZPkA663JdESFew_d3WLUxV5m4
 
 
 ###
