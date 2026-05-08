@@ -1,6 +1,6 @@
 using TraderForge.Application.Common;
 using TraderForge.Application.DTOs.Queries;
-using TraderForge.Domain.Interfaces;
+using TraderForge.Domain.Services;
 
 namespace TraderForge.Application.Handlers;
 

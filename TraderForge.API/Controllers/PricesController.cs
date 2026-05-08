@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using TraderForge.Application.DTOs.Queries;
+using TraderForge.API.Mappers;
+using TraderForge.API.Requests;
 using TraderForge.Application.Handlers;
 
 namespace TraderForge.API.Controllers;
@@ -16,13 +17,14 @@ public class PricesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> GetPrices([FromBody] GetMarketPricesQuery query) 
+    public async Task<IActionResult> GetPrices([FromBody] GetMarketPricesRequest request) 
     {
-        if (query.Symbols == null || query.Symbols.Count == 0)
+        if (request.Symbols == null || request.Symbols.Count == 0)
         {
             return BadRequest("You must provide at least one symbol.");
         }
 
+        var query = request.ToQuery();
         var result = await _handler.GetMarketPricesAsync(query); 
         return Ok(result.Value); 
     }

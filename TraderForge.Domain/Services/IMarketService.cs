@@ -1,4 +1,4 @@
-﻿namespace TraderForge.Domain.Interfaces;
+﻿namespace TraderForge.Domain.Services;
 
 public interface IMarketService
 {

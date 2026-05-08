@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using TraderForge.Domain.Constants;
-using TraderForge.Domain.Interfaces;
+using TraderForge.Domain.Services;
 
 namespace TraderForge.Infrastructure.Services;
 

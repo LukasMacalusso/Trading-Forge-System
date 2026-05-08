@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TraderForge.Domain.Constants;
 using TraderForge.Domain.Entities;
-using TraderForge.Domain.Interfaces;
+using TraderForge.Domain.Services;
 using TraderForge.Domain.Repositories;
 
 namespace TraderForge.Infrastructure.Services;
@@ -12,16 +12,19 @@ public class BackgroundMarketPollingService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IMarketDataProvider _dataProvider;
-    private readonly IMemoryCache _cache; 
+    private readonly IMemoryCache _cache;
+    private readonly IMarketDataBroadcaster _broadcaster;
     
     public BackgroundMarketPollingService(
         IServiceScopeFactory scopeFactory, 
         IMarketDataProvider dataProvider, 
-        IMemoryCache cache)
+        IMemoryCache cache,
+        IMarketDataBroadcaster broadcaster)
     {
         _scopeFactory = scopeFactory;
         _dataProvider = dataProvider;
         _cache = cache;
+        _broadcaster = broadcaster;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -30,17 +33,18 @@ public class BackgroundMarketPollingService : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
         {
-            await ExecutePollingCycle();
+            await ExecutePollingCycle(stoppingToken);
         }
     }
     
-    private async Task ExecutePollingCycle()
+    private async Task ExecutePollingCycle(CancellationToken stoppingToken)
     {
         try
         {
             var allPrices = await _dataProvider.GetPricesAsync();
             SaveToCache(allPrices);
             await SaveToDatabase(allPrices);
+            await _broadcaster.BroadCastPricesAsync(allPrices, stoppingToken);
         }
         catch (Exception ex)
         {

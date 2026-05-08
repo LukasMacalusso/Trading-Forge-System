@@ -1,6 +1,6 @@
 ﻿using System.Net.Http.Json;
 using System.Globalization;
-using TraderForge.Domain.Interfaces;
+using TraderForge.Domain.Services;
 
 namespace TraderForge.Infrastructure.Services;
 
