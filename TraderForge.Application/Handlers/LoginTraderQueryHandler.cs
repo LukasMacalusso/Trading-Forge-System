@@ -1,13 +1,10 @@
 using TraderForge.Application.Common;
 using TraderForge.Application.DTOs;
-using TraderForge.Domain.Entities;
 using TraderForge.Domain.Interfaces;
-
 namespace TraderForge.Application.Handlers;
 
 public class LoginTraderQueryHandler
 {
-    
     private readonly IIdentityService _identityService;
     private readonly ITraderRepository _traderRepository;
 
@@ -16,8 +13,7 @@ public class LoginTraderQueryHandler
         _identityService = identityService;
         _traderRepository = traderRepository;
     }
-
-
+    
     public async Task<ResultGeneric<string>> GetLoginTokenAsync(LoginTraderQuery query)
     {
         try

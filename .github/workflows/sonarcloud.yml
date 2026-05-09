@@ -40,9 +40,8 @@ jobs:
           dotnet sonarscanner begin \
             /k:"lukas-trillat-macalusso_Trading-Forge-System" \
             /o:"lukas-trillat-macalusso" \
-            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.host.url="https://sonarcloud.io"
           
           dotnet build
-          
-          dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
