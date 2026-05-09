@@ -13,7 +13,7 @@ public class LoginTraderQueryHandler
         _identityService = identityService;
         _traderRepository = traderRepository;
     }
-    
+
     public async Task<ResultGeneric<string>> GetLoginTokenAsync(LoginTraderQuery query)
     {
         try
