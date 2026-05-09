@@ -9,12 +9,18 @@ const marketService = new MarketService();
 
 /** Manages market data fetching and simulates real-time price updates (BR-19). */
 export function useMarketData() {
-  const { assets, selectedAsset, candles, orderBook, isLoading, lastUpdatedAt,
-    setAssets, selectAsset, setCandles, setOrderBook, updateAssetPrice, setLoading } = useMarketStore();
+  const {
+    assets, watchlist, selectedAsset, candles, orderBook, isLoading, lastUpdatedAt,
+    setAssets, selectAsset, setCandles, setOrderBook, updateAssetPrice, setLoading,
+    addToWatchlist, removeFromWatchlist,
+  } = useMarketStore();
 
   const isStale = lastUpdatedAt
     ? Date.now() - lastUpdatedAt > MARKET_DATA_MAX_STALENESS_MS
     : false;
+
+  const watchedAssets = assets.filter((a) => watchlist.includes(a.symbol));
+  const unwatchedAssets = assets.filter((a) => !watchlist.includes(a.symbol));
 
   useEffect(() => {
     setLoading(true);
@@ -52,5 +58,18 @@ export function useMarketData() {
     loadOrderBook(asset.symbol);
   }, [loadCandles, loadOrderBook]);
 
-  return { assets, selectedAsset, candles, orderBook, isLoading, isStale, handleSelectAsset, loadCandles };
+  return {
+    assets,
+    watchedAssets,
+    unwatchedAssets,
+    selectedAsset,
+    candles,
+    orderBook,
+    isLoading,
+    isStale,
+    handleSelectAsset,
+    loadCandles,
+    addToWatchlist,
+    removeFromWatchlist,
+  };
 }

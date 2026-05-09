@@ -7,6 +7,10 @@
     padding: 0;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-neutral-950 text-neutral-100 antialiased;
     font-family: 'Inter', system-ui, sans-serif;

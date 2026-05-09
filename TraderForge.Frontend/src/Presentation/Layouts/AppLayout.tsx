@@ -1,23 +1,31 @@
-import { Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Briefcase, Bot, CreditCard, Clock } from 'lucide-react';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, Briefcase, CreditCard, Clock, LogOut } from 'lucide-react';
 import { AlertBanner } from '../Components/Notifications/AlertBanner';
+import { useAuthStore } from '../../Application/Store/authStore';
 
 const NAV_ITEMS = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/portfolio', icon: Briefcase, label: 'Portfolio' },
-  { to: '/bots', icon: Bot, label: 'Strategies' },
   { to: '/pending', icon: Clock, label: 'Pending' },
   { to: '/subscription', icon: CreditCard, label: 'Plan' },
 ];
 
 export function AppLayout() {
+  const { logout } = useAuthStore();
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    logout();
+    navigate('/');
+  }
+
   return (
     <div className="flex h-screen bg-neutral-950 overflow-hidden">
       {/* Sidebar */}
       <aside className="w-56 shrink-0 flex flex-col bg-neutral-900 border-r border-neutral-800">
         <div className="px-4 py-5 border-b border-neutral-800">
           <h1 className="text-lg font-bold text-neutral-100 tracking-tight">
-            Trader<span className="text-emerald-400">Forge</span>
+            Trading <span className="text-emerald-400">Forge</span>
           </h1>
         </div>
 
@@ -40,6 +48,15 @@ export function AppLayout() {
           ))}
         </nav>
 
+        <div className="px-2 pb-4">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800 transition-colors"
+          >
+            <LogOut size={16} />
+            Sign Out
+          </button>
+        </div>
       </aside>
 
       {/* Main content */}

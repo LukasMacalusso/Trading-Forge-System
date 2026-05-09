@@ -10,17 +10,30 @@ import { ExecutionPanel } from '../../Components/Orders/ExecutionPanel';
 import { Badge } from '../../Components/UI/Badge';
 
 export function DashboardPage() {
-  const { assets, selectedAsset, candles, orderBook, isLoading, isStale, handleSelectAsset } = useMarketData();
+  const {
+    assets,
+    watchedAssets,
+    unwatchedAssets,
+    selectedAsset,
+    candles,
+    orderBook,
+    isLoading,
+    isStale,
+    handleSelectAsset,
+    addToWatchlist,
+    removeFromWatchlist,
+  } = useMarketData();
   const { portfolio } = usePortfolioStore();
   usePortfolio();
 
   useEffect(() => {
-    if (assets.length > 0 && !selectedAsset) {
-      handleSelectAsset(assets[0]);
+    if (watchedAssets.length > 0 && !selectedAsset) {
+      handleSelectAsset(watchedAssets[0]);
     }
-  }, [assets]);
+  }, [watchedAssets]);
 
   const pnlIsUp = (portfolio?.totalPnL ?? 0) >= 0;
+  const positionCount = portfolio?.positions.length ?? 0;
 
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -39,9 +52,12 @@ export function DashboardPage() {
         </div>
       ) : (
         <PriceTicker
-          assets={assets}
+          assets={watchedAssets}
+          allAssets={assets}
           selectedSymbol={selectedAsset?.symbol}
           onSelect={handleSelectAsset}
+          onAdd={addToWatchlist}
+          onRemove={removeFromWatchlist}
         />
       )}
 
@@ -69,12 +85,22 @@ export function DashboardPage() {
             </div>
           )}
 
-          {/* Candlestick Chart */}
-          <div className="flex-1 min-h-0 bg-[#0a0a0b] rounded-lg overflow-hidden relative">
-            <div className="absolute inset-0">
-              <CandlestickChart candles={candles} symbol={selectedAsset?.symbol ?? ''} />
+          {/* No asset selected after removing from watchlist */}
+          {!selectedAsset && !isLoading && (
+            <div className="flex-1 flex flex-col items-center justify-center gap-2 text-neutral-600">
+              <p className="text-sm">No hay ningún activo seleccionado.</p>
+              <p className="text-xs">Selecciona uno del ticker o añade uno con el botón <span className="text-neutral-400">+ Añadir</span>.</p>
             </div>
-          </div>
+          )}
+
+          {/* Candlestick Chart */}
+          {selectedAsset && (
+            <div className="flex-1 min-h-0 bg-[#0a0a0b] rounded-lg overflow-hidden relative">
+              <div className="absolute inset-0">
+                <CandlestickChart candles={candles} symbol={selectedAsset.symbol} />
+              </div>
+            </div>
+          )}
 
           {/* Portfolio summary bar */}
           {portfolio && (
@@ -92,9 +118,19 @@ export function DashboardPage() {
                 </span>
               </div>
               <div>
-                <span className="text-neutral-500">Total P&L </span>
+                <span className="text-neutral-500">P&L </span>
                 <span className={`font-mono font-semibold ${pnlIsUp ? 'text-emerald-400' : 'text-red-400'}`}>
                   {pnlIsUp ? '+' : ''}${portfolio.totalPnL.toFixed(2)} ({portfolio.totalPnLPercent.toFixed(2)}%)
+                </span>
+              </div>
+              <div className="ml-auto flex items-center gap-1.5">
+                <span className="text-neutral-500">Posiciones abiertas</span>
+                <span className={`font-mono font-bold text-sm px-2 py-0.5 rounded-md ${
+                  positionCount === 0
+                    ? 'text-neutral-500 bg-neutral-800'
+                    : 'text-emerald-400 bg-emerald-500/10'
+                }`}>
+                  {positionCount}
                 </span>
               </div>
             </div>

@@ -3,6 +3,7 @@ import type { Asset, CandlestickBar, OrderBook } from '../../Domain/Entities/Ass
 
 interface MarketState {
   assets: Asset[];
+  watchlist: string[];
   selectedAsset: Asset | null;
   candles: CandlestickBar[];
   orderBook: OrderBook | null;
@@ -14,17 +15,26 @@ interface MarketState {
   setOrderBook: (orderBook: OrderBook) => void;
   updateAssetPrice: (symbol: string, newPrice: number, change: number) => void;
   setLoading: (loading: boolean) => void;
+  addToWatchlist: (symbol: string) => void;
+  removeFromWatchlist: (symbol: string) => void;
 }
 
 export const useMarketStore = create<MarketState>((set) => ({
   assets: [],
+  watchlist: [],
   selectedAsset: null,
   candles: [],
   orderBook: null,
   lastUpdatedAt: null,
   isLoading: false,
 
-  setAssets: (assets) => set({ assets, lastUpdatedAt: Date.now() }),
+  setAssets: (assets) =>
+    set((state) => ({
+      assets,
+      lastUpdatedAt: Date.now(),
+      // On first load populate watchlist with all available symbols
+      watchlist: state.watchlist.length === 0 ? assets.map((a) => a.symbol) : state.watchlist,
+    })),
 
   selectAsset: (asset) => set({ selectedAsset: asset, candles: [], orderBook: null }),
 
@@ -35,9 +45,7 @@ export const useMarketStore = create<MarketState>((set) => ({
   updateAssetPrice: (symbol, newPrice, change) =>
     set((state) => ({
       assets: state.assets.map((a) =>
-        a.symbol === symbol
-          ? { ...a, currentPrice: newPrice, priceChange24h: change }
-          : a
+        a.symbol === symbol ? { ...a, currentPrice: newPrice, priceChange24h: change } : a
       ),
       selectedAsset:
         state.selectedAsset?.symbol === symbol
@@ -47,4 +55,16 @@ export const useMarketStore = create<MarketState>((set) => ({
     })),
 
   setLoading: (isLoading) => set({ isLoading }),
+
+  addToWatchlist: (symbol) =>
+    set((state) => ({
+      watchlist: state.watchlist.includes(symbol) ? state.watchlist : [...state.watchlist, symbol],
+    })),
+
+  removeFromWatchlist: (symbol) =>
+    set((state) => ({
+      watchlist: state.watchlist.filter((s) => s !== symbol),
+      selectedAsset:
+        state.selectedAsset?.symbol === symbol ? null : state.selectedAsset,
+    })),
 }));
