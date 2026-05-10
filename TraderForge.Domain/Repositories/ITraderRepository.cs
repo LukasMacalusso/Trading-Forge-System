@@ -8,11 +8,15 @@ public interface ITraderRepository
 
     Task<Trader> GetByIdAsync(string id);
     
-    Task<Trader> GetByIdWithSubscriptionPlanAsync(string id);
+    Task<Trader> GetByIdIncludeSubPlanAsync(string id);
     
-    Task<Trader> GetByIdWithPortfoliosAsync(string id);
+    Task<Trader> GetByIdIncludePortfolioAsync(string id);
 
-    Task<Trader> GetByIdWithAllAsync(string id);
+    Task<Trader> GetByIdIncludeAllAsync(string id);
+
+    Task<Trader> GetByIdIncludePlanAndStrategyAsync(string id);
+
+    Task<Trader> GetByIdIncludePlanAndAssetsAsync(string id);
 
     Task<List<Trader>> GetExpiredTrialsAsync();
     

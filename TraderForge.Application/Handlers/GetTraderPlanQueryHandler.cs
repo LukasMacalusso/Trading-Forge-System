@@ -17,7 +17,7 @@ public class GetTraderPlanQueryHandler
     {
         try
         {
-            var trader = await _traderRepository.GetByIdWithSubscriptionPlanAsync(query.TraderId);
+            var trader = await _traderRepository.GetByIdIncludeSubPlanAsync(query.TraderId);
             
             if (trader is null)
                 return ResultGeneric<SubscriptionPlan?>.Failure("Trader not found.");

@@ -28,24 +28,42 @@ public class TraderRepository : ITraderRepository
         return await _dbContext.Traders.FirstOrDefaultAsync(t => t.Id == id);
     }
 
-    public async Task<Trader> GetByIdWithSubscriptionPlanAsync(string id)
+    public async Task<Trader> GetByIdIncludeSubPlanAsync(string id)
     {
         return await _dbContext.Traders.Include(t => t.SubscriptionPlan).FirstOrDefaultAsync(t => t.Id == id);
     }
     
-    public async Task<Trader> GetByIdWithPortfoliosAsync(string id)
+    public async Task<Trader> GetByIdIncludePortfolioAsync(string id)
     {
         return await _dbContext.Traders.Include(t => t.Portfolios).FirstOrDefaultAsync(t => t.Id == id);
     }
 
-    public async Task<Trader> GetByIdWithAllAsync(string id)
+    public async Task<Trader> GetByIdIncludeAllAsync(string id)
     {
-        return await _dbContext.Traders
+        return (await _dbContext.Traders
             .Include(t => t.SubscriptionPlan)
             .Include(t => t.Portfolios)
-            .FirstOrDefaultAsync(t => t.Id == id);
+            .FirstOrDefaultAsync(t => t.Id == id))!;
     }
     
+    public async Task<Trader> GetByIdIncludePlanAndStrategyAsync(string id)
+    {
+        return (await _dbContext.Traders
+            .Include(t => t.SubscriptionPlan)
+            .Include(t => t.Portfolios)
+            .ThenInclude(p => p.Strategies)
+            .FirstOrDefaultAsync(t => t.Id == id))!;
+    }
+
+    public async Task<Trader> GetByIdIncludePlanAndAssetsAsync(string id)
+    {
+        return (await _dbContext.Traders
+            .Include(t => t.SubscriptionPlan)
+            .Include(t => t.Portfolios)
+            .ThenInclude(p => p.PortfolioAssets)
+            .FirstOrDefaultAsync(t => t.Id == id))!;
+    }
+
     public async Task<List<Trader>> GetExpiredTrialsAsync()
     {
         return await _dbContext.Traders

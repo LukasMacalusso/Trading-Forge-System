@@ -11,6 +11,9 @@ public class ApplicationDbContext : IdentityDbContext<Account>
     public DbSet<Administrator> Administrators { get; set; }
     public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
     public DbSet<Portfolio> Portfolios { get; set; }
+    public DbSet<MarketAsset> MarketAssets { get; set; }
+    public DbSet<Strategy> Strategies { get; set; }
+    public DbSet<PortfolioAsset> PortfolioAssets { get; set; }
     
     
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)

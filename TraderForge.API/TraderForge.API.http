@@ -1,7 +1,7 @@
 @hostAddress = http://localhost:5116
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjAxODRiNi0zMDJiLTQ1NzctYmI5Zi04NTBiNjMwMTlhM2YiLCJlbWFpbCI6ImxtYWNhbHVzc29AdHJhZGVyZm9yZ2UuY29tIiwicm9sZSI6IlN5c3RlbUFkbWluIiwibmJmIjoxNzc4MzY1MDU1LCJleHAiOjE3NzgzNzIyNTUsImlhdCI6MTc3ODM2NTA1NSwiaXNzIjoiVHJhZGVyRm9yZ2VBUEkiLCJhdWQiOiJUcmFkZXJGb3JnZVJlYWN0QXBwIn0.5wcSwCheLDoNr7zuzU9nCjeIH5gD-yS8VvpJLQwOsrU
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1M2I1MjRhNS04Y2M0LTQzZDEtOTQ3YS03ZTk4YmEwZTRjN2MiLCJlbWFpbCI6InRlc3QxNkB0cmFkZXJmb3JnZS5jb20iLCJyb2xlIjoiVHJhZGVyIiwibmJmIjoxNzc4MzczNjk4LCJleHAiOjE3NzgzODA4OTgsImlhdCI6MTc3ODM3MzY5OCwiaXNzIjoiVHJhZGVyRm9yZ2VBUEkiLCJhdWQiOiJUcmFkZXJGb3JnZVJlYWN0QXBwIn0.nprgBliTLePAqMQROBeFMJ7Hkg8BPpnGiR9d1l9Kxdo
 @adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjAxODRiNi0zMDJiLTQ1NzctYmI5Zi04NTBiNjMwMTlhM2YiLCJlbWFpbCI6ImxtYWNhbHVzc29AdHJhZGVyZm9yZ2UuY29tIiwicm9sZSI6IlN5c3RlbUFkbWluIiwibmJmIjoxNzc4MzY1MTEzLCJleHAiOjE3NzgzNzIzMTMsImlhdCI6MTc3ODM2NTExMywiaXNzIjoiVHJhZGVyRm9yZ2VBUEkiLCJhdWQiOiJUcmFkZXJGb3JnZVJlYWN0QXBwIn0.mbvVQxPzw046eY7Be0wYJbvIk9qhnk072ufXF8LtA3A
-
+@traderToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZDc0Y2VhMi1iYzM1LTQwMzgtYTlkZC1jMjI2MmJkNjM4YjgiLCJlbWFpbCI6InRlc3Rncm91cDRAdHJhZGVyZm9yZ2UuY29tIiwicm9sZSI6IlRyYWRlciIsIm5iZiI6MTc3ODM3Mzc2MywiZXhwIjoxNzc4MzgwOTYzLCJpYXQiOjE3NzgzNzM3NjMsImlzcyI6IlRyYWRlckZvcmdlQVBJIiwiYXVkIjoiVHJhZGVyRm9yZ2VSZWFjdEFwcCJ9.NRAZT8E2MwA5GyGCQj3G_T7Kdc3SLMO-Cb9472c-mr0
 
 GET {{hostAddress}}/weatherforecast/
 Accept: application/json
@@ -47,8 +47,8 @@ POST {{hostAddress}}/api/identity/login
 Content-Type: application/json
 
 {
-  "email": "lmacalusso@traderforge.com",
-  "password": "Stormblessed4321.."
+  "email": "test16@traderforge.com",
+  "password": "SuperSecretPassword123!"
 }
 
 ###
@@ -95,6 +95,109 @@ Authorization: bearer {{adminToken}}
 
 DELETE {{hostAddress}}/api/admin/plans/33333333-3333-3333-3333-333333333333
 Authorization: bearer {{adminToken}}
+
+###
+
+### ============================================================
+### GROUP 4 — Subscription Limit Enforcement
+### ============================================================
+
+### Register a new trader (copy their ID from the response or DB)
+POST {{hostAddress}}/api/identity/register
+Content-Type: application/json
+
+{
+  "email": "testgroup4@traderforge.com",
+  "password": "SuperSecretPassword123!"
+}
+
+###
+
+### Login as trader — copy the returned token to @traderToken above
+POST {{hostAddress}}/api/identity/login
+Content-Type: application/json
+
+{
+  "email": "testgroup4@traderforge.com",
+  "password": "SuperSecretPassword123!"
+}
+
+###
+
+### Get trader's current plan (shows limits: Basic = 2 strategies, 5 assets)
+GET {{hostAddress}}/api/subscription/trader-plan
+Authorization: bearer {{traderToken}}
+
+###
+
+### Get active portfolio (returns the portfolio GUID for creating strategies/assets)
+GET {{hostAddress}}/api/portfolio
+Authorization: bearer {{traderToken}}
+
+###
+
+### List all strategies for the authenticated trader (returns GUIDs)
+GET {{hostAddress}}/api/portfolio/strategies
+Authorization: bearer {{traderToken}}
+
+###
+
+### List all portfolio assets for the authenticated trader (returns GUIDs)
+GET {{hostAddress}}/api/portfolio/assets
+Authorization: bearer {{traderToken}}
+
+###
+
+### Create a strategy (portfolio resolved server-side from active portfolio)
+POST {{hostAddress}}/api/portfolio/strategies
+Content-Type: application/json
+Authorization: bearer {{traderToken}}
+
+{
+  "name": "My First Strategy"
+}
+
+###
+
+### Activate/deactivate a strategy — replace id with the strategy GUID from GET
+PUT {{hostAddress}}/api/portfolio/strategies/00000000-0000-0000-0000-000000000000/state
+Content-Type: application/json
+Authorization: bearer {{traderToken}}
+
+{
+  "isActive": false
+}
+
+###
+
+### Add a portfolio asset (portfolio resolved server-side from active portfolio)
+POST {{hostAddress}}/api/portfolio/assets
+Content-Type: application/json
+Authorization: bearer {{traderToken}}
+
+{
+  "symbol": "BTCUSDT",
+  "quantity": 0.5,
+  "entryPrice": 65000.00
+}
+
+###
+
+### Remove a portfolio asset — replace id with the asset GUID
+DELETE {{hostAddress}}/api/portfolio/assets/00000000-0000-0000-0000-000000000000
+Authorization: bearer {{traderToken}}
+
+###
+
+### Change plan — now protected by downgrade check (P4)
+### Create 2+ strategies first, then try to downgrade to Pro to test limit enforcement
+POST {{hostAddress}}/api/subscription/change-plan
+Content-Type: application/json
+Authorization: bearer {{traderToken}}
+
+{
+  "newPlanId": "22222222-2222-2222-2222-222222222222"
+}
 
 ###
 

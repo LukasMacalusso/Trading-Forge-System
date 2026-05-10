@@ -8,6 +8,9 @@ public class Portfolio
     public DateTime? ClosedAt { get; private set; }
 
     
+    public ICollection<Strategy> Strategies { get; private set; } = new List<Strategy>();
+    public ICollection<PortfolioAsset> PortfolioAssets { get; private set; } = new List<PortfolioAsset>();
+
     public string TraderId { get; private set; }
     public Trader Trader { get; private set; } = null!;
 

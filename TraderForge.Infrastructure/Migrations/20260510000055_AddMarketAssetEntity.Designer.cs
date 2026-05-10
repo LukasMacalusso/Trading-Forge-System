@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TraderForge.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using TraderForge.Infrastructure.Persistence;
 namespace TraderForge.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260510000055_AddMarketAssetEntity")]
+    partial class AddMarketAssetEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -229,61 +232,6 @@ namespace TraderForge.Infrastructure.Migrations
                     b.HasIndex("TraderId");
 
                     b.ToTable("Portfolios", (string)null);
-                });
-
-            modelBuilder.Entity("TraderForge.Domain.Entities.PortfolioAsset", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal>("EntryPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid>("PortfolioId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Quantity")
-                        .HasColumnType("decimal(18,8)");
-
-                    b.Property<string>("Symbol")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PortfolioId");
-
-                    b.ToTable("PortfolioAssets", (string)null);
-                });
-
-            modelBuilder.Entity("TraderForge.Domain.Entities.Strategy", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<Guid>("PortfolioId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PortfolioId");
-
-                    b.ToTable("Strategies", (string)null);
                 });
 
             modelBuilder.Entity("TraderForge.Domain.Entities.SubscriptionPlan", b =>
@@ -502,28 +450,6 @@ namespace TraderForge.Infrastructure.Migrations
                     b.Navigation("Trader");
                 });
 
-            modelBuilder.Entity("TraderForge.Domain.Entities.PortfolioAsset", b =>
-                {
-                    b.HasOne("TraderForge.Domain.Entities.Portfolio", "Portfolio")
-                        .WithMany("PortfolioAssets")
-                        .HasForeignKey("PortfolioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Portfolio");
-                });
-
-            modelBuilder.Entity("TraderForge.Domain.Entities.Strategy", b =>
-                {
-                    b.HasOne("TraderForge.Domain.Entities.Portfolio", "Portfolio")
-                        .WithMany("Strategies")
-                        .HasForeignKey("PortfolioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Portfolio");
-                });
-
             modelBuilder.Entity("TraderForge.Domain.Entities.Trader", b =>
                 {
                     b.HasOne("TraderForge.Domain.Entities.SubscriptionPlan", "SubscriptionPlan")
@@ -531,13 +457,6 @@ namespace TraderForge.Infrastructure.Migrations
                         .HasForeignKey("SubscriptionPlanId");
 
                     b.Navigation("SubscriptionPlan");
-                });
-
-            modelBuilder.Entity("TraderForge.Domain.Entities.Portfolio", b =>
-                {
-                    b.Navigation("PortfolioAssets");
-
-                    b.Navigation("Strategies");
                 });
 
             modelBuilder.Entity("TraderForge.Domain.Entities.SubscriptionPlan", b =>
