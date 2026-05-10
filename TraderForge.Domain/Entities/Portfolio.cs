@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace TraderForge.Domain.Entities;
 public class Portfolio
 {
@@ -12,6 +14,7 @@ public class Portfolio
     public ICollection<PortfolioAsset> PortfolioAssets { get; private set; } = new List<PortfolioAsset>();
 
     public string TraderId { get; private set; }
+    [JsonIgnore]
     public Trader Trader { get; private set; } = null!;
 
     private Portfolio(){}
