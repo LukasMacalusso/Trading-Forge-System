@@ -38,11 +38,17 @@ jobs:
             /o:"tradingforge-sonarqube-key" \
             /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml"
+            /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml"
           
           dotnet build TradingForgeSystem.sln --configuration Release
           
-          dotnet test TradingForgeSystem.sln --no-build --configuration Release --verbosity normal \
+          dotnet test --no-build --configuration Release --verbosity normal \
+            --collect:"XPlat Code Coverage" \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          
+          dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
+          
+          dotnet test --no-build --configuration Release --verbosity normal \
                       --collect:"XPlat Code Coverage" \
                       --results-directory:"TestResults" \
                       -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover

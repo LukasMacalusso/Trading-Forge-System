@@ -1,6 +1,7 @@
 using TraderForge.Application.Common;
 using TraderForge.Application.DTOs;
 using TraderForge.Domain.Entities;
+using TraderForge.Domain.Interfaces;
 using TraderForge.Domain.Repositories;
 using TraderForge.Domain.Services;
 
@@ -10,14 +11,18 @@ public class RegisterTraderCommandHandler
 {
     private readonly IIdentityService _identityService;
     private readonly ITraderRepository _traderRepository;
+    private readonly ITraderFactory _traderFactory;
     private readonly ISubscriptionPlanRepository _planRepository;
 
-    public RegisterTraderCommandHandler(IIdentityService identityService, 
+    public RegisterTraderCommandHandler(
+        IIdentityService identityService, 
         ITraderRepository traderRepository, 
-        ISubscriptionPlanRepository planRepository)
+        ITraderFactory traderFactory,
+        ISubscriptionPlanRepository planRepository) 
     {
         _identityService = identityService;
         _traderRepository = traderRepository;
+        _traderFactory = traderFactory;
         _planRepository = planRepository;
     }
 
@@ -36,34 +41,21 @@ public class RegisterTraderCommandHandler
     private async Task<Result> ExecuteRegistration(RegisterTraderCommand command)
     {
         string newUserId = GenerateNewAccountId();
-        await _identityService.RegisterNewAccountAsync(newUserId,command.Email, command.Password);
-
-        Trader newTrader = await GenerateTraderWithFreeTrialAsync(newUserId, command.Email);
-        await _traderRepository.AddAsync(newTrader);
-            
-        return Result.Success();
-    }
-
-    private string GenerateNewAccountId()
-    {
-        return Guid.NewGuid().ToString();
-    }
-
-    private async Task<Trader> GenerateTraderWithFreeTrialAsync(string id, string email)
-    {
-        Trader newTrader = new Trader(id, email);
-        newTrader.FreeTrialRegistrationDate = DateTime.UtcNow;
-        newTrader.FreeTrialExpirationDate = DateTime.UtcNow.AddDays(7);
-        newTrader.UserName = email;
+        
+        await _identityService.RegisterNewAccountAsync(newUserId, command.Email, command.Password);
+        Trader newTrader = _traderFactory.CreateWithFreeTrial(newUserId, command.Email);
         
         SubscriptionPlan basicPlan = await _planRepository.GetByNameAsync("basic");
         newTrader.AssignSubscriptionPlan(basicPlan);
         
-        Portfolio newPortfolio = new Portfolio(id, basicPlan.InitialVirtualBalance);
+        Portfolio newPortfolio = new Portfolio(newUserId, basicPlan.InitialVirtualBalance);
         newTrader.Portfolios.Add(newPortfolio);
-        return newTrader;
+        
+        await _traderRepository.AddAsync(newTrader);
+        return Result.Success();
     }
-    
-    
-    
+    private static string GenerateNewAccountId()
+    {
+        return Guid.NewGuid().ToString();
+    }
 }
