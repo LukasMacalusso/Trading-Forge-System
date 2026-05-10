@@ -19,6 +19,9 @@ public class RegisterTraderCommandHandlerTests
         _identityServiceMock = new Mock<IIdentityService>();
         _traderRepositoryMock = new Mock<ITraderRepository>();
         _planRepositoryMock = new Mock<ISubscriptionPlanRepository>();
+        _planRepositoryMock
+            .Setup(x => x.GetByNameAsync("basic"))
+            .ReturnsAsync(new SubscriptionPlan(Guid.NewGuid(), "Basic", 9.99m, 10000m, 2, 5, false));
         _handler = new RegisterTraderCommandHandler(
             _identityServiceMock.Object,
             _traderRepositoryMock.Object,
