@@ -1,11 +1,10 @@
 using Moq;
-using TraderForge.Application.Common;
 using TraderForge.Application.DTOs;
 using TraderForge.Application.Handlers;
 using TraderForge.Domain.Entities;
 using TraderForge.Domain.Repositories;
 
-namespace TraderForge.Tests;
+namespace TraderForge.Application.Tests;
 
 public class AdminPlanHandlersTests
 {
