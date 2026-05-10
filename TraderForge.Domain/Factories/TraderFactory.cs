@@ -1,5 +1,6 @@
 ﻿using TraderForge.Domain.Entities;
 using TraderForge.Domain.Interfaces;
+namespace TraderForge.Domain.Factories;
 
 public class TraderFactory : ITraderFactory
 {

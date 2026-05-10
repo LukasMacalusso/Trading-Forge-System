@@ -54,7 +54,7 @@ public class RegisterTraderCommandHandler
         await _traderRepository.AddAsync(newTrader);
         return Result.Success();
     }
-    private string GenerateNewAccountId()
+    private static string GenerateNewAccountId()
     {
         return Guid.NewGuid().ToString();
     }

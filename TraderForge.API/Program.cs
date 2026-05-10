@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using TraderForge.API.Hubs;
 using TraderForge.API.Services;
 using TraderForge.Application.Handlers;
+using TraderForge.Domain.Factories;
 using TraderForge.Domain.Interfaces;
 using TraderForge.Domain.Repositories;
 using TraderForge.Domain.Services;
