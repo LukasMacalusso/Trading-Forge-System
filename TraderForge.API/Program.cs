@@ -2,9 +2,13 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using TraderForge.API.Hubs;
+using TraderForge.API.Services;
 using TraderForge.Application.Handlers;
 using TraderForge.Application.Interfaces;
 using TraderForge.Domain.Interfaces;
+using TraderForge.Domain.Repositories;
 using TraderForge.Domain.Services;
 using TraderForge.Infrastructure;
 using TraderForge.Infrastructure.Persistence;
@@ -39,6 +43,20 @@ if (File.Exists(envPath))
 }
 
 // -- Configure ASP.NET Core Identity -- //
+
+var builder = WebApplication.CreateBuilder(args);
+
+// -- Core Services Registration -- //
+builder.Services.AddOpenApi();
+builder.Services.AddControllers();
+builder.Services.AddMemoryCache();
+builder.Services.AddSignalR();
+
+// -- Database Context -- //
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// -- ASP.NET Core Identity -- //
 builder.Services.AddIdentityCore<Account>(options =>
 {
     options.User.RequireUniqueEmail = true;
@@ -46,8 +64,27 @@ builder.Services.AddIdentityCore<Account>(options =>
     options.Password.RequiredLength = 8;
 }).AddEntityFrameworkStores<ApplicationDbContext>();
 
+// -- Authentication & JWT -- //
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+        ValidAudience = builder.Configuration["JwtSettings:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]!))
+    };
+});
 
-// - Register Services for the DEPENDENCY INJECTION - //
+// -- Dependency Injection (Repositories & Services) -- //
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<ITraderRepository, TraderRepository>();
 builder.Services.AddScoped<IAdministratorRepository, AdministratorRepository>();
@@ -96,16 +133,37 @@ builder.Services.AddAuthentication(options =>
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]!))
         };
     });
+builder.Services.AddScoped<IMarketAssetRepository, MarketAssetRepository>();
 
+// -- CQRS Handlers -- //
+builder.Services.AddTransient<RegisterTraderCommandHandler>();
+builder.Services.AddTransient<LoginTraderQueryHandler>();
+builder.Services.AddTransient<GetMarketPricesQueryHandler>();
+
+// -- Market Data Services -- //
+builder.Services.AddHttpClient<IMarketDataProvider, BinanceMarketProvider>();
+builder.Services.AddSingleton<IMarketService, CachedMarketService>();
+builder.Services.AddHostedService<BackgroundMarketPollingService>();
+builder.Services.AddSingleton<IMarketDataBroadcaster, SignalRMarketDataBroadcaster>();
 
 // -- Register database context -- //
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
         .EnableSensitiveDataLogging()
         .LogTo(Console.WriteLine, LogLevel.Information));
+// -- CORS -- //
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policyBuilder =>
+    {
+        policyBuilder.WithOrigins("http://localhost:3000") // Replace with actual frontend URL
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials(); 
+    });
+});
 
 
-// -- Initialize app -- //
 var app = builder.Build();
 
 
@@ -139,20 +197,19 @@ using (var scope = app.Services.CreateScope())
 
 
 // Configure the HTTP request pipeline.
+// -- Middleware Pipeline -- //
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
-
+app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 
-
-// - Auth - //
-app.UseAuthentication(); 
+app.UseAuthentication();
 app.UseAuthorization();
 
-// - Controller - //
 app.MapControllers();
+app.MapHub<MarketDataHub>("/hubs/market");
 
 app.Run();

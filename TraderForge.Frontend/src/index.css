@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    @apply bg-neutral-950 text-neutral-100 antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  #root {
+    @apply min-h-screen w-full;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.neutral.700') transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-neutral-700 rounded-full;
+  }
+}
+
+/* --- Login and Register specific semantic styles --- */
+
+.login-card,
+.register-card {
+  @apply bg-neutral-900 border border-neutral-800 rounded-xl p-6 flex flex-col gap-5;
+}
+
+.login-header,
+.register-header {
+  @apply flex flex-col;
+}
+
+.login-title,
+.register-title {
+  @apply text-lg font-semibold text-neutral-100;
+}
+
+.login-subtitle,
+.register-subtitle {
+  @apply text-sm text-neutral-500 mt-0.5;
+}
+
+.login-form,
+.register-form {
+  @apply flex flex-col gap-4;
+}
+
+.login-error-message,
+.register-error-message {
+  @apply text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2;
+}
+
+.login-submit-button,
+.register-submit-button {
+  @apply w-full;
+}
+
+.login-footer-text,
+.register-footer-text {
+  @apply text-center text-sm text-neutral-500;
+}
+
+.login-register-link,
+.register-login-link {
+  @apply text-emerald-400 hover:text-emerald-300 transition-colors;
+}
+
+.register-password-rules {
+  @apply flex flex-col gap-1;
+}
+
+.register-rule-item {
+  @apply flex items-center gap-2 text-xs;
+}
+
+.register-rule-item--valid {
+  @apply text-emerald-400;
+}
+
+.register-rule-item--invalid {
+  @apply text-neutral-500;
+}
+
+/* --- Auth Layout specific semantic styles --- */
+
+.auth-layout {
+  @apply min-h-screen bg-neutral-950 flex items-center justify-center p-4;
+}
+
+.auth-layout__container {
+  @apply w-full max-w-sm;
+}
+
+.auth-layout__brand {
+  @apply text-center mb-8;
+}
+
+.auth-layout__title {
+  @apply text-2xl font-bold text-neutral-100 tracking-tight;
+}
+
+.auth-layout__title-accent {
+  @apply text-emerald-400;
+}
+
+.auth-layout__subtitle {
+  @apply text-sm text-neutral-500 mt-1;
+}

@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TraderForge.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace TraderForge.Infrastructure.Persistence;
-
 
 public class ApplicationDbContext : IdentityDbContext<Account>
 {
@@ -19,7 +19,6 @@ public class ApplicationDbContext : IdentityDbContext<Account>
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     { // empty because inheriting the base constructor
     }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
