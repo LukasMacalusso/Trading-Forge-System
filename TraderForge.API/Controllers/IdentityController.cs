@@ -24,7 +24,7 @@ public class IdentityController : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterTraderRequest request)
     {
         var command = request.ToCommand(); 
-        var result = await _registerTraderCommandHandler.RegisterTraderAsync(command);
+        var result = await _registerTraderCommandHandler.HandleAsync(command);
 
         if (result.IsSuccess)
         {
@@ -38,7 +38,7 @@ public class IdentityController : ControllerBase
     public async Task<IActionResult> Login([FromBody] LoginTraderRequest request)
     {
         var query = request.ToQuery();
-        var result = await _loginTraderQueryHandler.GetLoginTokenAsync(query);
+        var result = await _loginTraderQueryHandler.HandleAsync(query);
 
         if (result.IsSuccess)
         {

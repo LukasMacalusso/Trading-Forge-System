@@ -25,7 +25,7 @@ public class PricesController : ControllerBase
         }
 
         var query = request.ToQuery();
-        var result = await _handler.GetMarketPricesAsync(query); 
+        var result = await _handler.HandleAsync(query); 
         return Ok(result.Value); 
     }
 }

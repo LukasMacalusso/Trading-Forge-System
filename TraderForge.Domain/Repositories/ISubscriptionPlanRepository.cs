@@ -1,6 +1,6 @@
 using TraderForge.Domain.Entities;
 
-namespace TraderForge.Domain.Interfaces;
+namespace TraderForge.Domain.Repositories;
 
 public interface ISubscriptionPlanRepository
 {

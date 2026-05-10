@@ -1,9 +1,8 @@
-using System.Runtime.InteropServices.JavaScript;
 using TraderForge.Application.Common;
 using TraderForge.Application.DTOs;
 using TraderForge.Domain.Entities;
-using TraderForge.Domain.Interfaces;
 using TraderForge.Domain.Repositories;
+using TraderForge.Domain.Services;
 
 namespace TraderForge.Application.Handlers;
 
@@ -22,7 +21,7 @@ public class RegisterTraderCommandHandler
         _planRepository = planRepository;
     }
 
-    public async Task<Result> RegisterTraderAsync(RegisterTraderCommand command)
+    public async Task<Result> HandleAsync(RegisterTraderCommand command)
     {
         try
         {

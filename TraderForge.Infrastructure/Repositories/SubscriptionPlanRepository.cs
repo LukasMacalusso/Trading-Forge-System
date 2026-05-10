@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TraderForge.Domain.Entities;
-using TraderForge.Domain.Interfaces;
+using TraderForge.Domain.Repositories;
 using TraderForge.Infrastructure.Persistence;
 
 namespace TraderForge.Infrastructure.Repositories;

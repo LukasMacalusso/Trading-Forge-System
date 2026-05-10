@@ -37,7 +37,7 @@ public class GetMarketPricesQueryHandlerTests
             Symbols = new List<string> { "BTCUSDT", "ETHUSDT" }
         };
 
-        ResultGeneric<Dictionary<string, decimal>> result = await _handler.GetMarketPricesAsync(query);
+        ResultGeneric<Dictionary<string, decimal>> result = await _handler.HandleAsync(query);
 
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);

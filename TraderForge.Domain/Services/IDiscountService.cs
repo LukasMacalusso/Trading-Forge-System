@@ -1,4 +1,4 @@
-namespace TraderForge.Application.Interfaces;
+namespace TraderForge.Domain.Services;
 
 public record DiscountOffer(decimal Percentage, decimal DiscountedPrice);
 

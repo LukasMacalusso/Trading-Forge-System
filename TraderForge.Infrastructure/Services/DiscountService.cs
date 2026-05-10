@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Configuration;
-using TraderForge.Application.Interfaces;
-using TraderForge.Domain.Interfaces;
+using TraderForge.Domain.Services;
 using TraderForge.Domain.Repositories;
 
 namespace TraderForge.Infrastructure.Services;

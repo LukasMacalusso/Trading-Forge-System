@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TraderForge.Domain.Entities;
-using TraderForge.Domain.Interfaces;
 using TraderForge.Infrastructure.Persistence;
 using System.Linq;
 using TraderForge.Domain.Repositories;

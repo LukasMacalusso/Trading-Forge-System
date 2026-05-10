@@ -10,7 +10,7 @@ public class GetMarketPricesQueryHandler
     
     public GetMarketPricesQueryHandler(IMarketService marketService) => _marketService = marketService;
     
-    public async Task<ResultGeneric<Dictionary<string, decimal>>> GetMarketPricesAsync(GetMarketPricesQuery query)
+    public async Task<ResultGeneric<Dictionary<string, decimal>>> HandleAsync(GetMarketPricesQuery query)
     {
         var symbols = query.Symbols;
         

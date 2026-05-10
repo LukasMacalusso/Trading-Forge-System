@@ -1,5 +1,5 @@
 using TraderForge.Application.Common;
-using TraderForge.Domain.Interfaces;
+using TraderForge.Domain.Repositories;
 
 namespace TraderForge.Application.Handlers;
 

@@ -5,7 +5,7 @@ using TraderForge.API.Mappers;
 using TraderForge.API.Requests;
 using TraderForge.Application.DTOs;
 using TraderForge.Application.Handlers;
-using TraderForge.Application.Interfaces;
+using TraderForge.Domain.Services;
 
 namespace TraderForge.API.Controllers;
 [ApiController]
@@ -38,7 +38,7 @@ public class SubscriptionController : ControllerBase
 
         var command = request.ToCommand(traderId);
 
-        var result = await _commandHandler.ChangeTraderSubscription(command);
+        var result = await _commandHandler.HandleAsync(command);
 
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });
@@ -56,7 +56,7 @@ public class SubscriptionController : ControllerBase
     [HttpGet("plans")]
     public async Task<IActionResult> GetSubscriptionPlans()
     {
-        var result = await _getAllPlansHandler.GetAllSubscriptionPlans(new GetAllPlansQuery());
+        var result = await _getAllPlansHandler.HandleAsync(new GetAllPlansQuery());
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });
         return Ok(result.Value);

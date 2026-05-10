@@ -4,7 +4,7 @@ using TraderForge.API.Mappers;
 using TraderForge.API.Requests;
 using TraderForge.Application.DTOs;
 using TraderForge.Application.Handlers;
-using TraderForge.Domain.Interfaces;
+using TraderForge.Domain.Repositories;
 
 namespace TraderForge.API.Controllers;
 
@@ -36,7 +36,7 @@ public class AdministratorController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var result = await _getAllPlansHandler.GetAllSubscriptionPlans(new GetAllPlansQuery());
+        var result = await _getAllPlansHandler.HandleAsync(new GetAllPlansQuery());
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });
         return Ok(result.Value);

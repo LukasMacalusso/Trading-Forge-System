@@ -1,7 +1,7 @@
 using TraderForge.Application.Common;
 using TraderForge.Application.DTOs;
 using TraderForge.Domain.Entities;
-using TraderForge.Domain.Interfaces;
+using TraderForge.Domain.Repositories;
 
 namespace TraderForge.Application.Handlers;
 
@@ -12,7 +12,7 @@ public class GetAllPlansQueryHandler
     {
         _planRepository = planRepository;
     }
-    public async Task<ResultGeneric<List<SubscriptionPlan>>> GetAllSubscriptionPlans(GetAllPlansQuery query)
+    public async Task<ResultGeneric<List<SubscriptionPlan>>> HandleAsync(GetAllPlansQuery query)
     {
         try
         {

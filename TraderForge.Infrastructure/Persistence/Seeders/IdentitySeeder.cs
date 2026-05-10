@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using TraderForge.Domain.Entities;
-using TraderForge.Domain.Interfaces;
+using TraderForge.Domain.Repositories;
 using TraderForge.Infrastructure;
 
 namespace TraderForge.Infrastructure.Persistence.Seeders;

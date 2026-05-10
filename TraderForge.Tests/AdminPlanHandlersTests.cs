@@ -3,7 +3,7 @@ using TraderForge.Application.Common;
 using TraderForge.Application.DTOs;
 using TraderForge.Application.Handlers;
 using TraderForge.Domain.Entities;
-using TraderForge.Domain.Interfaces;
+using TraderForge.Domain.Repositories;
 
 namespace TraderForge.Tests;
 
@@ -133,7 +133,7 @@ public class AdminPlanHandlersTests
         repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(plans);
 
         var handler = new GetAllPlansQueryHandler(repoMock.Object);
-        var result = await handler.GetAllSubscriptionPlans(new GetAllPlansQuery());
+        var result = await handler.HandleAsync(new GetAllPlansQuery());
 
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);

@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TraderForge.Domain.Interfaces;
 using TraderForge.Domain.Repositories;
 
 namespace TraderForge.Infrastructure.Services;
