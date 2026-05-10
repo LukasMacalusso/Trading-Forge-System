@@ -14,10 +14,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup .NET 9
+      - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
@@ -38,13 +38,13 @@ jobs:
             /o:"tradingforge-sonarqube-key" \
             /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml"
+            /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml"
           
           dotnet build TradingForgeSystem.sln --configuration Release
           
           dotnet test TradingForgeSystem.sln --no-build --configuration Release --verbosity normal \
-                      --collect:"XPlat Code Coverage" \
-                      --results-directory:"TestResults" \
-                      -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+            --collect:"XPlat Code Coverage" \
+            --results-directory:"TestResults" \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
           
           dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
