@@ -10,19 +10,25 @@ public class BuyPositionCommandHandler
 {
     private readonly IPositionRepository _positionRepository;
     private readonly ITraderRepository _traderRepository;
+    private readonly IOrderRepository _orderRepository;
     private readonly ISubscriptionLimitGuard _limitGuard;
     private readonly ICommissionService _commissionService;
+    private readonly IMarketService _marketService;
 
     public BuyPositionCommandHandler(
         IPositionRepository positionRepository,
         ITraderRepository traderRepository,
+        IOrderRepository orderRepository,
         ISubscriptionLimitGuard limitGuard,
-        ICommissionService commissionService)
+        ICommissionService commissionService,
+        IMarketService marketService)
     {
         _positionRepository = positionRepository;
         _traderRepository = traderRepository;
+        _orderRepository = orderRepository;
         _limitGuard = limitGuard;
         _commissionService = commissionService;
+        _marketService = marketService;
     }
 
     public async Task<Result> HandleAsync(BuyPositionCommand command)
@@ -39,6 +45,9 @@ public class BuyPositionCommandHandler
 
     private async Task<Result> ExecuteTradeAsync(BuyPositionCommand command)
     {
+        if (!IsMarketOpen(command.Symbol))
+            return Result.Failure($"The market for {command.Symbol} is currently closed.");
+
         var limitResult = await VerifySubscriptionLimitAsync(command.TraderId);
         if (!limitResult.IsSuccess)
             return limitResult;
@@ -53,20 +62,24 @@ public class BuyPositionCommandHandler
             return balanceResult;
 
         await UpsertPositionAsync(portfolio, command);
-
-        var commission = _commissionService.Calculate(command.Quantity * command.EntryPrice);
-        portfolio.DeductFunds(totalCost, "Buy", command.Symbol, command.Quantity, command.EntryPrice, commission);
+        var commission = ProcessPayment(portfolio, command, totalCost);
+        await CreateOrderReceiptAsync(portfolio.Id, command, commission, totalCost);
+        
         await _positionRepository.SaveChangesAsync();
+        await _orderRepository.SaveChangesAsync();
 
         return Result.Success();
+    }
+
+    private bool IsMarketOpen(string symbol)
+    {
+        return _marketService.IsMarketOpen(symbol);
     }
 
     private async Task<Result> VerifySubscriptionLimitAsync(string traderId)
     {
         var canAdd = await _limitGuard.CanAddAssetAsync(traderId);
-        return canAdd
-            ? Result.Success()
-            : Result.Failure("Subscription limit reached: maximum active assets exceeded.");
+        return canAdd ? Result.Success() : Result.Failure("Subscription limit reached.");
     }
 
     private async Task<Portfolio?> GetActivePortfolioAsync(string traderId)
@@ -91,14 +104,28 @@ public class BuyPositionCommandHandler
     private async Task UpsertPositionAsync(Portfolio portfolio, BuyPositionCommand command)
     {
         var existing = portfolio.Positions.FirstOrDefault(p => p.Symbol == command.Symbol);
+        
         if (existing != null)
         {
             existing.Update(command.Quantity, command.EntryPrice);
             return;
         }
 
-        var position = new Position(
-            Guid.NewGuid(), command.Symbol, command.Quantity, command.EntryPrice, portfolio.Id);
+        var position = new Position(Guid.NewGuid(), command.Symbol, command.Quantity, command.EntryPrice, portfolio.Id);
         await _positionRepository.AddAsync(position);
+    }
+
+    private decimal ProcessPayment(Portfolio portfolio, BuyPositionCommand command, decimal totalCost)
+    {
+        var commission = _commissionService.Calculate(command.Quantity * command.EntryPrice);
+        portfolio.DeductFunds(totalCost, "Buy", command.Symbol, command.Quantity, command.EntryPrice, commission);
+        return commission;
+    }
+
+    private async Task CreateOrderReceiptAsync(Guid portfolioId, BuyPositionCommand command, decimal commission, decimal totalCost)
+    {
+        var order = new Order(
+            portfolioId, command.Symbol, "Buy", "Market", command.Quantity, command.EntryPrice, commission, totalCost, "Filled");
+        await _orderRepository.AddAsync(order);
     }
 }

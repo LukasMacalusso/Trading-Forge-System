@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TraderForge.API.Mappers;
 using TraderForge.API.Requests;
 using TraderForge.Application.DTOs;
 using TraderForge.Application.Handlers;
@@ -9,39 +8,42 @@ using TraderForge.Application.Handlers;
 namespace TraderForge.API.Controllers;
 
 [ApiController]
-[Route("/api/[controller]")]
+[Route("api/[controller]")]
 [Authorize(Roles = "Trader")]
 public class PortfolioController : ControllerBase
 {
     private readonly GetActivePortfolioQueryHandler _getPortfolioHandler;
     private readonly GetStrategiesQueryHandler _getStrategiesHandler;
-    private readonly GetPositionsQueryHandler _getAssetsHandler;
+    private readonly GetPositionsQueryHandler _getPositionsHandler;
     private readonly CreateStrategyCommandHandler _createStrategyHandler;
     private readonly UpdateStrategyStateCommandHandler _updateStrategyStateHandler;
-    private readonly BuyPositionCommandHandler _addAssetHandler;
-    private readonly SellPositionCommandHandler _removeAssetHandler;
+    private readonly BuyPositionCommandHandler _buyPositionHandler;
+    private readonly SellPositionCommandHandler _sellPositionHandler;
     private readonly GetTransactionsQueryHandler _getTransactionsHandler;
+    private readonly GetOrdersQueryHandler _getOrdersHandler;
     private readonly ResetSimulationCommandHandler _resetSimulationHandler;
 
     public PortfolioController(
         GetActivePortfolioQueryHandler getPortfolioHandler,
         GetStrategiesQueryHandler getStrategiesHandler,
-        GetPositionsQueryHandler getAssetsHandler,
+        GetPositionsQueryHandler getPositionsHandler,
         CreateStrategyCommandHandler createStrategyHandler,
         UpdateStrategyStateCommandHandler updateStrategyStateHandler,
-        BuyPositionCommandHandler addAssetHandler,
-        SellPositionCommandHandler removeAssetHandler,
+        BuyPositionCommandHandler buyPositionHandler,
+        SellPositionCommandHandler sellPositionHandler,
         GetTransactionsQueryHandler getTransactionsHandler,
+        GetOrdersQueryHandler getOrdersHandler,
         ResetSimulationCommandHandler resetSimulationHandler)
     {
         _getPortfolioHandler = getPortfolioHandler;
         _getStrategiesHandler = getStrategiesHandler;
-        _getAssetsHandler = getAssetsHandler;
+        _getPositionsHandler = getPositionsHandler;
         _createStrategyHandler = createStrategyHandler;
         _updateStrategyStateHandler = updateStrategyStateHandler;
-        _addAssetHandler = addAssetHandler;
-        _removeAssetHandler = removeAssetHandler;
+        _buyPositionHandler = buyPositionHandler;
+        _sellPositionHandler = sellPositionHandler;
         _getTransactionsHandler = getTransactionsHandler;
+        _getOrdersHandler = getOrdersHandler;
         _resetSimulationHandler = resetSimulationHandler;
     }
 
@@ -102,45 +104,46 @@ public class PortfolioController : ControllerBase
         return Ok(new { message = $"Strategy {state} successfully." });
     }
 
-    [HttpGet("assets")]
-    public async Task<IActionResult> GetAssets()
+    [HttpGet("positions")]
+    public async Task<IActionResult> GetPositions()
     {
         var traderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(traderId))
             return Unauthorized(new { error = "Invalid token claims." });
 
-        var result = await _getAssetsHandler.HandleAsync(new GetPositionsQuery { TraderId = traderId });
+        var result = await _getPositionsHandler.HandleAsync(new GetPositionsQuery { TraderId = traderId });
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });
 
         return Ok(result.Value);
     }
 
-    [HttpPost("assets")]
-    public async Task<IActionResult> AddAsset([FromBody] AddPortfolioAssetRequest request)
+    [HttpPost("positions/buy")]
+    public async Task<IActionResult> BuyPosition([FromBody] BuyPositionRequest request)
     {
         var traderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(traderId))
             return Unauthorized(new { error = "Invalid token claims." });
 
         var command = request.ToCommand(traderId);
-        var result = await _addAssetHandler.HandleAsync(command);
+        var result = await _buyPositionHandler.HandleAsync(command);
 
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });
 
-        return Ok(new { message = "Asset added successfully." });
+        return Ok(new { message = "Position purchased successfully." });
     }
 
-    [HttpDelete("assets/{id:guid}")]
-    public async Task<IActionResult> RemoveAsset(Guid id)
+    [HttpPost("positions/{id:guid}/sell")]
+    public async Task<IActionResult> SellPosition(Guid id, [FromBody] SellPositionRequest request)
     {
-        var result = await _removeAssetHandler.HandleAsync(new SellPositionCommand { PositionId = id });
+        var command = request.ToCommand(id);
+        var result = await _sellPositionHandler.HandleAsync(command);
 
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });
 
-        return Ok(new { message = "Asset removed successfully." });
+        return Ok(new { message = "Position sold successfully." });
     }
 
     [HttpGet("transactions")]
@@ -151,6 +154,20 @@ public class PortfolioController : ControllerBase
             return Unauthorized(new { error = "Invalid token claims." });
 
         var result = await _getTransactionsHandler.HandleAsync(new GetTransactionsQuery { TraderId = traderId });
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.ErrorMessage });
+
+        return Ok(result.Value);
+    }
+
+    [HttpGet("orders")]
+    public async Task<IActionResult> GetOrders()
+    {
+        var traderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(traderId))
+            return Unauthorized(new { error = "Invalid token claims." });
+
+        var result = await _getOrdersHandler.HandleAsync(new GetOrdersQuery { TraderId = traderId });
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });
 

@@ -89,6 +89,7 @@ builder.Services.AddScoped<IPositionRepository, PositionRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ISubscriptionLimitGuard, SubscriptionLimitGuard>();
 builder.Services.AddScoped<ICommissionService, CommissionService>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddTransient<RegisterTraderCommandHandler>();
 builder.Services.AddTransient<LoginTraderQueryHandler>();
 builder.Services.AddTransient<ChangeSubscriptionCommandHandler>();

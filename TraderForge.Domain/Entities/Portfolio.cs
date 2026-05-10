@@ -13,6 +13,7 @@ public class Portfolio
     public ICollection<Strategy> Strategies { get; private set; } = new List<Strategy>();
     public ICollection<Position> Positions { get; private set; } = new List<Position>();
     public ICollection<Transaction> Transactions { get; private set; } = new List<Transaction>();
+    public ICollection<Order> Orders { get; private set; } = new List<Order>();
 
     public string TraderId { get; private set; }
     [JsonIgnore]
