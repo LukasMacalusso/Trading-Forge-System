@@ -4,16 +4,16 @@ using TraderForge.Domain.Repositories;
 
 namespace TraderForge.Application.Handlers;
 
-public class RemovePortfolioAssetCommandHandler
+public class RemovePositionCommandHandler
 {
-    private readonly IPortfolioAssetRepository _assetRepository;
+    private readonly IPositionRepository _assetRepository;
 
-    public RemovePortfolioAssetCommandHandler(IPortfolioAssetRepository assetRepository)
+    public RemovePositionCommandHandler(IPositionRepository assetRepository)
     {
         _assetRepository = assetRepository;
     }
 
-    public async Task<Result> HandleAsync(RemovePortfolioAssetCommand command)
+    public async Task<Result> HandleAsync(RemovePositionCommand command)
     {
         try
         {
@@ -25,7 +25,7 @@ public class RemovePortfolioAssetCommandHandler
         }
     }
 
-    private async Task<Result> ExecuteAsync(RemovePortfolioAssetCommand command)
+    private async Task<Result> ExecuteAsync(RemovePositionCommand command)
     {
         var asset = await _assetRepository.GetByIdAsync(command.AssetId);
         if (asset == null)

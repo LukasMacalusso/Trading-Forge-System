@@ -15,20 +15,20 @@ public class PortfolioController : ControllerBase
 {
     private readonly GetActivePortfolioQueryHandler _getPortfolioHandler;
     private readonly GetStrategiesQueryHandler _getStrategiesHandler;
-    private readonly GetPortfolioAssetsQueryHandler _getAssetsHandler;
+    private readonly GetPositionsQueryHandler _getAssetsHandler;
     private readonly CreateStrategyCommandHandler _createStrategyHandler;
     private readonly UpdateStrategyStateCommandHandler _updateStrategyStateHandler;
-    private readonly AddPortfolioAssetCommandHandler _addAssetHandler;
-    private readonly RemovePortfolioAssetCommandHandler _removeAssetHandler;
+    private readonly AddPositionCommandHandler _addAssetHandler;
+    private readonly RemovePositionCommandHandler _removeAssetHandler;
 
     public PortfolioController(
         GetActivePortfolioQueryHandler getPortfolioHandler,
         GetStrategiesQueryHandler getStrategiesHandler,
-        GetPortfolioAssetsQueryHandler getAssetsHandler,
+        GetPositionsQueryHandler getAssetsHandler,
         CreateStrategyCommandHandler createStrategyHandler,
         UpdateStrategyStateCommandHandler updateStrategyStateHandler,
-        AddPortfolioAssetCommandHandler addAssetHandler,
-        RemovePortfolioAssetCommandHandler removeAssetHandler)
+        AddPositionCommandHandler addAssetHandler,
+        RemovePositionCommandHandler removeAssetHandler)
     {
         _getPortfolioHandler = getPortfolioHandler;
         _getStrategiesHandler = getStrategiesHandler;
@@ -103,7 +103,7 @@ public class PortfolioController : ControllerBase
         if (string.IsNullOrEmpty(traderId))
             return Unauthorized(new { error = "Invalid token claims." });
 
-        var result = await _getAssetsHandler.HandleAsync(new GetPortfolioAssetsQuery { TraderId = traderId });
+        var result = await _getAssetsHandler.HandleAsync(new GetPositionsQuery { TraderId = traderId });
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });
 
@@ -129,7 +129,7 @@ public class PortfolioController : ControllerBase
     [HttpDelete("assets/{id:guid}")]
     public async Task<IActionResult> RemoveAsset(Guid id)
     {
-        var result = await _removeAssetHandler.HandleAsync(new RemovePortfolioAssetCommand { AssetId = id });
+        var result = await _removeAssetHandler.HandleAsync(new RemovePositionCommand { AssetId = id });
 
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });

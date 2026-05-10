@@ -1,0 +1,45 @@
+using Microsoft.EntityFrameworkCore;
+using TraderForge.Domain.Entities;
+using TraderForge.Domain.Repositories;
+using TraderForge.Infrastructure.Persistence;
+
+namespace TraderForge.Infrastructure.Repositories;
+
+public class PositionRepository : IPositionRepository
+{
+    private readonly ApplicationDbContext _dbContext;
+
+    public PositionRepository(ApplicationDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
+    public async Task<List<Position>> GetByTraderIdAsync(string traderId)
+    {
+        return await _dbContext.Positions
+            .Where(a => a.Portfolio.TraderId == traderId)
+            .ToListAsync();
+    }
+
+    public async Task<Position?> GetByIdAsync(Guid id)
+    {
+        return await _dbContext.Positions.FirstOrDefaultAsync(a => a.Id == id);
+    }
+
+    public async Task AddAsync(Position asset)
+    {
+        await _dbContext.Positions.AddAsync(asset);
+        await SaveChangesAsync();
+    }
+
+    public async Task RemoveAsync(Position asset)
+    {
+        _dbContext.Positions.Remove(asset);
+        await SaveChangesAsync();
+    }
+
+    public async Task SaveChangesAsync()
+    {
+        await _dbContext.SaveChangesAsync();
+    }
+}

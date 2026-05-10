@@ -59,7 +59,7 @@ public class TraderRepository : ITraderRepository
         return (await _dbContext.Traders
             .Include(t => t.SubscriptionPlan)
             .Include(t => t.Portfolios)
-            .ThenInclude(p => p.PortfolioAssets)
+            .ThenInclude(p => p.Positions)
             .FirstOrDefaultAsync(t => t.Id == id))!;
     }
 

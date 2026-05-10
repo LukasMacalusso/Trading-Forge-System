@@ -11,7 +11,7 @@ public class Portfolio
 
     
     public ICollection<Strategy> Strategies { get; private set; } = new List<Strategy>();
-    public ICollection<PortfolioAsset> PortfolioAssets { get; private set; } = new List<PortfolioAsset>();
+    public ICollection<Position> Positions { get; private set; } = new List<Position>();
 
     public string TraderId { get; private set; }
     [JsonIgnore]

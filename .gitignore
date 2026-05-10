@@ -484,3 +484,6 @@ $RECYCLE.BIN/
 # Directorios de compilación y binarios
 [Bb]in/
 [Oo]bj/
+# Ignore literal backslash folders
+*\\Debug/
+*\\Release/

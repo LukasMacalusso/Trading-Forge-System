@@ -4,11 +4,11 @@ using TraderForge.Domain.Entities;
 
 namespace TraderForge.Infrastructure.Persistence.Configurations;
 
-public class PortfolioAssetConfiguration : IEntityTypeConfiguration<PortfolioAsset>
+public class PositionConfiguration : IEntityTypeConfiguration<Position>
 {
-    public void Configure(EntityTypeBuilder<PortfolioAsset> builder)
+    public void Configure(EntityTypeBuilder<Position> builder)
     {
-        builder.ToTable("PortfolioAssets");
+        builder.ToTable("Positions");
         builder.HasKey(a => a.Id);
         builder.Property(a => a.Id).ValueGeneratedNever();
         builder.Property(a => a.Symbol).IsRequired().HasMaxLength(20);
@@ -16,7 +16,7 @@ public class PortfolioAssetConfiguration : IEntityTypeConfiguration<PortfolioAss
         builder.Property(a => a.EntryPrice).HasColumnType("decimal(18,2)");
 
         builder.HasOne(a => a.Portfolio)
-            .WithMany(p => p.PortfolioAssets)
+            .WithMany(p => p.Positions)
             .HasForeignKey(a => a.PortfolioId)
             .OnDelete(DeleteBehavior.Cascade);
     }

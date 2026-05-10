@@ -6,14 +6,14 @@ using TraderForge.Domain.Services;
 
 namespace TraderForge.Application.Handlers;
 
-public class AddPortfolioAssetCommandHandler
+public class AddPositionCommandHandler
 {
-    private readonly IPortfolioAssetRepository _assetRepository;
+    private readonly IPositionRepository _assetRepository;
     private readonly ITraderRepository _traderRepository;
     private readonly ISubscriptionLimitGuard _limitGuard;
 
-    public AddPortfolioAssetCommandHandler(
-        IPortfolioAssetRepository assetRepository,
+    public AddPositionCommandHandler(
+        IPositionRepository assetRepository,
         ITraderRepository traderRepository,
         ISubscriptionLimitGuard limitGuard)
     {
@@ -22,7 +22,7 @@ public class AddPortfolioAssetCommandHandler
         _limitGuard = limitGuard;
     }
 
-    public async Task<Result> HandleAsync(AddPortfolioAssetCommand command)
+    public async Task<Result> HandleAsync(AddPositionCommand command)
     {
         try
         {
@@ -34,7 +34,7 @@ public class AddPortfolioAssetCommandHandler
         }
     }
 
-    private async Task<Result> ExecuteAsync(AddPortfolioAssetCommand command)
+    private async Task<Result> ExecuteAsync(AddPositionCommand command)
     {
         var canAdd = await _limitGuard.CanAddAssetAsync(command.TraderId);
         if (!canAdd)
@@ -45,7 +45,7 @@ public class AddPortfolioAssetCommandHandler
         if (activePortfolio == null)
             return Result.Failure("No active portfolio found.");
 
-        var asset = new PortfolioAsset(
+        var asset = new Position(
             Guid.NewGuid(),
             command.Symbol,
             command.Quantity,

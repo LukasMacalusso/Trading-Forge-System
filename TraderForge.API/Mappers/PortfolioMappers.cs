@@ -23,9 +23,9 @@ public static class PortfolioMappers
         };
     }
 
-    public static AddPortfolioAssetCommand ToCommand(this AddPortfolioAssetRequest request, string traderId)
+    public static AddPositionCommand ToCommand(this AddPortfolioAssetRequest request, string traderId)
     {
-        return new AddPortfolioAssetCommand
+        return new AddPositionCommand
         {
             TraderId = traderId,
             Symbol = request.Symbol,

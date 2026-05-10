@@ -41,7 +41,7 @@ public class SubscriptionLimitGuard : ISubscriptionLimitGuard
             return true;
 
         var activeAssets = trader.Portfolios
-            .SelectMany(p => p.PortfolioAssets)
+            .SelectMany(p => p.Positions)
             .Count();
 
         return activeAssets < plan.MaxActiveAssets;
@@ -75,7 +75,7 @@ public class SubscriptionLimitGuard : ISubscriptionLimitGuard
             if (traderWithAssets != null)
             {
                 var activeAssets = traderWithAssets.Portfolios
-                    .SelectMany(p => p.PortfolioAssets)
+                    .SelectMany(p => p.Positions)
                     .Count();
 
                 if (activeAssets > newPlan.MaxActiveAssets)

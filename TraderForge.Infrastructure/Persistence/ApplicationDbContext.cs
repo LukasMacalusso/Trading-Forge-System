@@ -13,7 +13,7 @@ public class ApplicationDbContext : IdentityDbContext<Account>
     public DbSet<Portfolio> Portfolios { get; set; }
     public DbSet<MarketAsset> MarketAssets { get; set; }
     public DbSet<Strategy> Strategies { get; set; }
-    public DbSet<PortfolioAsset> PortfolioAssets { get; set; }
+    public DbSet<Position> Positions { get; set; }
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     { // empty because inheriting the base constructor
     }

@@ -1,6 +1,6 @@
 namespace TraderForge.Domain.Entities;
 
-public class PortfolioAsset
+public class Position
 {
     public Guid Id { get; private set; }
     public string Symbol { get; private set; }
@@ -11,9 +11,10 @@ public class PortfolioAsset
     public Guid PortfolioId { get; private set; }
     public Portfolio Portfolio { get; private set; } = null!;
 
-    private PortfolioAsset() { }
+    private Position() { }
+    
 
-    public PortfolioAsset(Guid id, string symbol, decimal quantity, decimal entryPrice, Guid portfolioId)
+    public Position(Guid id, string symbol, decimal quantity, decimal entryPrice, Guid portfolioId)
     {
         Id = id;
         Symbol = symbol;

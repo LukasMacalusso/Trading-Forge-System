@@ -1,6 +1,6 @@
 namespace TraderForge.Application.DTOs;
 
-public class RemovePortfolioAssetCommand
+public class RemovePositionCommand
 {
     public Guid AssetId { get; set; }
 }
