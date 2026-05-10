@@ -12,6 +12,7 @@ public class Position
     public Portfolio Portfolio { get; private set; } = null!;
 
     private Position() { }
+    
 
     public Position(Guid id, string symbol, decimal quantity, decimal entryPrice, Guid portfolioId)
     {
