@@ -1,6 +1,6 @@
 using TraderForge.Domain.Entities;
 
-namespace TraderForge.Domain.Repositories;
+namespace TraderForge.Domain.Interfaces;
 
 public interface IMarketAssetRepository
 {

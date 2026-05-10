@@ -2,6 +2,9 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using TraderForge.API.Hubs;
+using TraderForge.API.Services;
 using TraderForge.Application.Handlers;
 using TraderForge.Application.Interfaces;
 using TraderForge.Domain.Interfaces;
@@ -10,8 +13,6 @@ using TraderForge.Infrastructure;
 using TraderForge.Infrastructure.Persistence;
 using TraderForge.Infrastructure.Repositories;
 using TraderForge.Infrastructure.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using TraderForge.Domain.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,7 +39,20 @@ if (File.Exists(envPath))
     builder.Configuration.AddInMemoryCollection(envConfig);
 }
 
-// -- Configure ASP.NET Core Identity -- //
+// -- Core Services -- //
+builder.Services.AddOpenApi();
+builder.Services.AddControllers().AddJsonOptions(options =>
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+builder.Services.AddMemoryCache();
+builder.Services.AddSignalR();
+
+// -- Database Context -- //
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+        .EnableSensitiveDataLogging()
+        .LogTo(Console.WriteLine, LogLevel.Information));
+
+// -- ASP.NET Core Identity -- //
 builder.Services.AddIdentityCore<Account>(options =>
 {
     options.User.RequireUniqueEmail = true;
@@ -46,8 +60,27 @@ builder.Services.AddIdentityCore<Account>(options =>
     options.Password.RequiredLength = 8;
 }).AddEntityFrameworkStores<ApplicationDbContext>();
 
+// -- Authentication & JWT -- //
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+        ValidAudience = builder.Configuration["JwtSettings:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]!))
+    };
+});
 
-// - Register Services for the DEPENDENCY INJECTION - //
+// -- Dependency Injection (Repositories & Services) -- //
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<ITraderRepository, TraderRepository>();
 builder.Services.AddScoped<IAdministratorRepository, AdministratorRepository>();
@@ -56,8 +89,9 @@ builder.Services.AddScoped<IMarketAssetRepository, MarketAssetRepository>();
 builder.Services.AddScoped<IStrategyRepository, StrategyRepository>();
 builder.Services.AddScoped<IPortfolioAssetRepository, PortfolioAssetRepository>();
 builder.Services.AddScoped<ISubscriptionLimitGuard, SubscriptionLimitGuard>();
-builder.Services.AddTransient<RegisterTraderCommandHandler>(); 
-builder.Services.AddTransient<LoginTraderQueryHandler>(); 
+builder.Services.AddScoped<IDiscountService, DiscountService>();
+builder.Services.AddTransient<RegisterTraderCommandHandler>();
+builder.Services.AddTransient<LoginTraderQueryHandler>();
 builder.Services.AddTransient<ChangeSubscriptionCommandHandler>();
 builder.Services.AddTransient<GetAllPlansQueryHandler>();
 builder.Services.AddTransient<GetTraderPlanQueryHandler>();
@@ -71,43 +105,30 @@ builder.Services.AddTransient<RemovePortfolioAssetCommandHandler>();
 builder.Services.AddTransient<GetActivePortfolioQueryHandler>();
 builder.Services.AddTransient<GetStrategiesQueryHandler>();
 builder.Services.AddTransient<GetPortfolioAssetsQueryHandler>();
+builder.Services.AddTransient<GetMarketPricesQueryHandler>();
+
+// -- Market Data Services -- //
+builder.Services.AddHttpClient<IMarketDataProvider, BinanceMarketProvider>();
+builder.Services.AddSingleton<IMarketService, CachedMarketService>();
+builder.Services.AddHostedService<BackgroundMarketPollingService>();
+builder.Services.AddSingleton<IMarketDataBroadcaster, SignalRMarketDataBroadcaster>();
+
+// -- Background Services -- //
 builder.Services.AddHostedService<TrialExpirationService>();
-builder.Services.AddScoped<IDiscountService, DiscountService>();
-builder.Services.AddOpenApi();
-builder.Services.AddControllers().AddJsonOptions(options =>
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
-// - Register JWT Authentication - //
-builder.Services.AddAuthentication(options =>
+// -- CORS -- //
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policyBuilder =>
     {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-            ValidAudience = builder.Configuration["JwtSettings:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]!))
-        };
+        policyBuilder.WithOrigins("http://localhost:3000")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
     });
+});
 
-
-// -- Register database context -- //
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
-        .EnableSensitiveDataLogging()
-        .LogTo(Console.WriteLine, LogLevel.Information));
-
-
-// -- Initialize app -- //
 var app = builder.Build();
-
 
 // --- Identity Seeder Execution --- //
 using (var scope = app.Services.CreateScope())
@@ -115,15 +136,15 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var configuration = services.GetRequiredService<IConfiguration>();
     var logger = services.GetRequiredService<ILogger<Program>>();
-    
+
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
 
         logger.LogInformation("Applying pending database migrations...");
-        
-        await context.Database.MigrateAsync(); 
-        
+
+        await context.Database.MigrateAsync();
+
         logger.LogInformation("Database migrations applied successfully.");
 
         logger.LogInformation("Attempting to seed default Identity administrators...");
@@ -136,23 +157,19 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-
-
-// Configure the HTTP request pipeline.
+// -- Middleware Pipeline -- //
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
-
+app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 
-
-// - Auth - //
-app.UseAuthentication(); 
+app.UseAuthentication();
 app.UseAuthorization();
 
-// - Controller - //
 app.MapControllers();
+app.MapHub<MarketDataHub>("/hubs/market");
 
 app.Run();

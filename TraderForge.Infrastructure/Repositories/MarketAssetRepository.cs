@@ -2,7 +2,7 @@ using TraderForge.Domain.Entities;
 using TraderForge.Domain.Repositories;
 using TraderForge.Infrastructure.Persistence;
 
-namespace TraderForge.Infrastructure.Repositories;
+namespace TraderForge.Domain.Interfaces;
 
 public class MarketAssetRepository : IMarketAssetRepository
 {
@@ -14,7 +14,6 @@ public class MarketAssetRepository : IMarketAssetRepository
     public async Task AddAsync(MarketAsset asset)
     {
         await _dbContext.MarketAssets.AddAsync(asset);
-        await SaveChangesAsync();
     }
 
     public async Task SaveChangesAsync()

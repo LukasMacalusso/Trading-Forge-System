@@ -3,8 +3,18 @@
 @adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjAxODRiNi0zMDJiLTQ1NzctYmI5Zi04NTBiNjMwMTlhM2YiLCJlbWFpbCI6ImxtYWNhbHVzc29AdHJhZGVyZm9yZ2UuY29tIiwicm9sZSI6IlN5c3RlbUFkbWluIiwibmJmIjoxNzc4MzY1MTEzLCJleHAiOjE3NzgzNzIzMTMsImlhdCI6MTc3ODM2NTExMywiaXNzIjoiVHJhZGVyRm9yZ2VBUEkiLCJhdWQiOiJUcmFkZXJGb3JnZVJlYWN0QXBwIn0.mbvVQxPzw046eY7Be0wYJbvIk9qhnk072ufXF8LtA3A
 @traderToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZDc0Y2VhMi1iYzM1LTQwMzgtYTlkZC1jMjI2MmJkNjM4YjgiLCJlbWFpbCI6InRlc3Rncm91cDRAdHJhZGVyZm9yZ2UuY29tIiwicm9sZSI6IlRyYWRlciIsIm5iZiI6MTc3ODM3NjY5MSwiZXhwIjoxNzc4MzgzODkxLCJpYXQiOjE3NzgzNzY2OTEsImlzcyI6IlRyYWRlckZvcmdlQVBJIiwiYXVkIjoiVHJhZGVyRm9yZ2VSZWFjdEFwcCJ9.EGXZKEZAYDPY0rMKcTz8isc3KXDdHJ7vmKCRVgV2MEk
 
-GET {{hostAddress}}/weatherforecast/
+### Get Market Prices via POST
+POST {{hostAddress}}/api/prices
+Content-Type: application/json
 Accept: application/json
+
+{
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT"
+  ]
+}
 
 ###
 
@@ -200,4 +210,3 @@ Authorization: bearer {{traderToken}}
 }
 
 ###
-
