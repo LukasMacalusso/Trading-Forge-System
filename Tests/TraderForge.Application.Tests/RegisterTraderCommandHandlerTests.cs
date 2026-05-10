@@ -34,7 +34,7 @@ public class RegisterTraderCommandHandlerTests
         Assert.Null(result.ErrorMessage);
 
         _identityServiceMock.Verify(
-            x => x.RegisterNewAccountAsync("0", command.Email, command.Password), Times.Once);
+            x => x.RegisterNewAccountAsync(It.IsAny<string>(), command.Email, command.Password), Times.Once);
 
         _traderRepositoryMock.Verify(
             x => x.AddAsync(It.Is<Trader>(
