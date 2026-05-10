@@ -5,32 +5,29 @@ namespace TraderForge.API.Mappers;
 
 public static class PortfolioMappers
 {
-    public static CreateStrategyCommand ToCommand(this CreateStrategyRequest request, string traderId)
+    public static CreateStrategyCommand ToCommand(this CreateStrategyRequest request, string traderId) => new()
     {
-        return new CreateStrategyCommand
-        {
-            TraderId = traderId,
-            Name = request.Name
-        };
-    }
+        TraderId = traderId,
+        Name = request.Name
+    };
 
-    public static UpdateStrategyStateCommand ToCommand(this UpdateStrategyStateRequest request, Guid strategyId)
+    public static UpdateStrategyStateCommand ToCommand(this UpdateStrategyStateRequest request, Guid strategyId) => new()
     {
-        return new UpdateStrategyStateCommand
-        {
-            StrategyId = strategyId,
-            IsActive = request.IsActive
-        };
-    }
+        StrategyId = strategyId,
+        IsActive = request.IsActive
+    };
 
-    public static BuyPositionCommand ToCommand(this AddPortfolioAssetRequest request, string traderId)
+    public static BuyPositionCommand ToCommand(this BuyPositionRequest request, string traderId) => new()
     {
-        return new BuyPositionCommand
-        {
-            TraderId = traderId,
-            Symbol = request.Symbol,
-            Quantity = request.Quantity,
-            EntryPrice = request.EntryPrice
-        };
-    }
+        TraderId = traderId,
+        Symbol = request.Symbol,
+        Quantity = request.Quantity,
+        EntryPrice = request.EntryPrice
+    };
+
+    public static SellPositionCommand ToCommand(this SellPositionRequest request, Guid positionId) => new()
+    {
+        PositionId = positionId,
+        Quantity = request.Quantity
+    };
 }
