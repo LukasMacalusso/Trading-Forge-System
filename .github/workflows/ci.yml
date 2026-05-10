@@ -44,3 +44,10 @@ jobs:
           dotnet test --no-build --configuration Release --verbosity normal
           
           dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
+          
+          dotnet test --no-build --configuration Release --verbosity normal \
+                      --collect:"XPlat Code Coverage" \
+                      --results-directory:"TestResults" \
+                      -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+
+                    dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
