@@ -1,6 +1,7 @@
 using TraderForge.Application.Common;
 using TraderForge.Application.DTOs;
-using TraderForge.Domain.Interfaces;
+using TraderForge.Domain.Repositories;
+using TraderForge.Domain.Services;
 namespace TraderForge.Application.Handlers;
 
 public class LoginTraderQueryHandler
@@ -14,7 +15,7 @@ public class LoginTraderQueryHandler
     }
 
 
-    public async Task<ResultGeneric<string>> GetLoginTokenAsync(LoginTraderQuery query)
+    public async Task<ResultGeneric<string>> HandleAsync(LoginTraderQuery query)
     {
         try
         {

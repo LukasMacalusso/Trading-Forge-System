@@ -1,8 +1,8 @@
-﻿namespace TraderForge.Domain.Constants;
+namespace TraderForge.Domain.Constants;
 
 public static class SupportedAssets
 {
-    public static readonly string[] Symbols = 
+    public static readonly string[] Symbols =
     {
         "BTCUSDT",
         "ETHUSDT",

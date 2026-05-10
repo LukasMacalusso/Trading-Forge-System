@@ -35,3 +35,10 @@ Whenever you pull new code from the repository, follow these steps to ensure you
     ```
 
 Your API should now be running and connected to your local Dockerized PostgreSQL instance!
+
+### Architecture Notes
+
+#### Real-Time Market Data
+While standard CRUD operations (like authentication and user settings) use traditional REST HTTP endpoints, **market data updates (like live charting) must use WebSockets via SignalR.** 
+- **Why?** Request-response polling is highly inefficient for real-time streams and will rapidly consume third-party API quotas (e.g., Binance) and server resources.
+- **How?** We implement a `MarketDataHub` (SignalR). As our background polling services fetch new prices, they inject the Hub context and broadcast the data directly to connected frontend clients, eliminating the need for client-side HTTP polling.

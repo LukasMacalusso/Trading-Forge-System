@@ -1,4 +1,4 @@
-﻿namespace TraderForge.Domain.Entities; 
+namespace TraderForge.Domain.Entities;
 
 public class MarketAsset
 {
