@@ -8,8 +8,7 @@ public class LoginTraderQueryHandler
     private readonly IIdentityService _identityService;
     private readonly ITraderRepository _traderRepository;
 
-    public LoginTraderQueryHandler(IIdentityService identityService, ITraderRepository traderRepository)
-    {
+    public LoginTraderQueryHandler(IIdentityService identityService, ITraderRepository traderRepository) {
         _identityService = identityService;
         _traderRepository = traderRepository;
     }
