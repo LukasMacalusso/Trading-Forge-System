@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using TraderForge.API.Hubs;
 using TraderForge.API.Services;
 using TraderForge.Application.Handlers;
+using TraderForge.Domain.Interfaces;
 using TraderForge.Domain.Repositories;
 using TraderForge.Domain.Services;
 using TraderForge.Infrastructure;
@@ -78,6 +79,7 @@ builder.Services.AddAuthentication(options =>
 // -- Dependency Injection (Repositories & Services) -- //
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<ITraderRepository, TraderRepository>();
+builder.Services.AddScoped<ITraderFactory, TraderFactory>();
 builder.Services.AddScoped<IAdministratorRepository, AdministratorRepository>();
 builder.Services.AddScoped<IMarketAssetRepository, MarketAssetRepository>();
 builder.Services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
