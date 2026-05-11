@@ -25,21 +25,7 @@ const INTERVAL_VOLATILITY: Record<CandleInterval, number> = {
   '1m': 0.002, '5m': 0.004, '15m': 0.006, '1h': 0.015, '4h': 0.022, '1d': 0.035,
 };
 
-<<<<<<< HEAD
-// Keep the data logic identical but use the real trading-pair symbols/names so the UI
-// looks realistic while remaining mock data.
-const MOCK_ASSETS: Asset[] = [
-  { symbol: 'BTCUSDT', name: 'Bitcoin', currentPrice: 63_200, priceChange24h: 1200, priceChangePercent24h: 1.93, volume24h: 28_000_000_000, marketCap: 1_240_000_000_000 },
-  { symbol: 'ETHUSDT', name: 'Ethereum', currentPrice: 4_200, priceChange24h: 85, priceChangePercent24h: 2.07, volume24h: 18_000_000_000, marketCap: 490_000_000_000 },
-  { symbol: 'BNBUSDT', name: 'Binance Coin', currentPrice: 620, priceChange24h: -8, priceChangePercent24h: -1.27, volume24h: 1_200_000_000, marketCap: 96_000_000_000 },
-  { symbol: 'ADAUSDT', name: 'Cardano', currentPrice: 0.52, priceChange24h: 0.01, priceChangePercent24h: 1.95, volume24h: 300_000_000, marketCap: 18_000_000_000 },
-  { symbol: 'MATICUSDT', name: 'Polygon', currentPrice: 0.88, priceChange24h: -0.02, priceChangePercent24h: -0.45, volume24h: 220_000_000, marketCap: 8_200_000_000 },
-  { symbol: 'SOLUSDT', name: 'Solana', currentPrice: 28.5, priceChange24h: 0.7, priceChangePercent24h: 2.51, volume24h: 1_100_000_000, marketCap: 12_400_000_000 },
-  { symbol: 'DOTUSDT', name: 'Polkadot', currentPrice: 5.10, priceChange24h: -0.12, priceChangePercent24h: -2.30, volume24h: 95_000_000, marketCap: 6_800_000_000 },
-];
-=======
 const SUPPORTED_SYMBOLS = Object.keys(ASSET_NAMES);
->>>>>>> eace40a (feat: connect backend)
 
 function generateCandles(basePrice: number, interval: CandleInterval = '1h'): CandlestickBar[] {
   const bars: CandlestickBar[] = [];

@@ -15,20 +15,12 @@ interface BackendPosition {
   entryPrice: number;
 }
 
-// Map backend symbols (including USDT pairs) to friendly display names.
 const ASSET_NAMES: Record<string, string> = {
-<<<<<<< HEAD
-  AAPL: 'Apple Inc.', TSLA: 'Tesla Inc.', MSFT: 'Microsoft Corp.',
-  GOOGL: 'Alphabet Inc.', AMZN: 'Amazon.com Inc.', NVDA: 'NVIDIA Corp.',
-  META: 'Meta Platforms Inc.', BTCUSDT: 'Bitcoin', ETHUSDT: 'Ethereum', BNBUSDT: 'Binance Coin',
-  ADAUSDT: 'Cardano', MATICUSDT: 'Polygon', SOLUSDT: 'Solana', DOTUSDT: 'Polkadot',
-=======
   BTCUSDT: 'Bitcoin',
   ETHUSDT: 'Ethereum',
   SOLUSDT: 'Solana',
   BNBUSDT: 'BNB',
   XRPUSDT: 'XRP',
->>>>>>> eace40a (feat: connect backend)
 };
 
 export class PortfolioService {
