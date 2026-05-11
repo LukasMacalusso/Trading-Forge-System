@@ -36,7 +36,7 @@ export function PlatformPreviewSection() {
   useEffect(() => {
     const id = setInterval(() => {
       setLivePrice((p) => {
-        const delta = (Math.random() - 0.47) * 95;
+        const delta = (Math.random() - 0.47) * 95; // NOSONAR:S2245 — UI animation only
         return Math.max(selectedAsset.price * 0.97, Math.min(selectedAsset.price * 1.03, p + delta));
       });
     }, 1_800);

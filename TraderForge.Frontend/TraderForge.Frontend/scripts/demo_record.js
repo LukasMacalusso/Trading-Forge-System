@@ -26,7 +26,8 @@ const OUT_DIR = path.resolve(FRONTEND_DIR, '..', 'presentations', 'recordings');
 
 async function startVite() {
   console.log('Starting Vite dev server...');
-  const proc = spawn('npm', ['run', 'dev'], { cwd: FRONTEND_DIR, stdio: 'inherit' });
+  const npmPath = process.env.npm_execpath || 'npm';
+  const proc = spawn(npmPath, ['run', 'dev'], { cwd: FRONTEND_DIR, stdio: 'inherit' });
   // give it some time to boot up
   await new Promise((res) => setTimeout(res, 3000));
   return proc;
@@ -117,7 +118,7 @@ async function recordFlow() {
 
   // try to assemble with ffmpeg if available
   try {
-    const ffmpeg = require('child_process').spawnSync('ffmpeg', [
+    const ffmpeg = require('child_process').spawnSync('ffmpeg', [ // NOSONAR:S4036 — dev-only script, optional tool
       '-y',
       '-framerate', '10',
       '-i', path.join(framesDir, 'frame_%05d.png'),

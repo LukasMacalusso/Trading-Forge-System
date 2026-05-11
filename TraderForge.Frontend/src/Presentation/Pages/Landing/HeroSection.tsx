@@ -58,7 +58,7 @@ export function HeroSection() {
     const BASE = 68_425.3;
     const id = setInterval(() => {
       setPrice((prev) => {
-        const delta = (Math.random() - 0.45) * 90;
+        const delta = (Math.random() - 0.45) * 90; // NOSONAR:S2245 — UI animation only
         const next = Math.max(66_000, Math.min(71_000, prev + delta));
         const pct = ((next - BASE) / BASE) * 100;
         setChange(Math.abs(pct));
