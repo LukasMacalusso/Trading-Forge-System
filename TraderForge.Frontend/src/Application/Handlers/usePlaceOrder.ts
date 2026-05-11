@@ -53,7 +53,7 @@ export function usePlaceOrder() {
       }
     } else {
       const position = portfolio!.positions.find((p) => p.symbol === command.symbol)!;
-      result = await portfolioService.sellPosition(position.id);
+      result = await portfolioService.sellPosition(position.id, position.quantity);
       if (result.isSuccess) {
         addNotification('success', `Posición en ${command.symbol} cerrada`);
       }
