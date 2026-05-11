@@ -8,7 +8,7 @@ interface BackendPortfolio {
   isActive: boolean;
 }
 
-interface BackendPosition {
+interface BackendAsset {
   id: string;
   symbol: string;
   quantity: number;
@@ -26,23 +26,23 @@ const ASSET_NAMES: Record<string, string> = {
 export class PortfolioService {
   async getPortfolio(initialBalance = 10_000): Promise<Result<Portfolio>> {
     try {
-      const [portfolioRes, positionsRes] = await Promise.all([
+      const [portfolioRes, assetsRes] = await Promise.all([
         httpClient.get<BackendPortfolio>('/api/portfolio'),
-        httpClient.get<BackendPosition[]>('/api/portfolio/positions'),
+        httpClient.get<BackendAsset[]>('/api/portfolio/assets'),
       ]);
 
       const { id, virtualBalance } = portfolioRes.data;
-      const backendPositions = positionsRes.data;
+      const backendAssets = assetsRes.data;
 
-      const positions: Position[] = backendPositions.map((p) => {
-        const totalValue = +(p.quantity * p.entryPrice).toFixed(2);
+      const positions: Position[] = backendAssets.map((a) => {
+        const totalValue = +(a.quantity * a.entryPrice).toFixed(2);
         return {
-          id: p.id,
-          symbol: p.symbol,
-          assetName: ASSET_NAMES[p.symbol] ?? p.symbol,
-          quantity: p.quantity,
-          averageBuyPrice: p.entryPrice,
-          currentPrice: p.entryPrice,
+          id: a.id,
+          symbol: a.symbol,
+          assetName: ASSET_NAMES[a.symbol] ?? a.symbol,
+          quantity: a.quantity,
+          averageBuyPrice: a.entryPrice,
+          currentPrice: a.entryPrice,
           unrealizedPnL: 0,
           unrealizedPnLPercent: 0,
           totalValue,
@@ -69,16 +69,16 @@ export class PortfolioService {
 
   async buyPosition(symbol: string, quantity: number, entryPrice: number): Promise<Result<void>> {
     try {
-      await httpClient.post('/api/portfolio/positions/buy', { symbol, quantity, entryPrice });
+      await httpClient.post('/api/portfolio/assets', { symbol, quantity, entryPrice });
       return Result.ok(undefined);
     } catch (error) {
       return Result.fail(extractErrorMessage(error, 'Failed to buy position.'));
     }
   }
 
-  async sellPosition(positionId: string, quantity: number): Promise<Result<void>> {
+  async sellPosition(assetId: string): Promise<Result<void>> {
     try {
-      await httpClient.post(`/api/portfolio/positions/${positionId}/sell`, { quantity });
+      await httpClient.delete(`/api/portfolio/assets/${assetId}`);
       return Result.ok(undefined);
     } catch (error) {
       return Result.fail(extractErrorMessage(error, 'Failed to sell position.'));
