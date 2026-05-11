@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using TraderForge.Application.DTOs;
 using TraderForge.Application.Handlers;
 using Microsoft.AspNetCore.Authorization;
+using TraderForge.API.Mappers;
+using TraderForge.API.Requests;
 
 namespace TraderForge.API.Controllers;
 
@@ -19,10 +21,10 @@ public class IdentityController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterTraderCommand command)
+    public async Task<IActionResult> Register([FromBody] RegisterTraderRequest request)
     {
-
-        var result = await _registerTraderCommandHandler.RegisterTraderAsync(command);
+        var command = request.ToCommand(); 
+        var result = await _registerTraderCommandHandler.HandleAsync(command);
 
         if (result.IsSuccess)
         {
@@ -33,9 +35,10 @@ public class IdentityController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginTraderQuery query)
+    public async Task<IActionResult> Login([FromBody] LoginTraderRequest request)
     {
-        var result = await _loginTraderQueryHandler.GetLoginTokenAsync(query);
+        var query = request.ToQuery();
+        var result = await _loginTraderQueryHandler.HandleAsync(query);
 
         if (result.IsSuccess)
         {
@@ -45,11 +48,15 @@ public class IdentityController : ControllerBase
         return Unauthorized(new { error = result.ErrorMessage });
 
     }
-
+    
+    
     [Authorize(Roles = "Trader")]
     [HttpGet("vip-lounge")]
     public IActionResult GetVipLounge()
     {
         return Ok(new { message = "Welcome to the Trade Lounge. The JWT token worked succesfully!" });
     }
+    
+    
+    
 }

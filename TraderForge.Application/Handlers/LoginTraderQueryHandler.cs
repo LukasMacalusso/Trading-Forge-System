@@ -1,24 +1,21 @@
 using TraderForge.Application.Common;
 using TraderForge.Application.DTOs;
-using TraderForge.Domain.Entities;
-using TraderForge.Domain.Interfaces;
-
+using TraderForge.Domain.Repositories;
+using TraderForge.Domain.Services;
 namespace TraderForge.Application.Handlers;
 
 public class LoginTraderQueryHandler
 {
-    
     private readonly IIdentityService _identityService;
     private readonly ITraderRepository _traderRepository;
 
-    public LoginTraderQueryHandler(IIdentityService identityService, ITraderRepository traderRepository)
-    {
+    public LoginTraderQueryHandler(IIdentityService identityService, ITraderRepository traderRepository) {
         _identityService = identityService;
         _traderRepository = traderRepository;
     }
 
 
-    public async Task<ResultGeneric<string>> GetLoginTokenAsync(LoginTraderQuery query)
+    public async Task<ResultGeneric<string>> HandleAsync(LoginTraderQuery query)
     {
         try
         {

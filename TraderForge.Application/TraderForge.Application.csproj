@@ -12,6 +12,7 @@
 
     <ItemGroup>
       <Folder Include="DTOs\" />
+      <Folder Include="Interfaces\" />
     </ItemGroup>
 
 </Project>

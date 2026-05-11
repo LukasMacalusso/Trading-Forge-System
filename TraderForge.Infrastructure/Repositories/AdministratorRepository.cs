@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TraderForge.Domain.Entities;
-using TraderForge.Domain.Interfaces;
+using TraderForge.Domain.Repositories;
 using TraderForge.Infrastructure.Persistence;
 
 namespace TraderForge.Infrastructure.Repositories;
@@ -20,7 +20,7 @@ public class AdministratorRepository : IAdministratorRepository
         await SaveChangesAsync();
     }
 
-    public async Task<Administrator>? GetAdministratorByIdAsync(string id)
+    public async Task<Administrator?> GetByIdAsync(string id)
     {
         return await _dbContext.Administrators.FirstOrDefaultAsync(a => a.Id == id);
     }
