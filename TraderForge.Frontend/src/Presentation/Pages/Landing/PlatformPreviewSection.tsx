@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { LayoutDashboard, Briefcase, Bot, Clock, CreditCard, TrendingUp } from 'lucide-react';
 
-// Simulated assets for the ticker
+// Simulated assets for the ticker — use the real exchange pair symbols to appear realistic
 const ASSETS = [
   { symbol: 'AAPL', name: 'Apple Inc.', price: 213.45, change: 1.82 },
-  { symbol: 'BTC', name: 'Bitcoin', price: 68425.3, change: 2.34 },
+  { symbol: 'BTCUSDT', name: 'Bitcoin', price: 68425.3, change: 2.34 },
   { symbol: 'TSLA', name: 'Tesla Inc.', price: 178.92, change: -0.74 },
-  { symbol: 'ETH', name: 'Ethereum', price: 3512.8, change: 1.17 },
+  { symbol: 'ETHUSDT', name: 'Ethereum', price: 3512.8, change: 1.17 },
   { symbol: 'NVDA', name: 'NVIDIA', price: 875.4, change: 3.21 },
 ];
 
@@ -49,7 +49,7 @@ export function PlatformPreviewSection() {
 
   // Simulate occasional order fills
   useEffect(() => {
-    const msgs = ['COMPRA 0.05 BTC ejecutada a $68,425', 'VENTA 2 AAPL ejecutada a $213.45', 'BOT activado: entrada NVDA'];
+    const msgs = ['COMPRA 0.05 BTCUSDT ejecutada a $68,425', 'VENTA 2 AAPL ejecutada a $213.45', 'BOT activado: entrada NVDA'];
     let i = 0;
     const id = setInterval(() => {
       setOrderFlash(msgs[i % msgs.length]);
@@ -59,6 +59,8 @@ export function PlatformPreviewSection() {
     return () => clearInterval(id);
   }, []);
 
+  // Display logic: show pair symbol but keep readability (e.g. BTCUSDT -> BTC)
+  const displaySymbol = selectedAsset.symbol.replace(/USDT$/, '');
   const isUp = livePrice >= selectedAsset.price;
 
   return (
@@ -143,8 +145,8 @@ export function PlatformPreviewSection() {
                   <div className="flex-1 flex flex-col gap-3 p-4 min-w-0">
                     {/* Asset header */}
                     <div className="flex items-center gap-3">
-                      <span className="text-base font-bold text-neutral-100">{selectedAsset.symbol}</span>
-                      <span className="text-sm text-neutral-500">{selectedAsset.name}</span>
+                          <span className="text-base font-bold text-neutral-100">{displaySymbol}</span>
+                        <span className="text-sm text-neutral-500">{selectedAsset.name}</span>
                       <motion.span
                         key={Math.round(livePrice / 5)}
                         initial={{ opacity: 0.5 }}

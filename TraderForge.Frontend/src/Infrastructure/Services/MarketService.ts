@@ -12,15 +12,16 @@ const INTERVAL_VOLATILITY: Record<CandleInterval, number> = {
   '1m': 0.002, '5m': 0.004, '15m': 0.006, '1h': 0.015, '4h': 0.022, '1d': 0.035,
 };
 
+// Keep the data logic identical but use the real trading-pair symbols/names so the UI
+// looks realistic while remaining mock data.
 const MOCK_ASSETS: Asset[] = [
-  { symbol: 'AAPL', name: 'Apple Inc.', currentPrice: 189.84, priceChange24h: 2.34, priceChangePercent24h: 1.25, volume24h: 54_200_000, marketCap: 2_910_000_000_000 },
-  { symbol: 'TSLA', name: 'Tesla Inc.', currentPrice: 248.50, priceChange24h: -5.20, priceChangePercent24h: -2.05, volume24h: 78_000_000, marketCap: 790_000_000_000 },
-  { symbol: 'MSFT', name: 'Microsoft Corp.', currentPrice: 415.20, priceChange24h: 3.10, priceChangePercent24h: 0.75, volume24h: 22_000_000, marketCap: 3_090_000_000_000 },
-  { symbol: 'GOOGL', name: 'Alphabet Inc.', currentPrice: 175.60, priceChange24h: -1.40, priceChangePercent24h: -0.79, volume24h: 18_000_000, marketCap: 2_180_000_000_000 },
-  { symbol: 'AMZN', name: 'Amazon.com Inc.', currentPrice: 192.30, priceChange24h: 4.50, priceChangePercent24h: 2.40, volume24h: 31_000_000, marketCap: 2_020_000_000_000 },
-  { symbol: 'NVDA', name: 'NVIDIA Corp.', currentPrice: 875.40, priceChange24h: 21.30, priceChangePercent24h: 2.50, volume24h: 41_000_000, marketCap: 2_160_000_000_000 },
-  { symbol: 'META', name: 'Meta Platforms Inc.', currentPrice: 521.00, priceChange24h: -3.80, priceChangePercent24h: -0.72, volume24h: 14_000_000, marketCap: 1_320_000_000_000 },
-  { symbol: 'BTC', name: 'Bitcoin', currentPrice: 63_200, priceChange24h: 1200, priceChangePercent24h: 1.93, volume24h: 28_000_000_000, marketCap: 1_240_000_000_000 },
+  { symbol: 'BTCUSDT', name: 'Bitcoin', currentPrice: 63_200, priceChange24h: 1200, priceChangePercent24h: 1.93, volume24h: 28_000_000_000, marketCap: 1_240_000_000_000 },
+  { symbol: 'ETHUSDT', name: 'Ethereum', currentPrice: 4_200, priceChange24h: 85, priceChangePercent24h: 2.07, volume24h: 18_000_000_000, marketCap: 490_000_000_000 },
+  { symbol: 'BNBUSDT', name: 'Binance Coin', currentPrice: 620, priceChange24h: -8, priceChangePercent24h: -1.27, volume24h: 1_200_000_000, marketCap: 96_000_000_000 },
+  { symbol: 'ADAUSDT', name: 'Cardano', currentPrice: 0.52, priceChange24h: 0.01, priceChangePercent24h: 1.95, volume24h: 300_000_000, marketCap: 18_000_000_000 },
+  { symbol: 'MATICUSDT', name: 'Polygon', currentPrice: 0.88, priceChange24h: -0.02, priceChangePercent24h: -0.45, volume24h: 220_000_000, marketCap: 8_200_000_000 },
+  { symbol: 'SOLUSDT', name: 'Solana', currentPrice: 28.5, priceChange24h: 0.7, priceChangePercent24h: 2.51, volume24h: 1_100_000_000, marketCap: 12_400_000_000 },
+  { symbol: 'DOTUSDT', name: 'Polkadot', currentPrice: 5.10, priceChange24h: -0.12, priceChangePercent24h: -2.30, volume24h: 95_000_000, marketCap: 6_800_000_000 },
 ];
 
 function generateCandles(basePrice: number, interval: CandleInterval = '1h'): CandlestickBar[] {

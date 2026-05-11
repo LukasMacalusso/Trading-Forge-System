@@ -179,8 +179,8 @@ export function HeroSection() {
             {/* Price header */}
             <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-800/40">
               <div className="flex items-baseline gap-1">
-                <span className="text-sm font-bold text-neutral-200 font-mono">BTC</span>
-                <span className="text-xs text-neutral-600">/USD</span>
+                <span className="text-sm font-bold text-neutral-200 font-mono">BTCUSDT</span>
+                <span className="text-xs text-neutral-600">/USDT</span>
               </div>
               <motion.span
                 key={Math.round(price / 10)}
