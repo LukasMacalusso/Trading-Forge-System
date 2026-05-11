@@ -12,7 +12,7 @@ export function AuthLayout() {
         >
           <div className="auth-layout__brand">
             <h1 className="auth-layout__title">
-              Trader<span className="auth-layout__title-accent">Forge</span>
+              Trading <span className="auth-layout__title-accent">Forge</span>
             </h1>
             <p className="auth-layout__subtitle">Trading Simulation Platform</p>
           </div>

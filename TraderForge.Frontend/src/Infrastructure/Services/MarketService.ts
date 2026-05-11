@@ -1,33 +1,58 @@
 import type { Asset, CandlestickBar, OrderBook } from '../../Domain/Entities/Asset';
 import { Result } from '../../Application/Common/Result';
+import { httpClient } from '../Http/httpClient';
 import type { CandleInterval } from '../../Domain/Interfaces/IMarketService';
 
-const MOCK_ASSETS: Asset[] = [
-  { symbol: 'AAPL', name: 'Apple Inc.', currentPrice: 189.84, priceChange24h: 2.34, priceChangePercent24h: 1.25, volume24h: 54_200_000, marketCap: 2_910_000_000_000 },
-  { symbol: 'TSLA', name: 'Tesla Inc.', currentPrice: 248.50, priceChange24h: -5.20, priceChangePercent24h: -2.05, volume24h: 78_000_000, marketCap: 790_000_000_000 },
-  { symbol: 'MSFT', name: 'Microsoft Corp.', currentPrice: 415.20, priceChange24h: 3.10, priceChangePercent24h: 0.75, volume24h: 22_000_000, marketCap: 3_090_000_000_000 },
-  { symbol: 'GOOGL', name: 'Alphabet Inc.', currentPrice: 175.60, priceChange24h: -1.40, priceChangePercent24h: -0.79, volume24h: 18_000_000, marketCap: 2_180_000_000_000 },
-  { symbol: 'AMZN', name: 'Amazon.com Inc.', currentPrice: 192.30, priceChange24h: 4.50, priceChangePercent24h: 2.40, volume24h: 31_000_000, marketCap: 2_020_000_000_000 },
-  { symbol: 'NVDA', name: 'NVIDIA Corp.', currentPrice: 875.40, priceChange24h: 21.30, priceChangePercent24h: 2.50, volume24h: 41_000_000, marketCap: 2_160_000_000_000 },
-  { symbol: 'META', name: 'Meta Platforms Inc.', currentPrice: 521.00, priceChange24h: -3.80, priceChangePercent24h: -0.72, volume24h: 14_000_000, marketCap: 1_320_000_000_000 },
-  { symbol: 'BTC', name: 'Bitcoin', currentPrice: 63_200, priceChange24h: 1200, priceChangePercent24h: 1.93, volume24h: 28_000_000_000, marketCap: 1_240_000_000_000 },
-];
+interface PricesResponse {
+  [symbol: string]: number;
+}
 
-function generateCandles(basePrice: number, count = 100): CandlestickBar[] {
+const ASSET_NAMES: Record<string, string> = {
+  BTCUSDT: 'Bitcoin',
+  ETHUSDT: 'Ethereum',
+  SOLUSDT: 'Solana',
+  BNBUSDT: 'BNB',
+  XRPUSDT: 'XRP',
+};
+
+const INTERVAL_SECONDS: Record<CandleInterval, number> = {
+  '1m': 60, '5m': 300, '15m': 900, '1h': 3600, '4h': 14400, '1d': 86400,
+};
+const INTERVAL_COUNT: Record<CandleInterval, number> = {
+  '1m': 150, '5m': 130, '15m': 110, '1h': 100, '4h': 90, '1d': 60,
+};
+const INTERVAL_VOLATILITY: Record<CandleInterval, number> = {
+  '1m': 0.002, '5m': 0.004, '15m': 0.006, '1h': 0.015, '4h': 0.022, '1d': 0.035,
+};
+
+const SUPPORTED_SYMBOLS = Object.keys(ASSET_NAMES);
+
+const FALLBACK_PRICES: Record<string, number> = {
+  BTCUSDT: 63200,
+  ETHUSDT: 4200,
+  SOLUSDT: 28.5,
+  BNBUSDT: 620,
+  XRPUSDT: 0.52,
+};
+
+function generateCandles(basePrice: number, interval: CandleInterval = '1h'): CandlestickBar[] {
   const bars: CandlestickBar[] = [];
+  const count = INTERVAL_COUNT[interval];
+  const spacing = INTERVAL_SECONDS[interval];
+  const volatility = INTERVAL_VOLATILITY[interval];
   let price = basePrice * 0.85;
   const now = Math.floor(Date.now() / 1000);
   for (let i = count; i >= 0; i--) {
-    const v = price * 0.015;
+    const v = price * volatility;
     const open = price;
-    const close = price + (Math.random() - 0.5) * v * 2;
+    const close = price + (Math.random() - 0.5) * v * 2; // NOSONAR:S2245 — mock data fallback
     bars.push({
-      time: now - i * 3600,
+      time: now - i * spacing,
       open: +open.toFixed(2),
-      high: +(Math.max(open, close) + Math.random() * v).toFixed(2),
-      low: +(Math.min(open, close) - Math.random() * v).toFixed(2),
+      high: +(Math.max(open, close) + Math.random() * v).toFixed(2), // NOSONAR:S2245 — mock data fallback
+      low: +(Math.min(open, close) - Math.random() * v).toFixed(2), // NOSONAR:S2245 — mock data fallback
       close: +close.toFixed(2),
-      volume: Math.floor(Math.random() * 5_000_000 + 500_000),
+      volume: Math.floor(Math.random() * 5_000_000 + 500_000), // NOSONAR:S2245 — mock data fallback
     });
     price = close;
   }
@@ -38,43 +63,135 @@ function generateOrderBook(basePrice: number): Omit<OrderBook, 'symbol'> {
   const side = (dir: 1 | -1) =>
     Array.from({ length: 12 }, (_, i) => {
       const price = +(basePrice + dir * (i + 1) * basePrice * 0.0005).toFixed(2);
-      const quantity = +(Math.random() * 500 + 50).toFixed(2);
+      const quantity = +(Math.random() * 500 + 50).toFixed(2); // NOSONAR:S2245 — mock data fallback
       return { price, quantity, total: +(price * quantity).toFixed(2) };
     });
   return { bids: side(-1), asks: side(1), timestamp: Date.now() };
 }
 
-/** Mock implementation — replace internals with real API calls when backend market endpoints are ready. */
-export class MarketService {
-  private delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+function extractErrorMessage(error: unknown, fallback: string): string {
+  const e = error as { response?: { data?: { error?: string } }; code?: string };
+  if (e?.response?.data?.error) return e.response.data.error;
+  if (e?.code === 'ERR_NETWORK' || !e?.response) return 'Cannot reach the server. Check the backend is running.';
+  return fallback;
+}
 
+let cachedAssets: Asset[] | null = null;
+
+export class MarketService {
   async getAssets(): Promise<Result<Asset[]>> {
-    await this.delay(300);
-    return Result.ok(MOCK_ASSETS);
+    try {
+      const { data } = await httpClient.post<PricesResponse>('/api/prices', {
+        symbols: SUPPORTED_SYMBOLS,
+      });
+
+      const assets: Asset[] = SUPPORTED_SYMBOLS.map((symbol) => {
+        const price = data[symbol] ?? FALLBACK_PRICES[symbol] ?? 0;
+        return {
+          symbol,
+          name: ASSET_NAMES[symbol] ?? symbol,
+          currentPrice: price,
+          priceChange24h: 0,
+          priceChangePercent24h: 0,
+          volume24h: 0,
+          marketCap: 0,
+        };
+      });
+
+      cachedAssets = assets;
+      return Result.ok(assets);
+    } catch (error) {
+      if (cachedAssets) return Result.ok(cachedAssets);
+      return Result.fail(extractErrorMessage(error, 'Failed to load assets.'));
+    }
   }
 
   async getAssetBySymbol(symbol: string): Promise<Result<Asset>> {
-    await this.delay(150);
-    const asset = MOCK_ASSETS.find((a) => a.symbol === symbol);
-    return asset ? Result.ok(asset) : Result.fail(`Asset ${symbol} not found.`);
+    try {
+      const { data } = await httpClient.post<PricesResponse>('/api/prices', {
+        symbols: [symbol],
+      });
+
+      const price = data[symbol] ?? FALLBACK_PRICES[symbol];
+      if (price == null) return Result.fail(`Asset ${symbol} not found.`);
+
+      return Result.ok({
+        symbol,
+        name: ASSET_NAMES[symbol] ?? symbol,
+        currentPrice: price,
+        priceChange24h: 0,
+        priceChangePercent24h: 0,
+        volume24h: 0,
+        marketCap: 0,
+      });
+    } catch (error) {
+      if (cachedAssets) {
+        const asset = cachedAssets.find((a) => a.symbol === symbol);
+        if (asset) return Result.ok(asset);
+      }
+      return Result.fail(extractErrorMessage(error, `Asset ${symbol} not found.`));
+    }
   }
 
-  async getCandles(symbol: string, _interval: CandleInterval): Promise<Result<CandlestickBar[]>> {
-    await this.delay(400);
-    const asset = MOCK_ASSETS.find((a) => a.symbol === symbol);
-    return asset ? Result.ok(generateCandles(asset.currentPrice)) : Result.fail(`Asset ${symbol} not found.`);
+  async getCandles(symbol: string, interval: CandleInterval = '1h'): Promise<Result<CandlestickBar[]>> {
+    try {
+      const { data } = await httpClient.post<PricesResponse>('/api/prices', {
+        symbols: [symbol],
+      });
+      const price = data[symbol] ?? 100;
+      return Result.ok(generateCandles(price, interval));
+    } catch {
+      return Result.ok(generateCandles(100, interval));
+    }
   }
 
   async getOrderBook(symbol: string): Promise<Result<OrderBook>> {
-    await this.delay(200);
-    const asset = MOCK_ASSETS.find((a) => a.symbol === symbol);
-    if (!asset) return Result.fail(`Asset ${symbol} not found.`);
-    return Result.ok({ ...generateOrderBook(asset.currentPrice), symbol });
+    try {
+      const { data } = await httpClient.post<PricesResponse>('/api/prices', {
+        symbols: [symbol],
+      });
+      const price = data[symbol] ?? 100;
+      return Result.ok({ ...generateOrderBook(price), symbol });
+    } catch {
+      return Result.ok({ ...generateOrderBook(100), symbol });
+    }
   }
 
   async searchAssets(query: string): Promise<Result<Asset[]>> {
-    await this.delay(100);
-    const q = query.toLowerCase();
-    return Result.ok(MOCK_ASSETS.filter((a) => a.symbol.toLowerCase().includes(q) || a.name.toLowerCase().includes(q)));
+    try {
+      if (!cachedAssets) await this.getAssets();
+      const q = query.toLowerCase();
+      return Result.ok(
+        (cachedAssets ?? []).filter(
+          (a) => a.symbol.toLowerCase().includes(q) || a.name.toLowerCase().includes(q)
+        )
+      );
+    } catch {
+      return Result.ok([]);
+    }
+  }
+
+  async refreshPrices(): Promise<void> {
+    try {
+      const { data } = await httpClient.post<PricesResponse>('/api/prices', {
+        symbols: SUPPORTED_SYMBOLS,
+      });
+
+      if (cachedAssets) {
+        const hasRealPrices = SUPPORTED_SYMBOLS.some((s) => data[s] != null && data[s] > 0);
+        if (hasRealPrices) {
+          cachedAssets = cachedAssets.map((asset) => ({
+            ...asset,
+            currentPrice: data[asset.symbol] ?? asset.currentPrice,
+          }));
+        }
+      }
+    } catch {
+      // silent fail — keep stale prices
+    }
+  }
+
+  getCachedAssets(): Asset[] {
+    return cachedAssets ?? [];
   }
 }

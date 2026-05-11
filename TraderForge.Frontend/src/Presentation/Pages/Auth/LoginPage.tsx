@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../Application/Handlers/useAuth';
+import { useAuthStore } from '../../../Application/Store/authStore';
 import { Button } from '../../Components/UI/Button';
 import { Input } from '../../Components/UI/Input';
 
@@ -8,7 +9,13 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { login, isLoading, error } = useAuth();
+  const { setToken } = useAuthStore();
   const navigate = useNavigate();
+
+  function handleDevBypass() {
+    setToken('dev-token');
+    navigate('/dashboard');
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -62,6 +69,18 @@ export function LoginPage() {
           Start your 7-day free trial
         </Link>
       </p>
+
+      {import.meta.env.DEV && (
+        <div className="border-t border-neutral-800 pt-4">
+          <button
+            type="button"
+            onClick={handleDevBypass}
+            className="w-full py-2 rounded-lg text-xs font-medium text-neutral-600 border border-dashed border-neutral-800 hover:border-neutral-600 hover:text-neutral-400 transition-colors"
+          >
+            Continuar sin backend (solo desarrollo)
+          </button>
+        </div>
+      )}
     </div>
   );
 }

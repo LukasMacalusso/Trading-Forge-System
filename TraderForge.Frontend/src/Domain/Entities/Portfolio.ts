@@ -1,4 +1,5 @@
 export interface Position {
+  id: string;
   symbol: string;
   assetName: string;
   quantity: number;

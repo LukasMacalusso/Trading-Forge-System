@@ -7,6 +7,10 @@
     padding: 0;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-neutral-950 text-neutral-100 antialiased;
     font-family: 'Inter', system-ui, sans-serif;
@@ -80,7 +84,7 @@
 
 .login-register-link,
 .register-login-link {
-  @apply text-emerald-400 hover:text-emerald-300 transition-colors;
+  @apply text-amber-400 hover:text-amber-300 transition-colors;
 }
 
 .register-password-rules {
@@ -92,7 +96,7 @@
 }
 
 .register-rule-item--valid {
-  @apply text-emerald-400;
+  @apply text-amber-400;
 }
 
 .register-rule-item--invalid {
@@ -118,7 +122,7 @@
 }
 
 .auth-layout__title-accent {
-  @apply text-emerald-400;
+  @apply text-amber-400;
 }
 
 .auth-layout__subtitle {
