@@ -1,46 +1,94 @@
-import type { Portfolio, SimulationSnapshot } from '../../Domain/Entities/Portfolio';
+import type { Portfolio, SimulationSnapshot, Position } from '../../Domain/Entities/Portfolio';
 import { Result } from '../../Application/Common/Result';
+import { httpClient } from '../Http/httpClient';
 
-const MOCK_PORTFOLIO: Portfolio = {
-  traderId: 'mock-trader-id',
-  virtualBalance: 6_843.17,
-  totalPortfolioValue: 13_156.83,
-  totalPnL: 3_156.83,
-  totalPnLPercent: 31.57,
-  positions: [
-    { symbol: 'AAPL', assetName: 'Apple Inc.', quantity: 5, averageBuyPrice: 182.50, currentPrice: 189.84, unrealizedPnL: 36.70, unrealizedPnLPercent: 4.02, totalValue: 949.20 },
-    { symbol: 'TSLA', assetName: 'Tesla Inc.', quantity: 5, averageBuyPrice: 245.00, currentPrice: 248.50, unrealizedPnL: 17.50, unrealizedPnLPercent: 1.43, totalValue: 1242.50 },
-    { symbol: 'NVDA', assetName: 'NVIDIA Corp.', quantity: 10, averageBuyPrice: 720.00, currentPrice: 875.40, unrealizedPnL: 1554.00, unrealizedPnLPercent: 21.58, totalValue: 8754.00 },
-    { symbol: 'MSFT', assetName: 'Microsoft Corp.', quantity: 5, averageBuyPrice: 400.00, currentPrice: 415.20, unrealizedPnL: 76.00, unrealizedPnLPercent: 3.80, totalValue: 2076.00 },
-  ],
+interface BackendPortfolio {
+  id: string;
+  virtualBalance: number;
+  isActive: boolean;
+}
+
+interface BackendAsset {
+  id: string;
+  symbol: string;
+  quantity: number;
+  entryPrice: number;
+}
+
+const ASSET_NAMES: Record<string, string> = {
+  AAPL: 'Apple Inc.', TSLA: 'Tesla Inc.', MSFT: 'Microsoft Corp.',
+  GOOGL: 'Alphabet Inc.', AMZN: 'Amazon.com Inc.', NVDA: 'NVIDIA Corp.',
+  META: 'Meta Platforms Inc.', BTC: 'Bitcoin',
 };
 
-const MOCK_SNAPSHOTS: SimulationSnapshot[] = [
-  { id: 'snap-1', createdAt: '2026-03-01T12:00:00Z', finalBalance: 8200, finalPortfolioValue: 12000, totalPnL: 2000, totalPnLPercent: 20, positionCount: 3 },
-  { id: 'snap-2', createdAt: '2026-04-01T12:00:00Z', finalBalance: 3500, finalPortfolioValue: 9800, totalPnL: -200, totalPnLPercent: -2, positionCount: 5 },
-];
-
-/** Mock implementation — replace with real API calls when backend portfolio endpoints are ready. */
 export class PortfolioService {
-  private delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  async getPortfolio(initialBalance = 10_000): Promise<Result<Portfolio>> {
+    try {
+      const [portfolioRes, assetsRes] = await Promise.all([
+        httpClient.get<BackendPortfolio>('/api/portfolio'),
+        httpClient.get<BackendAsset[]>('/api/portfolio/assets'),
+      ]);
 
-  async getPortfolio(_traderId: string): Promise<Result<Portfolio>> {
-    await this.delay(300);
-    return Result.ok({ ...MOCK_PORTFOLIO, positions: [...MOCK_PORTFOLIO.positions] });
+      const { id, virtualBalance } = portfolioRes.data;
+      const backendAssets = assetsRes.data;
+
+      const positions: Position[] = backendAssets.map((a) => ({
+        id: a.id,
+        symbol: a.symbol,
+        assetName: ASSET_NAMES[a.symbol] ?? a.symbol,
+        quantity: a.quantity,
+        averageBuyPrice: a.entryPrice,
+        currentPrice: a.entryPrice,
+        unrealizedPnL: 0,
+        unrealizedPnLPercent: 0,
+        totalValue: +(a.quantity * a.entryPrice).toFixed(2),
+      }));
+
+      const positionValue = positions.reduce((sum, p) => sum + p.totalValue, 0);
+      const totalPortfolioValue = +(virtualBalance + positionValue).toFixed(2);
+      const totalPnL = +(totalPortfolioValue - initialBalance).toFixed(2);
+      const totalPnLPercent = +((totalPnL / initialBalance) * 100).toFixed(2);
+
+      return Result.ok({
+        traderId: id,
+        virtualBalance,
+        totalPortfolioValue,
+        totalPnL,
+        totalPnLPercent,
+        positions,
+      });
+    } catch (error) {
+      return Result.fail(extractErrorMessage(error, 'Failed to load portfolio.'));
+    }
   }
 
-  async getSimulationHistory(_traderId: string): Promise<Result<SimulationSnapshot[]>> {
-    await this.delay(200);
-    return Result.ok(MOCK_SNAPSHOTS);
+  async addAsset(symbol: string, quantity: number, entryPrice: number): Promise<Result<void>> {
+    try {
+      await httpClient.post('/api/portfolio/assets', { symbol, quantity, entryPrice });
+      return Result.ok(undefined);
+    } catch (error) {
+      return Result.fail(extractErrorMessage(error, 'Failed to add asset.'));
+    }
   }
 
-  async resetSimulation(_traderId: string): Promise<Result<void>> {
-    await this.delay(500);
-    MOCK_PORTFOLIO.virtualBalance = 10_000;
-    MOCK_PORTFOLIO.positions = [];
-    MOCK_PORTFOLIO.totalPortfolioValue = 10_000;
-    MOCK_PORTFOLIO.totalPnL = 0;
-    MOCK_PORTFOLIO.totalPnLPercent = 0;
-    return Result.ok(undefined);
+  async removeAsset(assetId: string): Promise<Result<void>> {
+    try {
+      await httpClient.delete(`/api/portfolio/assets/${assetId}`);
+      return Result.ok(undefined);
+    } catch (error) {
+      return Result.fail(extractErrorMessage(error, 'Failed to remove asset.'));
+    }
   }
+
+  async getSimulationHistory(): Promise<Result<SimulationSnapshot[]>> {
+    return Result.ok([]);
+  }
+}
+
+function extractErrorMessage(error: unknown, fallback: string): string {
+  const e = error as { response?: { status?: number; data?: { error?: string } }; code?: string };
+  if (e?.response?.status === 403 || e?.response?.status === 401) return 'UNAUTHORIZED';
+  if (e?.response?.data?.error) return e.response.data.error;
+  if (e?.code === 'ERR_NETWORK' || !e?.response) return 'Cannot reach the server. Check the backend is running.';
+  return fallback;
 }

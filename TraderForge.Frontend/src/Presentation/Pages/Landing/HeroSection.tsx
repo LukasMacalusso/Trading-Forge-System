@@ -81,9 +81,9 @@ export function HeroSection() {
             backgroundSize: '64px 64px',
           }}
         />
-        <div className="absolute top-1/3 right-1/3 w-[520px] h-[520px] bg-emerald-500/8 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 right-1/3 w-[520px] h-[520px] bg-amber-500/8 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-indigo-500/6 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-emerald-400/4 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-amber-400/4 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
       </div>
 
       <div className="relative max-w-7xl mx-auto px-6 w-full grid grid-cols-1 lg:grid-cols-2 gap-12 xl:gap-20 items-center py-24">
@@ -96,8 +96,8 @@ export function HeroSection() {
         >
           {/* Badge */}
           <div>
-            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium tracking-wide">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium tracking-wide">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
               En Beta — Prueba gratis de 7 días
             </span>
           </div>
@@ -108,7 +108,7 @@ export function HeroSection() {
               Opera sin
             </h1>
             <h1 className="text-5xl xl:text-6xl font-black tracking-[-0.03em] leading-[1.05]">
-              <span className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-emerald-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 bg-clip-text text-transparent">
                 Riesgo.
               </span>{' '}
               <span className="text-neutral-50">Aprende</span>
@@ -128,7 +128,7 @@ export function HeroSection() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <Link
               to="/register"
-              className="group inline-flex items-center gap-2 px-6 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-semibold rounded-xl transition-all duration-200 text-sm shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40"
+              className="group inline-flex items-center gap-2 px-6 py-3.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-semibold rounded-xl transition-all duration-200 text-sm shadow-xl shadow-amber-500/25 hover:shadow-amber-500/40"
             >
               Comenzar prueba gratis
               <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform duration-200" />
@@ -145,7 +145,7 @@ export function HeroSection() {
           <div className="flex flex-wrap items-center gap-5">
             {TRUST_ITEMS.map(({ icon: Icon, label }) => (
               <span key={label} className="flex items-center gap-1.5 text-xs text-neutral-500">
-                <Icon size={12} className="text-emerald-500/60" />
+                <Icon size={12} className="text-amber-500/60" />
                 {label}
               </span>
             ))}
@@ -160,7 +160,7 @@ export function HeroSection() {
           className="relative flex items-center justify-center"
         >
           {/* Glow */}
-          <div className="absolute inset-0 bg-emerald-500/5 rounded-3xl blur-2xl scale-110" />
+          <div className="absolute inset-0 bg-amber-500/5 rounded-3xl blur-2xl scale-110" />
 
           {/* Terminal window */}
           <div className="relative w-full max-w-[500px] bg-[#0c0c0f] border border-neutral-800/70 rounded-2xl overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.6)]">
@@ -171,8 +171,8 @@ export function HeroSection() {
               <div className="w-2.5 h-2.5 rounded-full bg-[#28C840]" />
               <span className="text-[11px] text-neutral-600 ml-2 font-mono">Trading Forge Terminal</span>
               <div className="ml-auto flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[10px] text-emerald-400 font-mono tracking-widest">LIVE</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                <span className="text-[10px] text-amber-400 font-mono tracking-widest">LIVE</span>
               </div>
             </div>
 
@@ -206,8 +206,8 @@ export function HeroSection() {
               <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 150 }}>
                 <defs>
                   <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.22" />
-                    <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+                    <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.22" />
+                    <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
                   </linearGradient>
                   <filter id="heroGlow">
                     <feGaussianBlur stdDeviation="2.5" result="blur" />
@@ -239,7 +239,7 @@ export function HeroSection() {
                 {/* Line revealed by clipPath — no per-frame path calculation */}
                 <path
                   d={linePath}
-                  stroke="#10b981"
+                  stroke="#f59e0b"
                   strokeWidth="2"
                   fill="none"
                   filter="url(#heroGlow)"
@@ -248,14 +248,14 @@ export function HeroSection() {
 
                 {/* Dot at current price */}
                 <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, duration: 0.3 }}>
-                  <circle cx={dotX} cy={dotY} r="5" fill="#10b981" opacity="0.3" />
-                  <circle cx={dotX} cy={dotY} r="3" fill="#10b981" />
+                  <circle cx={dotX} cy={dotY} r="5" fill="#f59e0b" opacity="0.3" />
+                  <circle cx={dotX} cy={dotY} r="3" fill="#f59e0b" />
                 </motion.g>
 
                 {/* Dashed horizontal line at current price */}
                 <motion.line
                   x1="16" y1={dotY} x2={dotX - 6} y2={dotY}
-                  stroke="#10b981" strokeWidth="1" strokeDasharray="3 3" opacity="0.4"
+                  stroke="#f59e0b" strokeWidth="1" strokeDasharray="3 3" opacity="0.4"
                   initial={{ pathLength: 0 }}
                   animate={{ pathLength: 1 }}
                   transition={{ delay: 1.5, duration: 0.4 }}

@@ -1,0 +1,73 @@
+{
+  "hash": "d4d1a68f",
+  "configHash": "08c7b284",
+  "lockfileHash": "b93a32da",
+  "browserHash": "3e3de31d",
+  "optimized": {
+    "react/jsx-dev-runtime": {
+      "src": "../../node_modules/react/jsx-dev-runtime.js",
+      "file": "react_jsx-dev-runtime.js",
+      "fileHash": "3b12362a",
+      "needsInterop": true
+    },
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "2213f5b2",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "43bca92c",
+      "needsInterop": true
+    },
+    "react-router-dom": {
+      "src": "../../node_modules/react-router-dom/dist/index.mjs",
+      "file": "react-router-dom.js",
+      "fileHash": "1b22ef80",
+      "needsInterop": false
+    },
+    "framer-motion": {
+      "src": "../../node_modules/framer-motion/dist/es/index.mjs",
+      "file": "framer-motion.js",
+      "fileHash": "4acde26d",
+      "needsInterop": false
+    },
+    "lucide-react": {
+      "src": "../../node_modules/lucide-react/dist/esm/lucide-react.js",
+      "file": "lucide-react.js",
+      "fileHash": "696a6b18",
+      "needsInterop": false
+    },
+    "zustand": {
+      "src": "../../node_modules/zustand/esm/index.mjs",
+      "file": "zustand.js",
+      "fileHash": "6c383593",
+      "needsInterop": false
+    },
+    "lightweight-charts": {
+      "src": "../../node_modules/lightweight-charts/dist/lightweight-charts.development.mjs",
+      "file": "lightweight-charts.js",
+      "fileHash": "2fc9767d",
+      "needsInterop": false
+    },
+    "axios": {
+      "src": "../../node_modules/axios/index.js",
+      "file": "axios.js",
+      "fileHash": "58f0b464",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-6YXW5NLT": {
+      "file": "chunk-6YXW5NLT.js"
+    },
+    "chunk-UYSWIWPF": {
+      "file": "chunk-UYSWIWPF.js"
+    },
+    "chunk-PR4QN5HX": {
+      "file": "chunk-PR4QN5HX.js"
+    }
+  }
+}

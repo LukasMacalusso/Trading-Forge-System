@@ -29,11 +29,9 @@ export const useMarketStore = create<MarketState>((set) => ({
   isLoading: false,
 
   setAssets: (assets) =>
-    set((state) => ({
+    set(() => ({
       assets,
       lastUpdatedAt: Date.now(),
-      // On first load populate watchlist with all available symbols
-      watchlist: state.watchlist.length === 0 ? assets.map((a) => a.symbol) : state.watchlist,
     })),
 
   selectAsset: (asset) => set({ selectedAsset: asset, candles: [], orderBook: null }),

@@ -34,11 +34,11 @@ export function LandingFooter() {
           {/* Brand */}
           <div className="col-span-2">
             <Link to="/" className="flex items-center gap-2.5 mb-4">
-              <div className="w-7 h-7 bg-emerald-500 rounded-lg flex items-center justify-center">
+              <div className="w-7 h-7 bg-amber-500 rounded-lg flex items-center justify-center">
                 <TrendingUp size={14} className="text-neutral-950" strokeWidth={2.5} />
               </div>
               <span className="text-[15px] font-bold text-neutral-100 tracking-tight">
-                Trading <span className="text-emerald-400">Forge</span>
+                Trading <span className="text-amber-400">Forge</span>
               </span>
             </Link>
             <p className="text-sm text-neutral-500 leading-relaxed max-w-xs mb-6">

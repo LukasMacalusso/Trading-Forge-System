@@ -37,7 +37,7 @@ function TickerItem({
   }, [asset.currentPrice]);
 
   return (
-    <div className={`group relative flex items-stretch border-r border-neutral-800 shrink-0 ${isSelected ? 'bg-neutral-900 border-b-2 border-b-emerald-500' : ''}`}>
+    <div className={`group relative flex items-stretch border-r border-neutral-800 shrink-0 ${isSelected ? 'bg-neutral-900 border-b-2 border-b-amber-500' : ''}`}>
       <button
         onClick={onSelect}
         className="flex flex-col items-start px-4 py-2 transition-colors hover:bg-neutral-900 pr-7"
@@ -85,7 +85,7 @@ function AddAssetDropdown({ assets, onAdd, onClose }: { assets: Asset[]; onAdd: 
   }, [onClose]);
 
   return (
-    <div ref={ref} className="absolute top-full left-0 mt-1 w-48 bg-neutral-900 border border-neutral-700 rounded-xl shadow-xl z-50 overflow-hidden">
+    <div ref={ref} className="absolute top-full right-0 mt-1 w-56 bg-neutral-900 border border-neutral-700 rounded-xl shadow-xl z-50 overflow-hidden">
       {assets.length === 0 ? (
         <p className="text-xs text-neutral-500 px-3 py-3 text-center">All assets added</p>
       ) : (
@@ -118,22 +118,25 @@ export const PriceTicker = memo(function PriceTicker({
   const unwatched = allAssets.filter((a) => !assets.some((w) => w.symbol === a.symbol));
 
   return (
-    <div className="flex overflow-x-auto scrollbar-thin border-b border-neutral-800 bg-neutral-950">
-      {assets.map((asset) => (
-        <TickerItem
-          key={asset.symbol}
-          asset={asset}
-          isSelected={asset.symbol === selectedSymbol}
-          onSelect={() => onSelect(asset)}
-          onRemove={() => onRemove(asset.symbol)}
-        />
-      ))}
+    <div className="flex border-b border-neutral-800 bg-neutral-950">
+      {/* Scrollable ticker items — isolated so overflow-x-auto doesn't clip the dropdown */}
+      <div className="flex overflow-x-auto scrollbar-thin flex-1 min-w-0">
+        {assets.map((asset) => (
+          <TickerItem
+            key={asset.symbol}
+            asset={asset}
+            isSelected={asset.symbol === selectedSymbol}
+            onSelect={() => onSelect(asset)}
+            onRemove={() => onRemove(asset.symbol)}
+          />
+        ))}
+      </div>
 
-      {/* Add asset button */}
-      <div className="relative flex items-center px-2 shrink-0">
+      {/* Add asset button — sibling of scroll container so dropdown renders outside its clip area */}
+      <div className="relative flex items-center px-3 shrink-0 border-l border-neutral-800">
         <button
           onClick={() => setDropdownOpen((o) => !o)}
-          className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-neutral-600 hover:text-neutral-300 hover:bg-neutral-800 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition-colors"
         >
           <Plus size={12} strokeWidth={2.5} />
           Añadir

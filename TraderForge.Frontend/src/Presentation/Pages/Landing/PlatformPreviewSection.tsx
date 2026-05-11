@@ -73,7 +73,7 @@ export function PlatformPreviewSection() {
           className="relative"
         >
           {/* Glow */}
-          <div className="absolute -inset-2 bg-emerald-500/4 rounded-3xl blur-2xl" />
+          <div className="absolute -inset-2 bg-amber-500/4 rounded-3xl blur-2xl" />
 
           <div className="relative bg-neutral-950 border border-neutral-800 rounded-2xl overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.7)]">
             {/* Window bar */}
@@ -83,7 +83,7 @@ export function PlatformPreviewSection() {
               <div className="w-3 h-3 rounded-full bg-[#28C840]" />
               <span className="text-xs text-neutral-600 font-mono ml-3">Trading Forge — Dashboard</span>
               <div className="ml-auto flex items-center gap-2 text-[10px] text-neutral-600 font-mono">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                 MERCADOS ABIERTOS
               </div>
             </div>
@@ -91,17 +91,17 @@ export function PlatformPreviewSection() {
             <div className="flex h-[500px]">
               {/* Sidebar */}
               <aside className="w-14 flex flex-col items-center py-4 gap-3 bg-neutral-900 border-r border-neutral-800 shrink-0">
-                <div className="w-7 h-7 bg-emerald-500/20 rounded-lg flex items-center justify-center mb-2">
-                  <TrendingUp size={12} className="text-emerald-400" />
+                <div className="w-7 h-7 bg-amber-500/20 rounded-lg flex items-center justify-center mb-2">
+                  <TrendingUp size={12} className="text-amber-400" />
                 </div>
                 {[LayoutDashboard, Briefcase, Bot, Clock, CreditCard].map((Icon, i) => (
                   <div
                     key={i}
                     className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
-                      i === 0 ? 'bg-emerald-500/10' : 'hover:bg-neutral-800'
+                      i === 0 ? 'bg-amber-500/10' : 'hover:bg-neutral-800'
                     }`}
                   >
-                    <Icon size={14} className={i === 0 ? 'text-emerald-400' : 'text-neutral-600'} />
+                    <Icon size={14} className={i === 0 ? 'text-amber-400' : 'text-neutral-600'} />
                   </div>
                 ))}
               </aside>
@@ -117,13 +117,13 @@ export function PlatformPreviewSection() {
                         key={asset.symbol}
                         onClick={() => setSelectedAsset(asset)}
                         className={`flex flex-col items-start px-4 py-2.5 border-r border-neutral-800 shrink-0 transition-colors ${
-                          selected ? 'bg-neutral-900 border-b-2 border-b-emerald-500' : 'hover:bg-neutral-900/50'
+                          selected ? 'bg-neutral-900 border-b-2 border-b-amber-500' : 'hover:bg-neutral-900/50'
                         }`}
                       >
                         <div className="flex items-center gap-2">
                           <span className="text-[11px] font-bold text-neutral-200">{asset.symbol}</span>
                           <span
-                            className={`text-[10px] ${asset.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}
+                            className={`text-[10px] ${asset.change >= 0 ? 'text-amber-400' : 'text-red-400'}`}
                           >
                             {asset.change >= 0 ? '+' : ''}
                             {asset.change.toFixed(2)}%
@@ -156,7 +156,7 @@ export function PlatformPreviewSection() {
                       <span
                         className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
                           selectedAsset.change >= 0
-                            ? 'bg-emerald-500/10 text-emerald-400'
+                            ? 'bg-amber-500/10 text-amber-400'
                             : 'bg-red-500/10 text-red-400'
                         }`}
                       >
@@ -170,8 +170,8 @@ export function PlatformPreviewSection() {
                       <svg viewBox="0 0 600 200" className="w-full h-full" preserveAspectRatio="none">
                         <defs>
                           <linearGradient id="previewAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#10b981" stopOpacity="0.18" />
-                            <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+                            <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.18" />
+                            <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
                           </linearGradient>
                         </defs>
                         {/* Grid */}
@@ -185,7 +185,7 @@ export function PlatformPreviewSection() {
                         />
                         <path
                           d="M0,160 L60,145 L120,130 L180,140 L240,110 L300,95 L360,80 L420,85 L480,60 L540,45 L600,30"
-                          stroke="#10b981"
+                          stroke="#f59e0b"
                           strokeWidth="1.5"
                           fill="none"
                         />
@@ -197,7 +197,7 @@ export function PlatformPreviewSection() {
                             y={200 - (15 + Math.sin(i) * 8)}
                             width="48"
                             height={15 + Math.sin(i) * 8}
-                            fill={i % 3 === 0 ? '#ef444420' : '#10b98118'}
+                            fill={i % 3 === 0 ? '#ef444420' : '#f59e0b18'}
                           />
                         ))}
                       </svg>
@@ -269,7 +269,7 @@ export function PlatformPreviewSection() {
                     {/* Execution panel */}
                     <div className="border-t border-neutral-800 p-3 flex flex-col gap-2">
                       <div className="flex rounded-lg overflow-hidden border border-neutral-800">
-                        <div className="flex-1 py-1.5 text-center text-[11px] font-semibold bg-emerald-500 text-neutral-950">
+                        <div className="flex-1 py-1.5 text-center text-[11px] font-semibold bg-amber-500 text-neutral-950">
                           Buy
                         </div>
                         <div className="flex-1 py-1.5 text-center text-[11px] text-neutral-500">Sell</div>
@@ -282,7 +282,7 @@ export function PlatformPreviewSection() {
                         <span className="text-[10px] text-neutral-500">Total est.</span>
                         <span className="text-[10px] font-mono text-neutral-300">$3,421.26</span>
                       </div>
-                      <div className="bg-emerald-500/90 rounded py-1.5 text-center text-[11px] font-semibold text-neutral-950">
+                      <div className="bg-amber-500/90 rounded py-1.5 text-center text-[11px] font-semibold text-neutral-950">
                         Ejecutar Compra
                       </div>
                     </div>
@@ -293,7 +293,7 @@ export function PlatformPreviewSection() {
 
             {/* Status bar */}
             <div className="flex items-center gap-4 px-4 py-2 bg-neutral-900/40 border-t border-neutral-800 text-[10px] font-mono text-neutral-600">
-              <span className="text-emerald-500">● Conectado</span>
+              <span className="text-amber-500">● Conectado</span>
               <span>Latencia 12ms</span>
               <span>NYSE · NASDAQ · CRYPTO</span>
               <div className="ml-auto">
@@ -302,7 +302,7 @@ export function PlatformPreviewSection() {
                     key={orderFlash}
                     initial={{ opacity: 0, x: 8 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="text-emerald-400"
+                    className="text-amber-400"
                   >
                     ✓ {orderFlash}
                   </motion.span>

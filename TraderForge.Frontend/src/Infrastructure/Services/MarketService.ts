@@ -2,6 +2,16 @@ import type { Asset, CandlestickBar, OrderBook } from '../../Domain/Entities/Ass
 import { Result } from '../../Application/Common/Result';
 import type { CandleInterval } from '../../Domain/Interfaces/IMarketService';
 
+const INTERVAL_SECONDS: Record<CandleInterval, number> = {
+  '1m': 60, '5m': 300, '15m': 900, '1h': 3600, '4h': 14400, '1d': 86400,
+};
+const INTERVAL_COUNT: Record<CandleInterval, number> = {
+  '1m': 150, '5m': 130, '15m': 110, '1h': 100, '4h': 90, '1d': 60,
+};
+const INTERVAL_VOLATILITY: Record<CandleInterval, number> = {
+  '1m': 0.002, '5m': 0.004, '15m': 0.006, '1h': 0.015, '4h': 0.022, '1d': 0.035,
+};
+
 const MOCK_ASSETS: Asset[] = [
   { symbol: 'AAPL', name: 'Apple Inc.', currentPrice: 189.84, priceChange24h: 2.34, priceChangePercent24h: 1.25, volume24h: 54_200_000, marketCap: 2_910_000_000_000 },
   { symbol: 'TSLA', name: 'Tesla Inc.', currentPrice: 248.50, priceChange24h: -5.20, priceChangePercent24h: -2.05, volume24h: 78_000_000, marketCap: 790_000_000_000 },
@@ -13,16 +23,19 @@ const MOCK_ASSETS: Asset[] = [
   { symbol: 'BTC', name: 'Bitcoin', currentPrice: 63_200, priceChange24h: 1200, priceChangePercent24h: 1.93, volume24h: 28_000_000_000, marketCap: 1_240_000_000_000 },
 ];
 
-function generateCandles(basePrice: number, count = 100): CandlestickBar[] {
+function generateCandles(basePrice: number, interval: CandleInterval = '1h'): CandlestickBar[] {
   const bars: CandlestickBar[] = [];
+  const count = INTERVAL_COUNT[interval];
+  const spacing = INTERVAL_SECONDS[interval];
+  const volatility = INTERVAL_VOLATILITY[interval];
   let price = basePrice * 0.85;
   const now = Math.floor(Date.now() / 1000);
   for (let i = count; i >= 0; i--) {
-    const v = price * 0.015;
+    const v = price * volatility;
     const open = price;
     const close = price + (Math.random() - 0.5) * v * 2;
     bars.push({
-      time: now - i * 3600,
+      time: now - i * spacing,
       open: +open.toFixed(2),
       high: +(Math.max(open, close) + Math.random() * v).toFixed(2),
       low: +(Math.min(open, close) - Math.random() * v).toFixed(2),
@@ -59,10 +72,10 @@ export class MarketService {
     return asset ? Result.ok(asset) : Result.fail(`Asset ${symbol} not found.`);
   }
 
-  async getCandles(symbol: string, _interval: CandleInterval): Promise<Result<CandlestickBar[]>> {
-    await this.delay(400);
+  async getCandles(symbol: string, interval: CandleInterval = '1h'): Promise<Result<CandlestickBar[]>> {
+    await this.delay(300);
     const asset = MOCK_ASSETS.find((a) => a.symbol === symbol);
-    return asset ? Result.ok(generateCandles(asset.currentPrice)) : Result.fail(`Asset ${symbol} not found.`);
+    return asset ? Result.ok(generateCandles(asset.currentPrice, interval)) : Result.fail(`Asset ${symbol} not found.`);
   }
 
   async getOrderBook(symbol: string): Promise<Result<OrderBook>> {

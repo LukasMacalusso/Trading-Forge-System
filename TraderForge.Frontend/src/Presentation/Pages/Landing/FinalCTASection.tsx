@@ -7,8 +7,8 @@ export function FinalCTASection() {
     <section className="py-28 relative overflow-hidden">
       {/* Background glow */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-emerald-500/8 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[150px] bg-emerald-400/6 rounded-full blur-2xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-amber-500/8 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[150px] bg-amber-400/6 rounded-full blur-2xl" />
       </div>
 
       <div className="relative max-w-4xl mx-auto px-6 text-center">
@@ -20,8 +20,8 @@ export function FinalCTASection() {
           className="flex flex-col items-center gap-8"
         >
           {/* Badge */}
-          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
             Sin tarjeta · Cancela cuando quieras
           </span>
 
@@ -30,7 +30,7 @@ export function FinalCTASection() {
             <h2 className="text-5xl xl:text-6xl font-black tracking-[-0.03em] text-neutral-50 leading-tight mb-3">
               Empieza a Operar
               <br />
-              <span className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-emerald-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 bg-clip-text text-transparent">
                 Sin Riesgo.
               </span>
             </h2>
@@ -44,7 +44,7 @@ export function FinalCTASection() {
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <Link
               to="/register"
-              className="group inline-flex items-center gap-2 px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-semibold rounded-xl transition-all duration-200 text-base shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50"
+              className="group inline-flex items-center gap-2 px-8 py-4 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-semibold rounded-xl transition-all duration-200 text-base shadow-2xl shadow-amber-500/30 hover:shadow-amber-500/50"
             >
               Comenzar Prueba Gratis
               <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform duration-200" />

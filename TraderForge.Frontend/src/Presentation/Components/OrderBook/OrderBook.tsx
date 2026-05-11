@@ -4,13 +4,15 @@ import type { OrderBook as OrderBookData } from '../../../Domain/Entities/Asset'
 interface OrderBookProps {
   orderBook: OrderBookData | null;
   currentPrice: number;
+  userEntryPrice?: number;
 }
 
-function Row({ price, quantity, total, maxTotal, side }: {
-  price: number; quantity: number; total: number; maxTotal: number; side: 'bid' | 'ask';
+function Row({ price, quantity, total, maxTotal, side, userEntryPrice }: {
+  price: number; quantity: number; total: number; maxTotal: number; side: 'bid' | 'ask'; userEntryPrice?: number;
 }) {
   const fillPercent = (total / maxTotal) * 100;
   const isAsk = side === 'ask';
+  const pnlPerShare = userEntryPrice != null ? price - userEntryPrice : null;
 
   return (
     <div className="relative flex items-center justify-between px-3 py-0.5 text-xs font-mono hover:bg-neutral-800/40 cursor-default group">
@@ -20,6 +22,11 @@ function Row({ price, quantity, total, maxTotal, side }: {
       />
       <span className={`relative z-10 font-semibold ${isAsk ? 'text-red-400' : 'text-emerald-400'}`}>
         ${price.toFixed(2)}
+        {pnlPerShare != null && (
+          <span className={`ml-1 text-[10px] opacity-75 ${pnlPerShare >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>
+            {pnlPerShare >= 0 ? '+' : ''}{pnlPerShare.toFixed(2)}
+          </span>
+        )}
       </span>
       <span className="relative z-10 text-neutral-400">{quantity.toFixed(4)}</span>
       <span className="relative z-10 text-neutral-500">${total.toFixed(0)}</span>
@@ -27,11 +34,7 @@ function Row({ price, quantity, total, maxTotal, side }: {
   );
 }
 
-/**
- * Order book showing bid/ask walls with depth visualization bars.
- * Memoized — only re-renders when order book data changes.
- */
-export const OrderBook = memo(function OrderBook({ orderBook, currentPrice }: OrderBookProps) {
+export const OrderBook = memo(function OrderBook({ orderBook, currentPrice, userEntryPrice }: OrderBookProps) {
   if (!orderBook) {
     return (
       <div className="flex flex-col h-full bg-neutral-900 rounded-lg p-4">
@@ -61,7 +64,7 @@ export const OrderBook = memo(function OrderBook({ orderBook, currentPrice }: Or
         {/* Asks (sell) — reversed so lowest ask is closest to spread */}
         <div className="flex flex-col-reverse">
           {orderBook.asks.slice(0, 10).map((ask) => (
-            <Row key={ask.price} {...ask} maxTotal={maxAskTotal} side="ask" />
+            <Row key={ask.price} {...ask} maxTotal={maxAskTotal} side="ask" userEntryPrice={userEntryPrice} />
           ))}
         </div>
 
@@ -77,7 +80,7 @@ export const OrderBook = memo(function OrderBook({ orderBook, currentPrice }: Or
 
         {/* Bids (buy) */}
         {orderBook.bids.slice(0, 10).map((bid) => (
-          <Row key={bid.price} {...bid} maxTotal={maxBidTotal} side="bid" />
+          <Row key={bid.price} {...bid} maxTotal={maxBidTotal} side="bid" userEntryPrice={userEntryPrice} />
         ))}
       </div>
     </div>

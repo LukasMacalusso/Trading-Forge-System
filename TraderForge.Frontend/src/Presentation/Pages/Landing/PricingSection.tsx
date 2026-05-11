@@ -120,7 +120,7 @@ export function PricingSection() {
           transition={{ duration: 0.7 }}
           className="text-center mb-6"
         >
-          <span className="inline-block text-xs font-medium text-emerald-400 uppercase tracking-[0.15em] mb-4">
+          <span className="inline-block text-xs font-medium text-amber-400 uppercase tracking-[0.15em] mb-4">
             Planes y Precios
           </span>
           <h2 className="text-4xl xl:text-5xl font-black tracking-[-0.02em] text-neutral-50 mb-5">
@@ -144,7 +144,7 @@ export function PricingSection() {
               transition={{ duration: 0.6, delay: idx * 0.1 }}
               className="bg-neutral-900/60 border border-neutral-800/60 rounded-2xl p-6 text-center"
             >
-              <p className="text-3xl xl:text-4xl font-black font-mono text-emerald-400 mb-2">
+              <p className="text-3xl xl:text-4xl font-black font-mono text-amber-400 mb-2">
                 <Counter target={value} prefix={prefix} suffix={suffix} decimals={decimals} />
               </p>
               <p className="text-sm font-semibold text-neutral-200 mb-1">{label}</p>
@@ -164,14 +164,14 @@ export function PricingSection() {
               transition={{ duration: 0.6, ease: 'easeOut', delay: idx * 0.1 }}
               className={`relative rounded-2xl p-6 flex flex-col gap-6 ${
                 highlighted
-                  ? 'bg-neutral-900 border border-emerald-500/30 shadow-[0_0_60px_rgba(16,185,129,0.08)]'
+                  ? 'bg-neutral-900 border border-amber-500/30 shadow-[0_0_60px_rgba(245,158,11,0.08)]'
                   : 'bg-neutral-900/50 border border-neutral-800/70'
               }`}
             >
               {/* Badge */}
               {badge && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500 text-neutral-950 text-[11px] font-bold uppercase tracking-wide shadow-lg shadow-emerald-500/30">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500 text-neutral-950 text-[11px] font-bold uppercase tracking-wide shadow-lg shadow-amber-500/30">
                     <Zap size={10} strokeWidth={2.5} />
                     {badge}
                   </span>
@@ -180,7 +180,7 @@ export function PricingSection() {
 
               {/* Plan name + price */}
               <div>
-                <p className={`text-xs font-semibold uppercase tracking-[0.12em] mb-3 ${highlighted ? 'text-emerald-400' : 'text-neutral-500'}`}>
+                <p className={`text-xs font-semibold uppercase tracking-[0.12em] mb-3 ${highlighted ? 'text-amber-400' : 'text-neutral-500'}`}>
                   {name}
                 </p>
                 <div className="flex items-baseline gap-1 mb-2">
@@ -200,7 +200,7 @@ export function PricingSection() {
                     <Check
                       size={14}
                       strokeWidth={2.5}
-                      className={`mt-0.5 shrink-0 ${highlighted ? 'text-emerald-400' : 'text-emerald-500/60'}`}
+                      className={`mt-0.5 shrink-0 ${highlighted ? 'text-amber-400' : 'text-amber-500/60'}`}
                     />
                     <span className="text-sm text-neutral-300">{feature}</span>
                   </li>
@@ -225,7 +225,7 @@ export function PricingSection() {
                 to="/register"
                 className={`mt-auto w-full text-center py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
                   highlighted
-                    ? 'bg-emerald-500 hover:bg-emerald-400 text-neutral-950 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40'
+                    ? 'bg-amber-500 hover:bg-amber-400 text-neutral-950 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40'
                     : 'bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 hover:border-neutral-600'
                 }`}
               >

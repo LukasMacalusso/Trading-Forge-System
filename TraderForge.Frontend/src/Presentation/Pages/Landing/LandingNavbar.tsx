@@ -35,11 +35,11 @@ export function LandingNavbar() {
         <div className="h-16 flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-7 h-7 bg-emerald-500 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/25 group-hover:shadow-emerald-500/40 transition-shadow">
+            <div className="w-7 h-7 bg-amber-500 rounded-lg flex items-center justify-center shadow-lg shadow-amber-500/25 group-hover:shadow-amber-500/40 transition-shadow">
               <TrendingUp size={14} className="text-neutral-950" strokeWidth={2.5} />
             </div>
             <span className="text-[15px] font-bold text-neutral-100 tracking-tight">
-              Trading <span className="text-emerald-400">Forge</span>
+              Trading <span className="text-amber-400">Forge</span>
             </span>
           </Link>
 
@@ -66,7 +66,7 @@ export function LandingNavbar() {
             </Link>
             <Link
               to="/register"
-              className="inline-flex items-center px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 text-sm font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/35"
+              className="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 text-sm font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-amber-500/20 hover:shadow-amber-500/35"
             >
               Comenzar gratis
             </Link>
@@ -110,7 +110,7 @@ export function LandingNavbar() {
                 </Link>
                 <Link
                   to="/register"
-                  className="text-center px-4 py-2.5 bg-emerald-500 text-neutral-950 text-sm font-semibold rounded-lg"
+                  className="text-center px-4 py-2.5 bg-amber-500 text-neutral-950 text-sm font-semibold rounded-lg"
                   onClick={() => setMobileOpen(false)}
                 >
                   Comenzar gratis

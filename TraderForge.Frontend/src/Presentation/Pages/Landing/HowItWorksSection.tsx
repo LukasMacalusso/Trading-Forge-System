@@ -58,11 +58,11 @@ export function HowItWorksSection() {
                 <div className="hidden xl:block absolute top-10 left-full w-6 h-px bg-gradient-to-r from-neutral-700 to-neutral-800 z-10" />
               )}
 
-              <div className="h-full bg-neutral-900/60 border border-neutral-800/80 rounded-2xl p-6 flex flex-col gap-5 hover:border-emerald-500/20 hover:bg-neutral-900/80 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-emerald-500/5">
+              <div className="h-full bg-neutral-900/60 border border-neutral-800/80 rounded-2xl p-6 flex flex-col gap-5 hover:border-amber-500/20 hover:bg-neutral-900/80 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-amber-500/5">
                 {/* Number + icon row */}
                 <div className="flex items-start justify-between">
-                  <div className="w-11 h-11 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center group-hover:bg-emerald-500/15 transition-colors">
-                    <Icon size={18} className="text-emerald-400" strokeWidth={1.75} />
+                  <div className="w-11 h-11 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-center group-hover:bg-amber-500/15 transition-colors">
+                    <Icon size={18} className="text-amber-400" strokeWidth={1.75} />
                   </div>
                   <span className="text-3xl font-black text-neutral-800 group-hover:text-neutral-700 transition-colors font-mono">
                     {number}

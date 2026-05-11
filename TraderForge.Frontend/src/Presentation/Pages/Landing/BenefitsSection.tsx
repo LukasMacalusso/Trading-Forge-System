@@ -54,7 +54,7 @@ export function BenefitsSection() {
   return (
     <section id="features" className="py-28 relative overflow-hidden">
       {/* Background orb */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-emerald-500/4 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-amber-500/4 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
@@ -65,7 +65,7 @@ export function BenefitsSection() {
           transition={{ duration: 0.7 }}
           className="text-center mb-20"
         >
-          <span className="inline-block text-xs font-medium text-emerald-400 uppercase tracking-[0.15em] mb-4">
+          <span className="inline-block text-xs font-medium text-amber-400 uppercase tracking-[0.15em] mb-4">
             Por qué Trading Forge
           </span>
           <h2 className="text-4xl xl:text-5xl font-black tracking-[-0.02em] text-neutral-50 mb-5">
@@ -91,10 +91,10 @@ export function BenefitsSection() {
               key={title}
               variants={itemVariants}
               transition={{ duration: 0.6, ease: 'easeOut' }}
-              className="group bg-neutral-900/50 border border-neutral-800/70 rounded-2xl p-6 hover:border-emerald-500/15 hover:bg-neutral-900/70 transition-all duration-300"
+              className="group bg-neutral-900/50 border border-neutral-800/70 rounded-2xl p-6 hover:border-amber-500/15 hover:bg-neutral-900/70 transition-all duration-300"
             >
-              <div className="w-10 h-10 bg-emerald-500/10 border border-emerald-500/15 rounded-xl flex items-center justify-center mb-5 group-hover:bg-emerald-500/15 transition-colors">
-                <Icon size={18} className="text-emerald-400" strokeWidth={1.75} />
+              <div className="w-10 h-10 bg-amber-500/10 border border-amber-500/15 rounded-xl flex items-center justify-center mb-5 group-hover:bg-amber-500/15 transition-colors">
+                <Icon size={18} className="text-amber-400" strokeWidth={1.75} />
               </div>
               <h3 className="text-base font-bold text-neutral-100 mb-2">{title}</h3>
               <p className="text-sm text-neutral-500 leading-relaxed">{description}</p>

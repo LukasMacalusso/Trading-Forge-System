@@ -27,6 +27,6 @@ export class IdentityService {
 function extractErrorMessage(error: unknown, fallback: string): string {
   const e = error as { response?: { data?: { error?: string } }; code?: string; message?: string };
   if (e?.response?.data?.error) return e.response.data.error;
-  if (e?.code === 'ERR_NETWORK' || !e?.response) return 'Cannot reach the server. Make sure the backend is running on port 5116.';
+  if (e?.code === 'ERR_NETWORK' || !e?.response) return 'No se puede conectar al servidor. Asegúrate de que el backend esté corriendo.';
   return fallback;
 }

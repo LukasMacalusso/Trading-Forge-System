@@ -1,13 +1,15 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Briefcase, CreditCard, Clock, LogIn, LogOut } from 'lucide-react';
+import { LayoutDashboard, Briefcase, CreditCard, Clock, LogIn, LogOut, Globe, User } from 'lucide-react';
 import { AlertBanner } from '../Components/Notifications/AlertBanner';
 import { useAuthStore } from '../../Application/Store/authStore';
 
 const NAV_ITEMS = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/portfolio', icon: Briefcase, label: 'Portfolio' },
+  { to: '/all', icon: Globe, label: 'All' },
   { to: '/pending', icon: Clock, label: 'Pending' },
   { to: '/subscription', icon: CreditCard, label: 'Plan' },
+  { to: '/cuenta', icon: User, label: 'Cuenta' },
 ];
 
 export function AppLayout() {
@@ -25,7 +27,7 @@ export function AppLayout() {
       <aside className="w-56 shrink-0 flex flex-col bg-neutral-900 border-r border-neutral-800">
         <div className="px-4 py-5 border-b border-neutral-800">
           <h1 className="text-lg font-bold text-neutral-100 tracking-tight">
-            Trading <span className="text-emerald-400">Forge</span>
+            Trading <span className="text-amber-400">Forge</span>
           </h1>
         </div>
 
@@ -37,7 +39,7 @@ export function AppLayout() {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                   isActive
-                    ? 'bg-emerald-500/10 text-emerald-400 font-medium'
+                    ? 'bg-amber-500/10 text-amber-400 font-medium'
                     : 'text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800'
                 }`
               }

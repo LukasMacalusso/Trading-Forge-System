@@ -72,7 +72,7 @@ export function TechSection() {
           className="absolute inset-0 opacity-[0.02]"
           style={{
             backgroundImage:
-              'linear-gradient(rgba(16,185,129,1) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,1) 1px, transparent 1px)',
+              'linear-gradient(rgba(245,158,11,1) 1px, transparent 1px), linear-gradient(90deg, rgba(245,158,11,1) 1px, transparent 1px)',
             backgroundSize: '48px 48px',
           }}
         />
@@ -87,7 +87,7 @@ export function TechSection() {
           transition={{ duration: 0.7 }}
           className="text-center mb-20"
         >
-          <span className="inline-block text-xs font-medium text-emerald-400 uppercase tracking-[0.15em] mb-4">
+          <span className="inline-block text-xs font-medium text-amber-400 uppercase tracking-[0.15em] mb-4">
             En Números
           </span>
           <h2 className="text-4xl xl:text-5xl font-black tracking-[-0.02em] text-neutral-50 mb-5">
@@ -108,7 +108,7 @@ export function TechSection() {
               transition={{ duration: 0.6, delay: idx * 0.1 }}
               className="bg-neutral-900/60 border border-neutral-800/60 rounded-2xl p-6 text-center"
             >
-              <p className="text-3xl xl:text-4xl font-black font-mono text-emerald-400 mb-2">
+              <p className="text-3xl xl:text-4xl font-black font-mono text-amber-400 mb-2">
                 <Counter
                   target={value}
                   prefix={prefix}
@@ -133,7 +133,7 @@ export function TechSection() {
               transition={{ duration: 0.65, delay: idx * 0.08 }}
               className="flex items-start gap-4 bg-neutral-900/40 border border-neutral-800/50 rounded-xl p-5"
             >
-              <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+              <div className="w-2 h-2 rounded-full bg-amber-500 mt-1.5 shrink-0" />
               <div>
                 <h4 className="text-sm font-bold text-neutral-100 mb-1">{label}</h4>
                 <p className="text-sm text-neutral-500 leading-relaxed">{description}</p>

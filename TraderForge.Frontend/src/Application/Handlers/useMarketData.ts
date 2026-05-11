@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { useMarketStore } from '../Store/marketStore';
+import { usePortfolioStore } from '../Store/portfolioStore';
 import { MarketService } from '../../Infrastructure/Services/MarketService';
 import type { Asset } from '../../Domain/Entities/Asset';
 import type { CandleInterval } from '../../Domain/Interfaces/IMarketService';
@@ -30,16 +31,17 @@ export function useMarketData() {
     });
   }, []);
 
-  /** Simulate live price updates every 2 seconds. */
+  /** Simulate live price updates every 2 seconds and propagate to portfolio for live P&L. */
   useEffect(() => {
     if (assets.length === 0) return;
-    const interval = setInterval(() => {
+    const id = setInterval(() => {
       const asset = assets[Math.floor(Math.random() * assets.length)];
       const delta = asset.currentPrice * (Math.random() - 0.499) * 0.003;
       const newPrice = parseFloat((asset.currentPrice + delta).toFixed(2));
       updateAssetPrice(asset.symbol, newPrice, delta);
+      usePortfolioStore.getState().updatePositionPrice(asset.symbol, newPrice);
     }, 2000);
-    return () => clearInterval(interval);
+    return () => clearInterval(id);
   }, [assets]);
 
   const loadCandles = useCallback(async (symbol: string, interval: CandleInterval = '1h') => {
@@ -52,11 +54,11 @@ export function useMarketData() {
     if (result.isSuccess) setOrderBook(result.value!);
   }, []);
 
-  const handleSelectAsset = useCallback((asset: Asset) => {
+  const handleSelectAsset = useCallback((asset: Asset, interval: CandleInterval = '1h') => {
     selectAsset(asset);
-    loadCandles(asset.symbol);
+    loadCandles(asset.symbol, interval);
     loadOrderBook(asset.symbol);
-  }, [loadCandles, loadOrderBook]);
+  }, [loadCandles, loadOrderBook, selectAsset]);
 
   return {
     assets,
