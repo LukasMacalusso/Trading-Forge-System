@@ -5,6 +5,7 @@ Generate simple PNG images from code snippets using Pillow.
 This avoids external syntax-highlighting dependencies and renders
 monospaced text onto a white background.
 """
+import argparse
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
@@ -74,7 +75,14 @@ def render_text_to_png(text: str, out_path: Path, font_path: str | None):
 
 
 def main():
-    repo_root = Path(__file__).resolve().parents[1]
+    parser = argparse.ArgumentParser(description="Render code snippets as PNG images.")
+    parser.add_argument('--parent-dirs', type=int, default=1,
+                        help='Number of parent dirs from script location to repo root (default: 1)')
+    args = parser.parse_args()
+
+    repo_root = Path(__file__).resolve().parent
+    for _ in range(args.parent_dirs):
+        repo_root = repo_root.parent
     out_dir = repo_root / "presentations" / "snippets"
     out_dir.mkdir(parents=True, exist_ok=True)
 
