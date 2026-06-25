@@ -19,9 +19,7 @@ public class BuyPositionCommandHandlerTests
         marketServiceMock.Setup(m => m.IsMarketOpen(It.IsAny<string>())).Returns(true);
 
         return new BuyPositionCommandHandler(
-            positionRepositoryMock.Object,
             traderRepositoryMock.Object,
-            orderRepositoryMock.Object,
             subscriptionLimitGuardMock.Object,
             commissionServiceMock.Object,
             marketServiceMock.Object

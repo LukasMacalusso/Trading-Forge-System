@@ -14,11 +14,13 @@ public class SellPositionCommandHandlerTests
         var commissionServiceMock = new Mock<ICommissionService>();
         var marketServiceMock = new Mock<IMarketService>();
 
+        var traderRepositoryMock = new Mock<ITraderRepository>();
+
         marketServiceMock.Setup(m => m.IsMarketOpen(It.IsAny<string>())).Returns(true);
 
         return new SellPositionCommandHandler(
             positionRepositoryMock.Object,
-            orderRepositoryMock.Object,
+            traderRepositoryMock.Object,
             commissionServiceMock.Object,
             marketServiceMock.Object
         );

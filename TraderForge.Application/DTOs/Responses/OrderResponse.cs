@@ -20,13 +20,13 @@ public class OrderResponse
     {
         Id = order.Id,
         Symbol = order.Symbol,
-        Side = order.Side,
-        Type = order.Type,
+        Side = order.Side.ToString(),
+        Type = order.Type.ToString(),
         Quantity = order.Quantity,
         Price = order.Price,
         Commission = order.Commission,
         Total = order.Total,
-        Status = order.Status,
+        Status = order.Status.ToString(),
         CreatedAt = order.CreatedAt,
         FilledAt = order.FilledAt
     };
