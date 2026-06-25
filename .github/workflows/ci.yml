@@ -42,6 +42,8 @@ jobs:
             /o:"tradingforge-sonarqube-key" \
             /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.exclusions="TraderForge.Frontend/**" \
+            /d:sonar.coverage.exclusions="**/DTOs/**,**/Requests/**,**/Responses/**,**/Migrations/**,**/Program.cs,**/DependencyInjection.cs,**/*.Designer.cs" \
             /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml"
           
           dotnet build TradingForgeSystem.sln --configuration Release
