@@ -1,3 +1,5 @@
+using TraderForge.Domain.Services;
+
 namespace TraderForge.Domain.Entities;
 
 public class Trader

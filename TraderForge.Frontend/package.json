@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@microsoft/signalr": "^10.0.0",
     "@xyflow/react": "^12.10.2",
     "axios": "^1.9.0",
     "framer-motion": "^12.11.0",

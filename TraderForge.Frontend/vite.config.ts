@@ -7,6 +7,18 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  resolve: {
+    alias: {
+      '@api': '/src/api',
+      '@components': '/src/components',
+      '@hooks': '/src/hooks',
+      '@pages': '/src/pages',
+      '@router': '/src/router',
+      '@store': '/src/store',
+      '@models': '/src/models',
+      '@utils': '/src/utils'
+    }
+  },
   server: {
     proxy: {
       '/api': {

@@ -25,18 +25,18 @@ feature:
 	git checkout main
 	git pull origin main
 	git checkout -b feature/$(name)
-	@echo "🚀 Created and switched to branch: feature/$(name)"
+	@echo " Created and switched to branch: feature/$(name)"
 
 fix:
 	@if [ -z "$(name)" ]; then echo "Error: Please provide a name (e.g., make fix name=my-fix)"; exit 1; fi
 	git checkout main
 	git pull origin main
 	git checkout -b fix/$(name)
-	@echo "🐛 Created and switched to branch: fix/$(name)"
+	@echo " Created and switched to branch: fix/$(name)"
 
 push:
 	git push -u origin HEAD
-	@echo "☁️ Branch pushed to origin!"
+	@echo " Branch pushed to origin!"
 
 # --- .NET ---
 build:
@@ -48,8 +48,8 @@ test:
 # --- Docker ---
 up:
 	docker-compose up -d
-	@echo "🐳 Docker containers are spinning up in the background!"
+	@echo " Docker containers are spinning up in the background!"
 
 down:
 	docker-compose down
-	@echo "🐳 Docker containers stopped."
+	@echo " Docker containers stopped."
