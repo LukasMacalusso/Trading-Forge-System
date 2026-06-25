@@ -47,4 +47,50 @@ public class Trader
         SubscriptionPlan = null;
     }
 
+    public void ResetPortfolio()
+    {
+        if (SubscriptionPlan == null)
+            throw new InvalidOperationException("No subscription plan assigned.");
+
+        var activePortfolio = Portfolios.FirstOrDefault(p => p.IsActive);
+        if (activePortfolio != null)
+        {
+            activePortfolio.FreezeSimulation();
+            activePortfolio.AddFunds(0, "Reset", null, null, null, 0);
+        }
+
+        var newPortfolio = new Portfolio(Id, SubscriptionPlan.InitialVirtualBalance);
+        newPortfolio.AddFunds(SubscriptionPlan.InitialVirtualBalance, "Reset", null, null, null, 0);
+        Portfolios.Add(newPortfolio);
+    }
+
+    public void InitializeWithPlan(SubscriptionPlan plan)
+    {
+        AssignSubscriptionPlan(plan);
+        var initialPortfolio = new Portfolio(Id, plan.InitialVirtualBalance);
+        Portfolios.Add(initialPortfolio);
+    }
+
+    public void BuyPosition(string symbol, decimal quantity, decimal price, ICommissionService commissionService)
+    {
+        var activePortfolio = Portfolios.FirstOrDefault(p => p.IsActive);
+        if (activePortfolio == null)
+            throw new InvalidOperationException("No active portfolio found.");
+
+        activePortfolio.BuyPosition(symbol, quantity, price, commissionService);
+
+        if (!activePortfolio.IsActive)
+        {
+            ResetPortfolio();
+        }
+    }
+
+    public void SellPosition(string symbol, decimal quantity, decimal price, ICommissionService commissionService)
+    {
+        var activePortfolio = Portfolios.FirstOrDefault(p => p.IsActive);
+        if (activePortfolio == null)
+            throw new InvalidOperationException("No active portfolio found.");
+
+        activePortfolio.SellPosition(symbol, quantity, price, commissionService);
+    }
 }

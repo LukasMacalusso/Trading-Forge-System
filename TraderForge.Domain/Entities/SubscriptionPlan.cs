@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace TraderForge.Domain.Entities;
 
 public class SubscriptionPlan
@@ -14,7 +12,6 @@ public class SubscriptionPlan
     
     public bool CanModifyVirtualBalance { get; private set; }
 
-    [JsonIgnore]
     public ICollection<Trader> Traders { get; private set; } = new List<Trader>();
     
     private SubscriptionPlan(){}

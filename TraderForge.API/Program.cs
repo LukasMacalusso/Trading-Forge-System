@@ -17,29 +17,6 @@ using TraderForge.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// -- Load adminCredentials.env for local development (Docker loads it via env_file) -- //
-var envPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "adminCredentials.env");
-if (!File.Exists(envPath))
-    envPath = Path.Combine(Directory.GetCurrentDirectory(), "adminCredentials.env");
-if (File.Exists(envPath))
-{
-    var envConfig = new Dictionary<string, string?>();
-    foreach (var line in File.ReadAllLines(envPath))
-    {
-        var trimmed = line.Trim();
-        if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith('#'))
-            continue;
-        var idx = trimmed.IndexOf('=', StringComparison.Ordinal);
-        if (idx > 0)
-        {
-            var key = trimmed[..idx].Replace("__", ":");
-            var value = trimmed[(idx + 1)..];
-            envConfig[key] = value;
-        }
-    }
-    builder.Configuration.AddInMemoryCollection(envConfig);
-}
-
 // -- Core Services Registration -- //
 builder.Services.AddOpenApi();
 builder.Services.AddMemoryCache();

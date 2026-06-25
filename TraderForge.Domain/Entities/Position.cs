@@ -30,4 +30,12 @@ public class Position
         Quantity += additionalQuantity;
         EntryPrice = totalCost / Quantity;
     }
+
+    public void ReduceQuantity(decimal sellQuantity)
+    {
+        if (sellQuantity > Quantity)
+            throw new InvalidOperationException("Cannot reduce below zero.");
+            
+        Quantity -= sellQuantity;
+    }
 }
