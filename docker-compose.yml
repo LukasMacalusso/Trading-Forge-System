@@ -2,9 +2,10 @@ services:
   db:
     image: postgres:16-alpine
     container_name: traderforge_postgres
+    env_file:
+      - docker.env
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_DB: TraderForgeDb
     ports:
       - "5432:5432"
@@ -19,20 +20,17 @@ services:
       retries: 5
 
   api:
-    build: 
+    build:
       context: .
       dockerfile: TraderForge.API/Dockerfile
     container_name: traderforge_api
-    # 2. Update depends_on to wait for the healthcheck
     depends_on:
       db:
         condition: service_healthy
     env_file:
-      - adminCredentials.env
-    environment:
-      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=TraderForgeDb;Username=postgres;Password=mysecretpassword 
+      - docker.env
     ports:
-      - "5000:8080" 
+      - "5000:8080"
     restart: unless-stopped
 
 volumes:

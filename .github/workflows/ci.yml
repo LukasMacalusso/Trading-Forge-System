@@ -32,6 +32,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          ConnectionStrings__DefaultConnection: ${{ secrets.DB_CONNECTION_STRING }}
+          JwtSettings__Secret: ${{ secrets.JWT_SECRET }}
+          AdminSettings__DefaultAdmins__0__Email: ${{ secrets.ADMIN_EMAIL }}
+          AdminSettings__DefaultAdmins__0__Password: ${{ secrets.ADMIN_PASSWORD }}
         run: |
           dotnet sonarscanner begin \
             /k:"lukas-trillat-macalusso_Trading-Forge-System" \

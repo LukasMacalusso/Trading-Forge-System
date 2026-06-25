@@ -46,10 +46,7 @@ public class RegisterTraderCommandHandler
         Trader newTrader = _traderFactory.CreateWithFreeTrial(newUserId, command.Email);
         
         SubscriptionPlan basicPlan = await _planRepository.GetByNameAsync("basic");
-        newTrader.AssignSubscriptionPlan(basicPlan);
-        
-        Portfolio newPortfolio = new Portfolio(newUserId, basicPlan.InitialVirtualBalance);
-        newTrader.Portfolios.Add(newPortfolio);
+        newTrader.InitializeWithPlan(basicPlan);
         
         await _traderRepository.AddAsync(newTrader);
         return Result.Success();
