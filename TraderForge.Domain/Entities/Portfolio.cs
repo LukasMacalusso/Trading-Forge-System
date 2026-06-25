@@ -44,6 +44,8 @@ public class Portfolio
 
         Transactions.Add(new Transaction(
             Id, type, total, balanceBefore, VirtualBalance, commission, symbol, qty, price));
+            
+        EvaluateBankruptcyStatus();
     }
 
     public void AddFunds(decimal total, string type, string? symbol, decimal? qty, decimal? price, decimal commission)
