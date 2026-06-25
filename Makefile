@@ -15,8 +15,12 @@ help:
 	@echo "  make build                - Builds the .NET solution"
 	@echo "  make test                 - Runs the .NET tests"
 	@echo ""
-	@echo "  make up                   - Starts Docker (Database + API) in the background"
-	@echo "  make down                 - Stops the Docker containers"
+	@echo "  make run-api              - Runs the C# Backend"
+	@echo "  make run-web              - Runs the React Frontend"
+	@echo ""
+	@echo "  make db-up                - Starts just the Postgres Database"
+	@echo "  make db-down              - Stops the Database"
+	@echo "  make db-wipe              - Deletes the Database completely"
 	@echo "================================================="
 
 # --- Git Workflow ---
@@ -45,11 +49,22 @@ build:
 test:
 	dotnet test TradingForgeSystem.sln
 
-# --- Docker ---
-up:
-	docker-compose up -d
-	@echo " Docker containers are spinning up in the background!"
+# --- Run Apps ---
+run-api:
+	cd TraderForge.API && dotnet run
 
-down:
+run-web:
+	cd TraderForge.Frontend && npm run dev
+
+# --- Database / Docker ---
+db-up:
+	docker-compose up db -d
+	@echo " Postgres Database is spinning up in the background!"
+
+db-down:
 	docker-compose down
-	@echo " Docker containers stopped."
+	@echo " Database stopped."
+
+db-wipe:
+	docker-compose down -v
+	@echo " Database wiped completely clean."
