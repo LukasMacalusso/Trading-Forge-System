@@ -22,6 +22,8 @@ const ASSET_NAMES: Record<string, string> = {
 // TODO: Remove these once C# Backend implements GetCandles 
 // and GetOrderBook endpoints
 // =========================================================
+const secureRandom = () => crypto.getRandomValues(new Uint32Array(1))[0] / 4294967295;
+
 function generateCandles(basePrice: number): CandlestickBar[] {
   const bars: CandlestickBar[] = [];
   let price = basePrice * 0.85;
@@ -29,14 +31,14 @@ function generateCandles(basePrice: number): CandlestickBar[] {
   for (let i = 100; i >= 0; i--) {
     const v = price * 0.015;
     const open = price;
-    const close = price + (Math.random() - 0.5) * v * 2;
+    const close = price + (secureRandom() - 0.5) * v * 2;
     bars.push({
       time: now - i * 3600,
       open: +open.toFixed(2),
-      high: +(Math.max(open, close) + Math.random() * v).toFixed(2),
-      low: +(Math.min(open, close) - Math.random() * v).toFixed(2),
+      high: +(Math.max(open, close) + secureRandom() * v).toFixed(2),
+      low: +(Math.min(open, close) - secureRandom() * v).toFixed(2),
       close: +close.toFixed(2),
-      volume: Math.floor(Math.random() * 5_000_000 + 500_000),
+      volume: Math.floor(secureRandom() * 5_000_000 + 500_000),
     });
     price = close;
   }
@@ -47,7 +49,7 @@ function generateOrderBook(basePrice: number): Omit<OrderBook, 'symbol'> {
   const side = (dir: 1 | -1) =>
     Array.from({ length: 12 }, (_, i) => {
       const price = +(basePrice + dir * (i + 1) * basePrice * 0.0005).toFixed(2);
-      const quantity = +(Math.random() * 500 + 50).toFixed(2); 
+      const quantity = +(secureRandom() * 500 + 50).toFixed(2); 
       return { price, quantity, total: +(price * quantity).toFixed(2) };
     });
   return { bids: side(-1), asks: side(1), timestamp: Date.now() };
