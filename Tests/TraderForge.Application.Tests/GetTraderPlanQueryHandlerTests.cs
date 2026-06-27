@@ -1,5 +1,5 @@
 using Moq;
-using TraderForge.Application.Common;
+using TraderForge.Domain.Common;
 using TraderForge.Application.DTOs;
 using TraderForge.Application.Handlers;
 using TraderForge.Domain.Entities;

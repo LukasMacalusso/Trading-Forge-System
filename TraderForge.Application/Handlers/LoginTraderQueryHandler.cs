@@ -1,4 +1,4 @@
-using TraderForge.Application.Common;
+using TraderForge.Domain.Common;
 using TraderForge.Application.DTOs;
 using TraderForge.Domain.Repositories;
 using TraderForge.Domain.Services;
@@ -29,8 +29,12 @@ public class LoginTraderQueryHandler
 
     private async Task<ResultGeneric<string>> RequestTokenFromIdentity(LoginTraderQuery query)
     {
-        string jwtToken = await _identityService.GetValidatedTokenAsync(query.Email, query.Password);
-        return ResultGeneric<string>.Success(jwtToken);
+        var result = await _identityService.GetValidatedTokenAsync(query.Email, query.Password);
+        if (!result.IsSuccess)
+        {
+            return ResultGeneric<string>.Failure(result.ErrorMessage ?? "Login failed.");
+        }
+        return ResultGeneric<string>.Success(result.Value!);
     }
 
 }

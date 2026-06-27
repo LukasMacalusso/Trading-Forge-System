@@ -1,4 +1,4 @@
-using TraderForge.Application.Common;
+using TraderForge.Domain.Common;
 using TraderForge.Application.DTOs;
 using TraderForge.Domain.Entities;
 using TraderForge.Domain.Interfaces;
@@ -42,7 +42,12 @@ public class RegisterTraderCommandHandler
     {
         string newUserId = GenerateNewAccountId();
         
-        await _identityService.RegisterNewAccountAsync(newUserId, command.Email, command.Password);
+        var identityResult = await _identityService.RegisterNewAccountAsync(newUserId, command.Email, command.Password);
+        if (!identityResult.IsSuccess)
+        {
+            return Result.Failure(identityResult.ErrorMessage ?? "Registration failed.");
+        }
+
         Trader newTrader = _traderFactory.CreateWithFreeTrial(newUserId, command.Email);
         
         SubscriptionPlan basicPlan = await _planRepository.GetByNameAsync("basic");

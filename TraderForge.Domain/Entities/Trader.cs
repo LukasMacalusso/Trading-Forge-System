@@ -34,7 +34,6 @@ public class Trader
     public void AssignSubscriptionPlan(SubscriptionPlan plan)
     {
         SubscriptionPlanId = plan.Id;
-        //SubscriptionPlan = plan;
     }
 
     private void FreezeActivePortfolio()

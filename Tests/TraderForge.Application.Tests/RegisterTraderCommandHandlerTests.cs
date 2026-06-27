@@ -1,5 +1,5 @@
 using Moq;
-using TraderForge.Application.Common;
+using TraderForge.Domain.Common;
 using TraderForge.Application.DTOs;
 using TraderForge.Application.Handlers;
 using TraderForge.Domain.Entities;
@@ -34,6 +34,9 @@ public class RegisterTraderCommandHandlerTests
         _planRepositoryMock.Setup(x => x.GetByNameAsync("basic"))
             .ReturnsAsync(new SubscriptionPlan(
                 Guid.NewGuid(), "Basic", 9.99m, 10000m, 2, 5, false));
+                
+        _identityServiceMock.Setup(x => x.RegisterNewAccountAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(Result.Success());
         
         _handler = new RegisterTraderCommandHandler(
             _identityServiceMock.Object,

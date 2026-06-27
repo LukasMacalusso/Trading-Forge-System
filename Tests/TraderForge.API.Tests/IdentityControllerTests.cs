@@ -7,6 +7,7 @@ using TraderForge.Domain.Entities;
 using TraderForge.Domain.Interfaces;
 using TraderForge.Domain.Repositories;
 using TraderForge.Domain.Services;
+using TraderForge.Domain.Common;
 
 namespace TraderForge.API.Tests;
 
@@ -31,6 +32,9 @@ public class IdentityControllerTests
         _planRepositoryMock.Setup(x => x.GetByNameAsync("basic"))
             .ReturnsAsync(new SubscriptionPlan(
                 Guid.NewGuid(), "Basic", 9.99m, 10000m, 2, 5, false));
+                
+        _identityServiceMock.Setup(x => x.RegisterNewAccountAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(Result.Success());
         
         var registerHandler = new RegisterTraderCommandHandler(
             _identityServiceMock.Object,

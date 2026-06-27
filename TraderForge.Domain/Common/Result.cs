@@ -1,4 +1,4 @@
-namespace TraderForge.Application.Common;
+namespace TraderForge.Domain.Common;
 
 public class Result
 {

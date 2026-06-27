@@ -1,4 +1,4 @@
-using TraderForge.Application.Common;
+using TraderForge.Domain.Common;
 using TraderForge.Domain.Repositories;
 
 namespace TraderForge.Application.Handlers;
