@@ -91,7 +91,7 @@ public class BackgroundMarketPollingService : BackgroundService
                 return;
 
             var currentPrices = GetOrCreatePriceCache();
-            var pricesUpdated = TryUpdatePrices(document.RootElement, currentPrices);
+            var pricesUpdated = TryUpdatePrices(document.RootElement, currentPrices.Prices);
 
             if (pricesUpdated)
             {
@@ -104,15 +104,15 @@ public class BackgroundMarketPollingService : BackgroundService
         }
     }
 
-    private Dictionary<string, decimal> GetOrCreatePriceCache()
+    private MarketPriceCacheItem GetOrCreatePriceCache()
     {
         return _cache.GetOrCreate(CacheKeys.MarketPrices, entry =>
         {
-            entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(2));
-            return new Dictionary<string, decimal>();
-        }) ?? new Dictionary<string, decimal>();
+            entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(2)); 
+            return new MarketPriceCacheItem { LastUpdated = DateTime.UtcNow };
+        }) ?? new MarketPriceCacheItem();
     }
-
+    
     private bool TryUpdatePrices(JsonElement rootArray, Dictionary<string, decimal> currentPrices)
     {
         bool anyUpdated = false;
@@ -141,9 +141,10 @@ public class BackgroundMarketPollingService : BackgroundService
         return decimal.TryParse(priceProp.GetString(), out price);
     }
 
-    private async Task SaveAndBroadcastPricesAsync(Dictionary<string, decimal> currentPrices, CancellationToken stoppingToken)
+    private async Task SaveAndBroadcastPricesAsync(MarketPriceCacheItem currentPrices, CancellationToken stoppingToken)
     {
+        currentPrices.LastUpdated = DateTime.UtcNow; 
         _cache.Set(CacheKeys.MarketPrices, currentPrices, TimeSpan.FromMinutes(2));
-        await _broadcaster.BroadCastPricesAsync(currentPrices, stoppingToken);
+        await _broadcaster.BroadCastPricesAsync(currentPrices.Prices, stoppingToken);
     }
 }
