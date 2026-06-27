@@ -1,81 +1,108 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
+using System.Net.WebSockets;
+using System.Text;
+using System.Text.Json;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Hosting;
 using TraderForge.Domain.Constants;
-using TraderForge.Domain.Entities;
 using TraderForge.Domain.Services;
-using TraderForge.Domain.Repositories;
 
 namespace TraderForge.Infrastructure.Services;
 
 public class BackgroundMarketPollingService : BackgroundService
 {
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IMarketDataProvider _dataProvider;
     private readonly IMemoryCache _cache;
     private readonly IMarketDataBroadcaster _broadcaster;
-    
+    private readonly Uri _binanceWebSocketUri = new("wss://stream.binance.com:9443/ws/!ticker@arr");
+
     public BackgroundMarketPollingService(
-        IServiceScopeFactory scopeFactory, 
-        IMarketDataProvider dataProvider, 
         IMemoryCache cache,
         IMarketDataBroadcaster broadcaster)
     {
-        _scopeFactory = scopeFactory;
-        _dataProvider = dataProvider;
         _cache = cache;
         _broadcaster = broadcaster;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var timer = new PeriodicTimer(TimeSpan.FromMinutes(1));
-
-        while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
+        while (!stoppingToken.IsCancellationRequested)
         {
-            await ExecutePollingCycle(stoppingToken);
+            using var ws = new ClientWebSocket();
+            try
+            {
+                await ws.ConnectAsync(_binanceWebSocketUri, stoppingToken);
+                var buffer = new byte[1024 * 64];
+
+                while (ws.State == WebSocketState.Open && !stoppingToken.IsCancellationRequested)
+                {
+                    using var ms = new MemoryStream();
+                    WebSocketReceiveResult result;
+                    do
+                    {
+                        result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), stoppingToken);
+                        ms.Write(buffer, 0, result.Count);
+                    }
+                    while (!result.EndOfMessage && !stoppingToken.IsCancellationRequested);
+
+                    if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, stoppingToken);
+                    }
+                    else
+                    {
+                        ms.Position = 0;
+                        using var reader = new StreamReader(ms, Encoding.UTF8);
+                        var json = await reader.ReadToEndAsync(stoppingToken);
+                        await ProcessWebSocketMessage(json, stoppingToken);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[WebSocket Error]: {ex.Message}. Reconnecting in 5 seconds...");
+                await Task.Delay(5000, stoppingToken);
+            }
         }
     }
-    
-    private async Task ExecutePollingCycle(CancellationToken stoppingToken)
+
+    private async Task ProcessWebSocketMessage(string json, CancellationToken stoppingToken)
     {
         try
         {
-            var allPrices = await _dataProvider.GetPricesAsync();
-            SaveToCache(allPrices);
-            await SaveToDatabase(allPrices);
-            await _broadcaster.BroadCastPricesAsync(allPrices, stoppingToken);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[Polling Error]: {ex.Message}");
-        }
-    }
-    
-    private void SaveToCache(Dictionary<string, decimal> allPrices)
-    {
-        _cache.Set(CacheKeys.MarketPrices, allPrices, TimeSpan.FromMinutes(1));
-    }
-
-    private async Task SaveToDatabase(Dictionary<string, decimal> allPrices)
-    {
-        using var scope = _scopeFactory.CreateScope();
-        var repository = scope.ServiceProvider.GetRequiredService<IMarketAssetRepository>();
-
-        foreach (var symbol in SupportedAssets.Symbols)
-        {
-            if (allPrices.TryGetValue(symbol, out var price))
+            using var document = JsonDocument.Parse(json);
+            if (document.RootElement.ValueKind == JsonValueKind.Array)
             {
-                var asset = new MarketAsset
+                var currentPrices = _cache.GetOrCreate(CacheKeys.MarketPrices, entry =>
                 {
-                    Symbol = symbol, 
-                    Name = symbol, 
-                    CurrentPrice = price, 
-                    LastUpdated = DateTime.UtcNow
-                };
+                    entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(2)); 
+                    return new Dictionary<string, decimal>();
+                });
 
-                await repository.AddAsync(asset);
+                bool updated = false;
+
+                foreach (var element in document.RootElement.EnumerateArray())
+                {
+                    if (element.TryGetProperty("s", out var symbolProp) &&
+                        element.TryGetProperty("c", out var priceProp))
+                    {
+                        string symbol = symbolProp.GetString()!;
+                        if (decimal.TryParse(priceProp.GetString(), out decimal price))
+                        {
+                            currentPrices![symbol] = price;
+                            updated = true;
+                        }
+                    }
+                }
+
+                if (updated)
+                {
+                    _cache.Set(CacheKeys.MarketPrices, currentPrices, TimeSpan.FromMinutes(2));
+                    await _broadcaster.BroadCastPricesAsync(currentPrices!, stoppingToken);
+                }
             }
+        }
+        catch (JsonException)
+        {
+            // Ignore incomplete chunks
         }
     }
 }

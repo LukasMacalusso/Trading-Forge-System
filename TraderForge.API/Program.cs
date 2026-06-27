@@ -92,6 +92,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 
 // -- CQRS Handlers -- //
 builder.Services.AddTransient<GetMarketPricesQueryHandler>();
+builder.Services.AddTransient<GetHistoricalCandlesQueryHandler>();
 
 // -- Market Data Services -- //
 builder.Services.AddHttpClient<IMarketDataProvider, BinanceMarketProvider>();
