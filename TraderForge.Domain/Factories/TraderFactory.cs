@@ -1,8 +1,7 @@
 ﻿using TraderForge.Domain.Entities;
-using TraderForge.Domain.Interfaces;
 namespace TraderForge.Domain.Factories;
 
-public class TraderFactory : ITraderFactory
+public class TraderFactory
 {
     public Trader CreateWithFreeTrial(string id, string email)
     {

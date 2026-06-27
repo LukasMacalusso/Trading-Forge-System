@@ -67,9 +67,9 @@ export class PortfolioService {
     }
   }
 
-  async buyPosition(symbol: string, quantity: number, entryPrice: number): Promise<Result<void>> {
+  async buyPosition(symbol: string, quantity: number): Promise<Result<void>> {
     try {
-      await httpClient.post('/api/portfolio/positions/buy', { symbol, quantity, entryPrice });
+      await httpClient.post('/api/portfolio/positions/buy', { symbol, quantity });
       return Result.ok(undefined);
     } catch (error) {
       return Result.fail(extractErrorMessage(error, 'Failed to buy position.'));

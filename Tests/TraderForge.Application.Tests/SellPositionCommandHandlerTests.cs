@@ -17,6 +17,7 @@ public class SellPositionCommandHandlerTests
         var traderRepositoryMock = new Mock<ITraderRepository>();
 
         marketServiceMock.Setup(m => m.IsMarketOpen(It.IsAny<string>())).Returns(true);
+        marketServiceMock.Setup(m => m.GetPricesAsync()).ReturnsAsync(new Dictionary<string, decimal> { { "BTCUSDT", 50000m } });
 
         return new SellPositionCommandHandler(
             positionRepositoryMock.Object,

@@ -33,31 +33,41 @@ public class BinanceMarketProvider : IMarketDataProvider
     {
         var cacheKey = $"Klines_{symbol}_{interval}_{limit}";
         if (_cache.TryGetValue(cacheKey, out List<Candlestick>? cachedCandles))
-        {
             return cachedCandles!;
-        }
 
+        var candles = await FetchAndParseCandlesAsync(symbol, interval, limit);
+        
+        _cache.Set(cacheKey, candles, TimeSpan.FromMinutes(5));
+        return candles;
+    }
+
+    private async Task<List<Candlestick>> FetchAndParseCandlesAsync(string symbol, string interval, int limit)
+    {
         var url = $"https://api.binance.com/api/v3/klines?symbol={symbol}&interval={interval}&limit={limit}";
         var response = await _client.GetFromJsonAsync<JsonElement[][]>(url);
         
         if (response == null) return new List<Candlestick>();
 
-        var candles = new List<Candlestick>();
-        foreach (var item in response)
-        {
-            candles.Add(new Candlestick(
-                item[0].GetInt64(),
-                decimal.Parse(item[1].GetString()!, CultureInfo.InvariantCulture),
-                decimal.Parse(item[2].GetString()!, CultureInfo.InvariantCulture),
-                decimal.Parse(item[3].GetString()!, CultureInfo.InvariantCulture),
-                decimal.Parse(item[4].GetString()!, CultureInfo.InvariantCulture),
-                decimal.Parse(item[5].GetString()!, CultureInfo.InvariantCulture),
-                item[6].GetInt64()
-            ));
-        }
-        
-        _cache.Set(cacheKey, candles, TimeSpan.FromMinutes(5));
-        return candles;
+        return response.Select(ParseCandlestick).ToList();
+    }
+
+    private Candlestick ParseCandlestick(JsonElement[] item)
+    {
+        return new Candlestick(
+            item[0].GetInt64(),
+            ParseDecimal(item[1]),
+            ParseDecimal(item[2]),
+            ParseDecimal(item[3]),
+            ParseDecimal(item[4]),
+            ParseDecimal(item[5]),
+            item[6].GetInt64()
+        );
+    }
+
+    private decimal ParseDecimal(JsonElement element)
+    {
+        var value = element.GetString() ?? "0";
+        return decimal.Parse(value, CultureInfo.InvariantCulture);
     }
 }
 

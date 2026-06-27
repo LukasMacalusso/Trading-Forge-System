@@ -26,83 +26,124 @@ public class BackgroundMarketPollingService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            using var ws = new ClientWebSocket();
-            try
-            {
-                await ws.ConnectAsync(_binanceWebSocketUri, stoppingToken);
-                var buffer = new byte[1024 * 64];
-
-                while (ws.State == WebSocketState.Open && !stoppingToken.IsCancellationRequested)
-                {
-                    using var ms = new MemoryStream();
-                    WebSocketReceiveResult result;
-                    do
-                    {
-                        result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), stoppingToken);
-                        ms.Write(buffer, 0, result.Count);
-                    }
-                    while (!result.EndOfMessage && !stoppingToken.IsCancellationRequested);
-
-                    if (result.MessageType == WebSocketMessageType.Close)
-                    {
-                        await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, stoppingToken);
-                    }
-                    else
-                    {
-                        ms.Position = 0;
-                        using var reader = new StreamReader(ms, Encoding.UTF8);
-                        var json = await reader.ReadToEndAsync(stoppingToken);
-                        await ProcessWebSocketMessage(json, stoppingToken);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[WebSocket Error]: {ex.Message}. Reconnecting in 5 seconds...");
-                await Task.Delay(5000, stoppingToken);
-            }
+            await MaintainConnectionAsync(stoppingToken);
         }
     }
 
-    private async Task ProcessWebSocketMessage(string json, CancellationToken stoppingToken)
+    private async Task MaintainConnectionAsync(CancellationToken stoppingToken)
+    {
+        using var webSocket = new ClientWebSocket();
+        try
+        {
+            await webSocket.ConnectAsync(_binanceWebSocketUri, stoppingToken);
+            await ListenForMessagesAsync(webSocket, stoppingToken);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[WebSocket Error]: {ex.Message}. Reconnecting in 5 seconds...");
+            await Task.Delay(5000, stoppingToken);
+        }
+    }
+
+    private async Task ListenForMessagesAsync(ClientWebSocket webSocket, CancellationToken stoppingToken)
+    {
+        var buffer = new byte[1024 * 64];
+
+        while (webSocket.State == WebSocketState.Open && !stoppingToken.IsCancellationRequested)
+        {
+            var json = await ReceiveFullMessageAsync(webSocket, buffer, stoppingToken);
+            if (json == null)
+            {
+                await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, stoppingToken);
+                break;
+            }
+
+            await ProcessWebSocketMessageAsync(json, stoppingToken);
+        }
+    }
+
+    private async Task<string?> ReceiveFullMessageAsync(ClientWebSocket webSocket, byte[] buffer, CancellationToken stoppingToken)
+    {
+        using var memoryStream = new MemoryStream();
+        WebSocketReceiveResult result;
+
+        do
+        {
+            result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), stoppingToken);
+            memoryStream.Write(buffer, 0, result.Count);
+        }
+        while (!result.EndOfMessage && !stoppingToken.IsCancellationRequested);
+
+        if (result.MessageType == WebSocketMessageType.Close)
+            return null;
+
+        memoryStream.Position = 0;
+        using var reader = new StreamReader(memoryStream, Encoding.UTF8);
+        return await reader.ReadToEndAsync(stoppingToken);
+    }
+
+    private async Task ProcessWebSocketMessageAsync(string json, CancellationToken stoppingToken)
     {
         try
         {
             using var document = JsonDocument.Parse(json);
-            if (document.RootElement.ValueKind == JsonValueKind.Array)
+            if (document.RootElement.ValueKind != JsonValueKind.Array) 
+                return;
+
+            var currentPrices = GetOrCreatePriceCache();
+            var pricesUpdated = TryUpdatePrices(document.RootElement, currentPrices);
+
+            if (pricesUpdated)
             {
-                var currentPrices = _cache.GetOrCreate(CacheKeys.MarketPrices, entry =>
-                {
-                    entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(2)); 
-                    return new Dictionary<string, decimal>();
-                });
-
-                bool updated = false;
-
-                foreach (var element in document.RootElement.EnumerateArray())
-                {
-                    if (element.TryGetProperty("s", out var symbolProp) &&
-                        element.TryGetProperty("c", out var priceProp))
-                    {
-                        string symbol = symbolProp.GetString()!;
-                        if (decimal.TryParse(priceProp.GetString(), out decimal price))
-                        {
-                            currentPrices![symbol] = price;
-                            updated = true;
-                        }
-                    }
-                }
-
-                if (updated)
-                {
-                    _cache.Set(CacheKeys.MarketPrices, currentPrices, TimeSpan.FromMinutes(2));
-                    await _broadcaster.BroadCastPricesAsync(currentPrices!, stoppingToken);
-                }
+                await SaveAndBroadcastPricesAsync(currentPrices, stoppingToken);
             }
         }
         catch (JsonException)
         {
-            // Ignore incomplete chunks
+            // Ignore malformed JSON chunks
         }
+    }
+
+    private Dictionary<string, decimal> GetOrCreatePriceCache()
+    {
+        return _cache.GetOrCreate(CacheKeys.MarketPrices, entry =>
+        {
+            entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(2));
+            return new Dictionary<string, decimal>();
+        }) ?? new Dictionary<string, decimal>();
+    }
+
+    private bool TryUpdatePrices(JsonElement rootArray, Dictionary<string, decimal> currentPrices)
+    {
+        bool anyUpdated = false;
+
+        foreach (var element in rootArray.EnumerateArray())
+        {
+            if (TryExtractPriceData(element, out var symbol, out var price))
+            {
+                currentPrices[symbol] = price;
+                anyUpdated = true;
+            }
+        }
+
+        return anyUpdated;
+    }
+
+    private bool TryExtractPriceData(JsonElement element, out string symbol, out decimal price)
+    {
+        symbol = string.Empty;
+        price = 0;
+
+        if (!element.TryGetProperty("s", out var symbolProp) || !element.TryGetProperty("c", out var priceProp))
+            return false;
+
+        symbol = symbolProp.GetString() ?? string.Empty;
+        return decimal.TryParse(priceProp.GetString(), out price);
+    }
+
+    private async Task SaveAndBroadcastPricesAsync(Dictionary<string, decimal> currentPrices, CancellationToken stoppingToken)
+    {
+        _cache.Set(CacheKeys.MarketPrices, currentPrices, TimeSpan.FromMinutes(2));
+        await _broadcaster.BroadCastPricesAsync(currentPrices, stoppingToken);
     }
 }

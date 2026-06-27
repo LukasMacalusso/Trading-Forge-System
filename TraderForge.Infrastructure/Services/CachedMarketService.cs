@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Memory;
 using TraderForge.Domain.Constants;
 using TraderForge.Domain.Services;
 
@@ -20,35 +20,10 @@ public class CachedMarketService : IMarketService
         return new Dictionary<string, decimal>();
     }
     
-public bool IsMarketOpen(string symbol)
+    public bool IsMarketOpen(string symbol)
     {
-        var estTime = GetCurrentEasternTime();
-        
-        if (IsWeekend(estTime))
-        {
-            return false;
-        }
-
-        return IsWithinTradingHours(estTime.TimeOfDay);
-    }
-
-    private DateTime GetCurrentEasternTime()
-    {
-        var estZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-        return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, estZone);
-    }
-
-    private bool IsWeekend(DateTime time)
-    {
-        return time.DayOfWeek == DayOfWeek.Saturday || time.DayOfWeek == DayOfWeek.Sunday;
-    }
-
-    private bool IsWithinTradingHours(TimeSpan timeOfDay)
-    {
-        var marketOpen = new TimeSpan(9, 30, 0);
-        var marketClose = new TimeSpan(16, 0, 0);
-        
-        return timeOfDay >= marketOpen && timeOfDay <= marketClose;
+        // Crypto markets are 24/7.
+        return true;
     }
 
 }

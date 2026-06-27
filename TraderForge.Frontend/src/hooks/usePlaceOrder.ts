@@ -46,10 +46,9 @@ export function usePlaceOrder() {
     let result: { isSuccess: boolean; errorMessage?: string };
 
     if (command.side === 'Buy') {
-      const entryPrice = command.limitPrice ?? currentPrice;
-      result = await portfolioService.buyPosition(command.symbol, command.quantity, entryPrice);
+      result = await portfolioService.buyPosition(command.symbol, command.quantity);
       if (result.isSuccess) {
-        addNotification('success', `Compra de ${command.quantity} ${command.symbol} a $${entryPrice.toFixed(2)} ejecutada`);
+        addNotification('success', `Compra de ${command.quantity} ${command.symbol} ejecutada`);
       }
     } else {
       const position = portfolio!.positions.find((p) => p.symbol === command.symbol)!;
