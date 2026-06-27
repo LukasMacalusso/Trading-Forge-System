@@ -30,11 +30,14 @@ public class DiscountServiceTests
         typeof(ActiveSubscription).GetProperty("StartDate")!.SetValue(activeSub, DateTime.UtcNow.AddDays(-2));
         typeof(ActiveSubscription).GetProperty("EndDate")!.SetValue(activeSub, DateTime.UtcNow.AddDays(5));
         
+        var basicPlan = new SubscriptionPlan(Guid.NewGuid(), "Basic", 0, 0, 0, 0, false);
+        typeof(ActiveSubscription).GetProperty("Plan")!.SetValue(activeSub, basicPlan);
+
         var trader = new Trader(traderId, "test@test.com");
         typeof(Trader).GetProperty("Subscription")!.SetValue(trader, activeSub);
         var plan = new SubscriptionPlan(planId, "Pro", 29.99m, 50000m, 10, 20, false);
 
-        _traderRepoMock.Setup(x => x.GetByIdAsync(traderId)).ReturnsAsync(trader);
+        _traderRepoMock.Setup(x => x.GetByIdIncludeSubPlanAsync(traderId)).ReturnsAsync(trader);
         _planRepoMock.Setup(x => x.GetByIdAsync(planId)).ReturnsAsync(plan);
 
         var configSectionMock = new Mock<IConfigurationSection>();
@@ -52,7 +55,7 @@ public class DiscountServiceTests
     [Fact]
     public async Task GetEarlyCancellationOfferAsync_WhenTraderNotFound_ReturnsNull()
     {
-        _traderRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<string>()))
+        _traderRepoMock.Setup(x => x.GetByIdIncludeSubPlanAsync(It.IsAny<string>()))
             .ReturnsAsync((Trader?)null!);
 
         var result = await _service.GetEarlyCancellationOfferAsync("nonexistent", Guid.NewGuid());
@@ -63,7 +66,7 @@ public class DiscountServiceTests
     public async Task GetEarlyCancellationOfferAsync_WhenPlanNotFound_ReturnsNull()
     {
         var traderId = Guid.NewGuid().ToString();
-        _traderRepoMock.Setup(x => x.GetByIdAsync(traderId))
+        _traderRepoMock.Setup(x => x.GetByIdIncludeSubPlanAsync(traderId))
             .ReturnsAsync(new Trader(traderId, "test@test.com"));
         _planRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>()))
             .ReturnsAsync((SubscriptionPlan?)null!);
@@ -81,11 +84,13 @@ public class DiscountServiceTests
         typeof(ActiveSubscription).GetProperty("StartDate")!.SetValue(activeSub, DateTime.UtcNow.AddDays(-2));
         typeof(ActiveSubscription).GetProperty("EndDate")!.SetValue(activeSub, DateTime.UtcNow.AddDays(28));
         
+        var plan = new SubscriptionPlan(planId, "Pro", 29.99m, 50000m, 10, 20, false);
+        typeof(ActiveSubscription).GetProperty("Plan")!.SetValue(activeSub, plan);
+
         var trader = new Trader(traderId, "test@test.com");
         typeof(Trader).GetProperty("Subscription")!.SetValue(trader, activeSub);
-        var plan = new SubscriptionPlan(planId, "Pro", 29.99m, 50000m, 10, 20, false);
 
-        _traderRepoMock.Setup(x => x.GetByIdAsync(traderId)).ReturnsAsync(trader);
+        _traderRepoMock.Setup(x => x.GetByIdIncludeSubPlanAsync(traderId)).ReturnsAsync(trader);
         _planRepoMock.Setup(x => x.GetByIdAsync(planId)).ReturnsAsync(plan);
 
         var result = await _service.GetEarlyCancellationOfferAsync(traderId, planId);

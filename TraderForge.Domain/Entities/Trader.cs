@@ -16,6 +16,7 @@ public class Trader
     {
         Id = id;
         Email = email;
+        UserName = email;
     }
 
 
