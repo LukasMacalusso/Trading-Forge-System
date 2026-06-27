@@ -1,5 +1,7 @@
 using Moq;
+using TraderForge.Application.DTOs;
 using TraderForge.Application.Handlers;
+using TraderForge.Domain.Entities;
 using TraderForge.Domain.Repositories;
 using TraderForge.Domain.Services;
 
@@ -7,23 +9,33 @@ namespace TraderForge.Application.Tests;
 
 public class BuyPositionCommandHandlerTests
 {
-    private BuyPositionCommandHandler CreateHandler()
+    [Fact]
+    public async Task HandleAsync_MarketClosed_ReturnsFailure()
     {
-        var positionRepositoryMock = new Mock<IPositionRepository>();
-        var traderRepositoryMock = new Mock<ITraderRepository>();
-        var orderRepositoryMock = new Mock<IOrderRepository>();
-        var subscriptionLimitGuardMock = new Mock<ISubscriptionLimitGuard>();
-        var commissionServiceMock = new Mock<ICommissionService>();
-        var marketServiceMock = new Mock<IMarketService>();
+        var marketMock = new Mock<IMarketService>();
+        marketMock.Setup(m => m.IsMarketOpen(It.IsAny<string>())).Returns(false);
+        var handler = new BuyPositionCommandHandler(new Mock<ITraderRepository>().Object, new Mock<ISubscriptionLimitGuard>().Object, new Mock<ICommissionService>().Object, marketMock.Object);
 
-        marketServiceMock.Setup(m => m.IsMarketOpen(It.IsAny<string>())).Returns(true);
-        marketServiceMock.Setup(m => m.GetPricesAsync()).ReturnsAsync(new Dictionary<string, decimal> { { "BTCUSDT", 50000m } });
+        var result = await handler.HandleAsync(new BuyPositionCommand { TraderId = "u1", Symbol = "BTC", Quantity = 1 });
+        Assert.False(result.IsSuccess);
+        Assert.Contains("The market for BTC is currently closed.", result.ErrorMessage);
+    }
 
-        return new BuyPositionCommandHandler(
-            traderRepositoryMock.Object,
-            subscriptionLimitGuardMock.Object,
-            commissionServiceMock.Object,
-            marketServiceMock.Object
-        );
+    [Fact]
+    public async Task HandleAsync_TraderNotFound_ReturnsFailure()
+    {
+        var marketMock = new Mock<IMarketService>();
+        marketMock.Setup(m => m.IsMarketOpen(It.IsAny<string>())).Returns(true);
+        marketMock.Setup(m => m.GetPricesAsync()).ReturnsAsync(new Dictionary<string, decimal> { { "BTC", 50000m } });
+        var limitGuardMock = new Mock<ISubscriptionLimitGuard>();
+        limitGuardMock.Setup(l => l.CanAddAssetAsync(It.IsAny<string>())).ReturnsAsync(true);
+        var traderRepo = new Mock<ITraderRepository>();
+        traderRepo.Setup(t => t.GetByIdIncludePlanAndPositionsAsync("u1")).ReturnsAsync((Trader?)null);
+
+        var handler = new BuyPositionCommandHandler(traderRepo.Object, limitGuardMock.Object, new Mock<ICommissionService>().Object, marketMock.Object);
+
+        var result = await handler.HandleAsync(new BuyPositionCommand { TraderId = "u1", Symbol = "BTC", Quantity = 1 });
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Trader not found.", result.ErrorMessage);
     }
 }

@@ -1,0 +1,152 @@
+Summary
+  Generated on: 27/06/2026 - 13:47:37
+  Coverage date: 25/06/2026 - 14:46:03 - 27/06/2026 - 13:47:08
+  Parser: MultiReport (20x Cobertura)
+  Assemblies: 4
+  Classes: 124
+  Files: 134
+  Line coverage: 8.5%
+  Covered lines: 878
+  Uncovered lines: 9410
+  Coverable lines: 10288
+  Total lines: 12619
+  Branch coverage: 20% (123 of 612)
+  Covered branches: 123
+  Total branches: 612
+  Method coverage: 39.5% (249 of 629)
+  Full method coverage: 36.4% (229 of 629)
+  Covered methods: 249
+  Fully covered methods: 229
+  Total methods: 629
+
+TraderForge.API                                                                           21.1%
+  Microsoft.AspNetCore.OpenApi.Generated                                                     0%
+  Program                                                                                    0%
+  System.Runtime.CompilerServices                                                            0%
+  TraderForge.API.Controllers.AdministratorController                                     95.5%
+  TraderForge.API.Controllers.IdentityController                                          87.5%
+  TraderForge.API.Controllers.PortfolioController                                            0%
+  TraderForge.API.Controllers.PricesController                                            63.1%
+  TraderForge.API.Controllers.SubscriptionController                                      97.4%
+  TraderForge.API.Mappers.AdminPlanMappers                                                 100%
+  TraderForge.API.Mappers.IdentityMappers                                                  100%
+  TraderForge.API.Mappers.PortfolioMappers                                                   0%
+  TraderForge.API.Mappers.PricesMapper                                                     100%
+  TraderForge.API.Mappers.SubscriptionMappers                                              100%
+  TraderForge.API.Requests.BuyPositionRequest                                                0%
+  TraderForge.API.Requests.ChangeSubscriptionRequest                                       100%
+  TraderForge.API.Requests.CreatePlanRequest                                               100%
+  TraderForge.API.Requests.CreateStrategyRequest                                             0%
+  TraderForge.API.Requests.GetMarketPricesRequest                                          100%
+  TraderForge.API.Requests.LoginTraderRequest                                              100%
+  TraderForge.API.Requests.RegisterTraderRequest                                           100%
+  TraderForge.API.Requests.SellPositionRequest                                               0%
+  TraderForge.API.Requests.UpdatePlanRequest                                               100%
+  TraderForge.API.Requests.UpdateStrategyStateRequest                                        0%
+  TraderForge.API.Services.SignalRMarketDataBroadcaster                                      0%
+
+TraderForge.Application                                                                   63.4%
+  TraderForge.Application.Common.Result                                                    100%
+  TraderForge.Application.Common.ResultGeneric<T>                                          100%
+  TraderForge.Application.DTOs.BuyPositionCommand                                            0%
+  TraderForge.Application.DTOs.ChangeSubscriptionCommand                                   100%
+  TraderForge.Application.DTOs.CreatePlanCommand                                           100%
+  TraderForge.Application.DTOs.CreateStrategyCommand                                       100%
+  TraderForge.Application.DTOs.GetActivePortfolioQuery                                     100%
+  TraderForge.Application.DTOs.GetOrdersQuery                                                0%
+  TraderForge.Application.DTOs.GetPositionsQuery                                             0%
+  TraderForge.Application.DTOs.GetStrategiesQuery                                          100%
+  TraderForge.Application.DTOs.GetTraderPlanQuery                                          100%
+  TraderForge.Application.DTOs.GetTransactionsQuery                                        100%
+  TraderForge.Application.DTOs.LoginTraderQuery                                            100%
+  TraderForge.Application.DTOs.Queries.GetHistoricalCandlesQuery                             0%
+  TraderForge.Application.DTOs.Queries.GetMarketPricesQuery                                100%
+  TraderForge.Application.DTOs.RegisterTraderCommand                                       100%
+  TraderForge.Application.DTOs.ResetSimulationCommand                                      100%
+  TraderForge.Application.DTOs.Responses.OrderResponse                                       0%
+  TraderForge.Application.DTOs.Responses.TransactionResponse                               100%
+  TraderForge.Application.DTOs.SellPositionCommand                                           0%
+  TraderForge.Application.DTOs.UpdatePlanCommand                                           100%
+  TraderForge.Application.DTOs.UpdateStrategyStateCommand                                  100%
+  TraderForge.Application.Handlers.BuyPositionCommandHandler                                 0%
+  TraderForge.Application.Handlers.ChangeSubscriptionCommandHandler                        100%
+  TraderForge.Application.Handlers.CreatePlanCommandHandler                               87.5%
+  TraderForge.Application.Handlers.CreateStrategyCommandHandler                            100%
+  TraderForge.Application.Handlers.DeletePlanCommandHandler                               83.3%
+  TraderForge.Application.Handlers.GetActivePortfolioQueryHandler                          100%
+  TraderForge.Application.Handlers.GetAllPlansQueryHandler                                 100%
+  TraderForge.Application.Handlers.GetHistoricalCandlesQueryHandler                          0%
+  TraderForge.Application.Handlers.GetMarketPricesQueryHandler                             100%
+  TraderForge.Application.Handlers.GetOrdersQueryHandler                                     0%
+  TraderForge.Application.Handlers.GetPositionsQueryHandler                                  0%
+  TraderForge.Application.Handlers.GetStrategiesQueryHandler                               100%
+  TraderForge.Application.Handlers.GetTraderPlanQueryHandler                               100%
+  TraderForge.Application.Handlers.GetTransactionsQueryHandler                             100%
+  TraderForge.Application.Handlers.LoginTraderQueryHandler                                 100%
+  TraderForge.Application.Handlers.RegisterTraderCommandHandler                           97.6%
+  TraderForge.Application.Handlers.ResetSimulationCommandHandler                          78.2%
+  TraderForge.Application.Handlers.SellPositionCommandHandler                                0%
+  TraderForge.Application.Handlers.UpdatePlanCommandHandler                               88.4%
+  TraderForge.Application.Handlers.UpdateStrategyStateCommandHandler                       100%
+
+TraderForge.Domain                                                                        51.9%
+  TraderForge.Domain.Common.Result                                                         100%
+  TraderForge.Domain.Common.ResultGeneric<T>                                               100%
+  TraderForge.Domain.Constants.SupportedAssets                                               0%
+  TraderForge.Domain.Entities.ActiveSubscription                                            96%
+  TraderForge.Domain.Entities.Administrator                                                  0%
+  TraderForge.Domain.Entities.MarketAsset                                                    0%
+  TraderForge.Domain.Entities.Order                                                          0%
+  TraderForge.Domain.Entities.Portfolio                                                   48.6%
+  TraderForge.Domain.Entities.Position                                                       0%
+  TraderForge.Domain.Entities.Strategy                                                    95.2%
+  TraderForge.Domain.Entities.SubscriptionPlan                                            96.6%
+  TraderForge.Domain.Entities.Trader                                                      65.4%
+  TraderForge.Domain.Entities.Transaction                                                 97.2%
+  TraderForge.Domain.Factories.TraderFactory                                               100%
+  TraderForge.Domain.Models.Candlestick                                                      0%
+  TraderForge.Domain.Services.DiscountOffer                                                100%
+
+TraderForge.Infrastructure                                                                   1%
+  TraderForge.Infrastructure.Migrations.AddAdministratorTable                                0%
+  TraderForge.Infrastructure.Migrations.AddMarketAssetEntity                                 0%
+  TraderForge.Infrastructure.Migrations.AddMarketAssetsTable                                 0%
+  TraderForge.Infrastructure.Migrations.AddMarketAssetTable                                  0%
+  TraderForge.Infrastructure.Migrations.AddOrderEntity                                       0%
+  TraderForge.Infrastructure.Migrations.AddPortfolioAssetEntity                              0%
+  TraderForge.Infrastructure.Migrations.AddStrategyEntity                                    0%
+  TraderForge.Infrastructure.Migrations.AddTraderTable                                       0%
+  TraderForge.Infrastructure.Migrations.AddTransactionEntity                                 0%
+  TraderForge.Infrastructure.Migrations.ApplicationDbContextModelSnapshot                    0%
+  TraderForge.Infrastructure.Migrations.DomainRefactor                                       0%
+  TraderForge.Infrastructure.Migrations.Feature1_2_Subscriptions                             0%
+  TraderForge.Infrastructure.Migrations.FixPositionTableName                                 0%
+  TraderForge.Infrastructure.Migrations.InitialIdentitySetup                                 0%
+  TraderForge.Infrastructure.Migrations.MarketAssetRefactor                                  0%
+  TraderForge.Infrastructure.Migrations.RefactorActiveSubscription                           0%
+  TraderForge.Infrastructure.Persistence.ApplicationDbContext                                0%
+  TraderForge.Infrastructure.Persistence.Configurations.ActiveSubscriptionConfiguration      0%
+  TraderForge.Infrastructure.Persistence.Configurations.OrderConfiguration                   0%
+  TraderForge.Infrastructure.Persistence.Configurations.PortfolioConfiguration               0%
+  TraderForge.Infrastructure.Persistence.Configurations.PositionConfiguration                0%
+  TraderForge.Infrastructure.Persistence.Configurations.StrategyConfiguration                0%
+  TraderForge.Infrastructure.Persistence.Configurations.SubscriptionPlanConfiguration        0%
+  TraderForge.Infrastructure.Persistence.Configurations.TransactionConfiguration             0%
+  TraderForge.Infrastructure.Persistence.Seeders.IdentitySeeder                              0%
+  TraderForge.Infrastructure.Repositories.AdministratorRepository                            0%
+  TraderForge.Infrastructure.Repositories.MarketAssetRepository                              0%
+  TraderForge.Infrastructure.Repositories.OrderRepository                                    0%
+  TraderForge.Infrastructure.Repositories.PositionRepository                                 0%
+  TraderForge.Infrastructure.Repositories.StrategyRepository                                 0%
+  TraderForge.Infrastructure.Repositories.SubscriptionPlanRepository                         0%
+  TraderForge.Infrastructure.Repositories.TraderRepository                                   0%
+  TraderForge.Infrastructure.Repositories.TransactionRepository                              0%
+  TraderForge.Infrastructure.Services.BackgroundMarketPollingService                         0%
+  TraderForge.Infrastructure.Services.BinanceMarketProvider                                  0%
+  TraderForge.Infrastructure.Services.BinancePrice                                           0%
+  TraderForge.Infrastructure.Services.CachedMarketService                                   25%
+  TraderForge.Infrastructure.Services.CommissionService                                      0%
+  TraderForge.Infrastructure.Services.DiscountService                                      100%
+  TraderForge.Infrastructure.Services.IdentityService                                        0%
+  TraderForge.Infrastructure.Services.SubscriptionLimitGuard                              86.6%
+  TraderForge.Infrastructure.Services.TrialExpirationService                                 0%
