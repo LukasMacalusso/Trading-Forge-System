@@ -1,4 +1,4 @@
-using TraderForge.Application.Common;
+using TraderForge.Domain.Common;
 using TraderForge.Application.DTOs;
 using TraderForge.Domain.Entities;
 using TraderForge.Domain.Repositories;
@@ -20,7 +20,7 @@ public class GetTraderPlanQueryHandler
             
             if (trader is null)
                 return ResultGeneric<SubscriptionPlan?>.Failure("Trader not found.");
-            return ResultGeneric<SubscriptionPlan?>.Success(trader.SubscriptionPlan);
+            return ResultGeneric<SubscriptionPlan?>.Success(trader.Subscription?.Plan);
             
         }
         catch (Exception ex)

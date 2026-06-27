@@ -8,7 +8,7 @@ public class Order
     public Guid PortfolioId { get; private set; }
     public Portfolio Portfolio { get; private set; } = null!;
 
-    public string Symbol { get; private set; }
+    public string Symbol { get; private set; } = null!;
     public OrderSide Side { get; private set; }
     public OrderType Type { get; private set; }
     public decimal Quantity { get; private set; }

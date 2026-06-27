@@ -83,7 +83,7 @@ public static class IdentitySeeder
             await AssignSystemAdminRoleAsync(userManager, adminUser);
             logger.LogInformation($"Successfully seeded Identity account for admin: {config.Email}");
 
-            await EnsureDomainAdminExistsAsync(adminRepository, adminUser.Id, adminUser.Email, logger);
+            await EnsureDomainAdminExistsAsync(adminRepository, adminUser.Id, adminUser.Email ?? string.Empty, logger);
         }
         else
         {
@@ -94,7 +94,7 @@ public static class IdentitySeeder
     private static async Task UpdateExistingAdminAsync(UserManager<Account> userManager, IAdministratorRepository adminRepository, Account existingAdmin, AdminConfig config, ILogger logger)
     {
         await EnsurePasswordIsSynchronizedAsync(userManager, existingAdmin, config.Password, logger);
-        await EnsureDomainAdminExistsAsync(adminRepository, existingAdmin.Id, existingAdmin.Email, logger);
+        await EnsureDomainAdminExistsAsync(adminRepository, existingAdmin.Id, existingAdmin.Email ?? string.Empty, logger);
     }
 
     private static async Task AssignSystemAdminRoleAsync(UserManager<Account> userManager, Account user)

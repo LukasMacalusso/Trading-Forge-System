@@ -8,7 +8,8 @@ using System.Text;
 using System.Collections.Generic;
 using System;
 using System.Linq;
-using System.Security.Claims;
+
+using TraderForge.Domain.Common;
 
 namespace TraderForge.Infrastructure.Services;
 
@@ -23,7 +24,7 @@ public class IdentityService : IIdentityService
         _jwtConfiguration = jwtConfiguration;
     }
 
-    public async Task RegisterNewAccountAsync(string newUserId, string email, string password)
+    public async Task<Result> RegisterNewAccountAsync(string newUserId, string email, string password)
     {
         var newApplicationUser = new Account()
         {
@@ -33,8 +34,14 @@ public class IdentityService : IIdentityService
         };
 
         var result = await _userManager.CreateAsync(newApplicationUser, password);
-        EnsureSuccessOrThrow(result);
+        if (!result.Succeeded)
+        {
+            var errorMessage = result.Errors.FirstOrDefault()?.Description ?? "Unknown registration error";
+            return Result.Failure(errorMessage);
+        }
+        
         await _userManager.AddClaimAsync(newApplicationUser, new Claim(ClaimTypes.Role, "Trader"));
+        return Result.Success();
     }
 
     private void EnsureSuccessOrThrow(IdentityResult result)
@@ -46,29 +53,27 @@ public class IdentityService : IIdentityService
         }
     }
 
-    public async Task<string> GetValidatedTokenAsync(string email, string password)
+    public async Task<ResultGeneric<string>> GetValidatedTokenAsync(string email, string password)
     {
-        Account user = await GetApplicationUserByEmailAsync(email, password);
-        if (await IsUserValidatedAsync(user,password))
+        Account? user = await GetApplicationUserByEmailAsync(email);
+        if (user == null || !await IsUserValidatedAsync(user, password))
         {
-            return await GenerateJwtTokenForUserAsync(user);
+            return ResultGeneric<string>.Failure("Invalid Credentials");
         }
-        else
-        {
-            throw new Exception("Invalid Credentials, user not validated");
-        }
-
+        
+        string token = await GenerateJwtTokenForUserAsync(user);
+        return ResultGeneric<string>.Success(token);
     }
 
-    private async Task<Account> GetApplicationUserByEmailAsync(string email, string password)
+    private async Task<Account?> GetApplicationUserByEmailAsync(string email)
     {
         try
         {
             return await _userManager.FindByEmailAsync(email);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            throw new Exception($"Failed to find User by it's email: {ex.Message}");
+            return null;
         }
     }
     

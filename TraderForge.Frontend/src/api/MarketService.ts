@@ -24,26 +24,6 @@ const ASSET_NAMES: Record<string, string> = {
 // =========================================================
 const secureRandom = () => crypto.getRandomValues(new Uint32Array(1))[0] / 4294967295;
 
-function generateCandles(basePrice: number): CandlestickBar[] {
-  const bars: CandlestickBar[] = [];
-  let price = basePrice * 0.85;
-  const now = Math.floor(Date.now() / 1000);
-  for (let i = 100; i >= 0; i--) {
-    const v = price * 0.015;
-    const open = price;
-    const close = price + (secureRandom() - 0.5) * v * 2;
-    bars.push({
-      time: now - i * 3600,
-      open: +open.toFixed(2),
-      high: +(Math.max(open, close) + secureRandom() * v).toFixed(2),
-      low: +(Math.min(open, close) - secureRandom() * v).toFixed(2),
-      close: +close.toFixed(2),
-      volume: Math.floor(secureRandom() * 5_000_000 + 500_000),
-    });
-    price = close;
-  }
-  return bars;
-}
 
 function generateOrderBook(basePrice: number): Omit<OrderBook, 'symbol'> {
   const side = (dir: 1 | -1) =>
@@ -66,6 +46,16 @@ function extractErrorMessage(error: unknown, fallback: string): string {
 // REAL API SERVICE
 // =========================================================
 let cachedAssets: Asset[] | null = null;
+
+interface BackendCandle {
+  openTime: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+  closeTime: number;
+}
 
 export class MarketService {
   async getAssets(): Promise<Result<Asset[]>> {
@@ -115,13 +105,24 @@ export class MarketService {
     }
   }
 
-  // TODO: Point to real C# endpoint
   async getCandles(symbol: string, interval: CandleInterval = '1h'): Promise<Result<CandlestickBar[]>> {
     try {
-      const { data } = await httpClient.post<PricesResponse>('/api/prices', { symbols: [symbol] });
-      return Result.ok(generateCandles(data[symbol] ?? 100));
-    } catch {
-      return Result.fail('Could not load candles');
+      const { data } = await httpClient.get<BackendCandle[]>('/api/prices/historical', {
+        params: { symbol, interval, limit: 500 }
+      });
+      
+      const bars: CandlestickBar[] = data.map(c => ({
+        time: Math.floor(c.openTime / 1000),
+        open: c.open,
+        high: c.high,
+        low: c.low,
+        close: c.close,
+        volume: c.volume,
+      }));
+      
+      return Result.ok(bars);
+    } catch (error) {
+      return Result.fail(extractErrorMessage(error, 'Could not load historical candles from backend.'));
     }
   }
 

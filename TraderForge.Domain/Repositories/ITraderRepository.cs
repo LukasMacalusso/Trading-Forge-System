@@ -6,19 +6,19 @@ public interface ITraderRepository
 {
     Task AddAsync(Trader trader);
 
-    Task<Trader> GetByIdAsync(string id);
+    Task<Trader?> GetByIdAsync(string id);
     
-    Task<Trader> GetByIdIncludeSubPlanAsync(string id);
+    Task<Trader?> GetByIdIncludeSubPlanAsync(string id);
     
-    Task<Trader> GetByIdIncludePortfolioAsync(string id);
+    Task<Trader?> GetByIdIncludePortfolioAsync(string id);
 
-    Task<Trader> GetByIdIncludeAllAsync(string id);
+    Task<Trader?> GetByIdIncludeAllAsync(string id);
 
-    Task<Trader> GetByIdIncludePlanAndStrategyAsync(string id);
+    Task<Trader?> GetByIdIncludePlanAndStrategyAsync(string id);
 
-    Task<Trader> GetByIdIncludePlanAndPositionsAsync(string id);
+    Task<Trader?> GetByIdIncludePlanAndPositionsAsync(string id);
 
-    Task<List<Trader>> GetExpiredTrialsAsync();
+
     
     Task SaveChangesAsync();
 }

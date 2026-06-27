@@ -1,4 +1,4 @@
-using TraderForge.Application.Common;
+using TraderForge.Domain.Common;
 using TraderForge.Application.DTOs;
 using TraderForge.Domain.Repositories;
 
@@ -31,7 +31,10 @@ public class ResetSimulationCommandHandler
         if (trader == null)
             return Result.Failure("Trader not found.");
 
-        trader.ResetPortfolio();
+        if (trader.Subscription?.Plan == null)
+            return Result.Failure("Active subscription or plan not found.");
+
+        trader.ResetPortfolio(trader.Subscription.Plan.InitialVirtualBalance);
 
         await _traderRepository.SaveChangesAsync();
         return Result.Success();

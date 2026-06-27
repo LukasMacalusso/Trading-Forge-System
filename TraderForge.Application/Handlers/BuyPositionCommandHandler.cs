@@ -1,5 +1,6 @@
-using TraderForge.Application.Common;
+using TraderForge.Domain.Common;
 using TraderForge.Application.DTOs;
+using TraderForge.Domain.Entities;
 using TraderForge.Domain.Repositories;
 using TraderForge.Domain.Services;
 
@@ -28,7 +29,18 @@ public class BuyPositionCommandHandler
     {
         try
         {
-            return await ExecuteTradeAsync(command);
+            var price = await EnsurePriceIsAvailableAsync(command.Symbol);
+            await EnsureSubscriptionLimitNotReachedAsync(command.TraderId);
+            var trader = await EnsureTraderExistsAsync(command.TraderId);
+
+            ExecuteTrade(trader, command, price);
+            await SaveChangesAsync();
+
+            return Result.Success();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Result.Failure(ex.Message);
         }
         catch (Exception ex)
         {
@@ -36,23 +48,41 @@ public class BuyPositionCommandHandler
         }
     }
 
-    private async Task<Result> ExecuteTradeAsync(BuyPositionCommand command)
+    private async Task<decimal> EnsurePriceIsAvailableAsync(string symbol)
     {
-        if (!_marketService.IsMarketOpen(command.Symbol))
-            return Result.Failure($"The market for {command.Symbol} is currently closed.");
+        if (!_marketService.IsMarketOpen(symbol))
+            throw new InvalidOperationException($"The market for {symbol} is currently closed.");
 
-        var canAdd = await _limitGuard.CanAddAssetAsync(command.TraderId);
+        var prices = await _marketService.GetPricesAsync();
+        if (!prices.TryGetValue(symbol, out var currentPrice))
+            throw new InvalidOperationException($"Current price for {symbol} is unavailable.");
+
+        return currentPrice;
+    }
+
+    private async Task EnsureSubscriptionLimitNotReachedAsync(string traderId)
+    {
+        var canAdd = await _limitGuard.CanAddAssetAsync(traderId);
         if (!canAdd)
-            return Result.Failure("Subscription limit reached.");
+            throw new InvalidOperationException("Subscription limit reached.");
+    }
 
-        var trader = await _traderRepository.GetByIdIncludePlanAndPositionsAsync(command.TraderId);
+    private async Task<Trader> EnsureTraderExistsAsync(string traderId)
+    {
+        var trader = await _traderRepository.GetByIdIncludePlanAndPositionsAsync(traderId);
         if (trader == null)
-            return Result.Failure("Trader not found.");
+            throw new InvalidOperationException("Trader not found.");
 
-        trader.BuyPosition(command.Symbol, command.Quantity, command.EntryPrice, _commissionService);
-        
+        return trader;
+    }
+
+    private void ExecuteTrade(Trader trader, BuyPositionCommand command, decimal price)
+    {
+        trader.BuyPosition(command.Symbol, command.Quantity, price, _commissionService);
+    }
+
+    private async Task SaveChangesAsync()
+    {
         await _traderRepository.SaveChangesAsync();
-
-        return Result.Success();
     }
 }

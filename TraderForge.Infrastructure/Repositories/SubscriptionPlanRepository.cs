@@ -14,7 +14,7 @@ public class SubscriptionPlanRepository : ISubscriptionPlanRepository
         _dbContext = dbContext;
     }
     
-    public async Task<SubscriptionPlan> GetByIdAsync(Guid id)
+    public async Task<SubscriptionPlan?> GetByIdAsync(Guid id)
     {
         return await _dbContext.SubscriptionPlans.FirstOrDefaultAsync(s => s.Id == id);
     }
@@ -24,7 +24,7 @@ public class SubscriptionPlanRepository : ISubscriptionPlanRepository
         return await _dbContext.SubscriptionPlans.ToListAsync();
     }
 
-    public async Task<SubscriptionPlan> GetByNameAsync(string subscriptionName)
+    public async Task<SubscriptionPlan?> GetByNameAsync(string subscriptionName)
     {
         return await _dbContext.SubscriptionPlans.FirstOrDefaultAsync(s => s.Name.ToLower() == subscriptionName.ToLower());
     }

@@ -21,8 +21,7 @@ public static class PortfolioMappers
     {
         TraderId = traderId,
         Symbol = request.Symbol,
-        Quantity = request.Quantity,
-        EntryPrice = request.EntryPrice
+        Quantity = request.Quantity
     };
 
     public static SellPositionCommand ToCommand(this SellPositionRequest request, Guid positionId) => new()

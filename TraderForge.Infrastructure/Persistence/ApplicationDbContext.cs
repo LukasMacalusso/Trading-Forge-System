@@ -10,8 +10,9 @@ public class ApplicationDbContext : IdentityDbContext<Account>
     public DbSet<Trader> Traders { get; set; }
     public DbSet<Administrator> Administrators { get; set; }
     public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
+    public DbSet<ActiveSubscription> ActiveSubscriptions { get; set; }
     public DbSet<Portfolio> Portfolios { get; set; }
-    public DbSet<MarketAsset> MarketAssets { get; set; }
+
     public DbSet<Strategy> Strategies { get; set; }
     public DbSet<Position> Positions { get; set; }
     public DbSet<Transaction> Transactions { get; set; }

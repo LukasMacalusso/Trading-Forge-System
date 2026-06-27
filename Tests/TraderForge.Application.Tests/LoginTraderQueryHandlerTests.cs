@@ -1,5 +1,5 @@
 using Moq;
-using TraderForge.Application.Common;
+using TraderForge.Domain.Common;
 using TraderForge.Application.DTOs;
 using TraderForge.Application.Handlers;
 using TraderForge.Domain.Repositories;
@@ -26,7 +26,7 @@ public class LoginTraderQueryHandlerTests
         const string expectedToken = "jwt.token.here";
         _identityServiceMock
             .Setup(x => x.GetValidatedTokenAsync("test@test.com", "password123"))
-            .ReturnsAsync(expectedToken);
+            .ReturnsAsync(ResultGeneric<string>.Success(expectedToken));
 
         var query = new LoginTraderQuery { Email = "test@test.com", Password = "password123" };
         var result = await _handler.HandleAsync(query);
@@ -40,7 +40,7 @@ public class LoginTraderQueryHandlerTests
     {
         _identityServiceMock
             .Setup(x => x.GetValidatedTokenAsync(It.IsAny<string>(), It.IsAny<string>()))
-            .ThrowsAsync(new Exception("Invalid Credentials, user not validated"));
+            .ReturnsAsync(ResultGeneric<string>.Failure("Invalid Credentials"));
 
         var query = new LoginTraderQuery { Email = "wrong@test.com", Password = "wrong" };
         var result = await _handler.HandleAsync(query);

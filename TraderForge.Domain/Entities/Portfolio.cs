@@ -17,7 +17,7 @@ public class Portfolio
     public ICollection<Transaction> Transactions { get; private set; } = new List<Transaction>();
     public ICollection<Order> Orders { get; private set; } = new List<Order>();
 
-    public string TraderId { get; private set; }
+    public string TraderId { get; private set; } = null!;
     public Trader Trader { get; private set; } = null!;
 
     private Portfolio() { }
@@ -29,6 +29,9 @@ public class Portfolio
         VirtualBalance = initialBalance;
         IsActive = true;
         CreatedAt = DateTime.UtcNow;
+
+        Transactions.Add(new Transaction(
+            Id, "Initial Deposit", initialBalance, 0, initialBalance, 0, null, null, null));
     }
 
     public void FreezeSimulation()

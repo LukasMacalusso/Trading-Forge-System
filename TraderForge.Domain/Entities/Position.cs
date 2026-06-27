@@ -3,7 +3,7 @@ namespace TraderForge.Domain.Entities;
 public class Position
 {
     public Guid Id { get; private set; }
-    public string Symbol { get; private set; }
+    public string Symbol { get; private set; } = null!;
     public decimal Quantity { get; private set; }
     public decimal EntryPrice { get; private set; }
     public DateTime CreatedAt { get; private set; }

@@ -16,14 +16,14 @@ public class SubscriptionLimitGuard : ISubscriptionLimitGuard
     public async Task<bool> CanAddStrategyAsync(string traderId)
     {
         var trader = await _traderRepository.GetByIdIncludePlanAndStrategyAsync(traderId);
-        if (trader?.SubscriptionPlan == null)
+        var plan = trader?.Subscription?.Plan;
+        if (plan == null)
             return false;
 
-        var plan = trader.SubscriptionPlan;
         if (plan.HasUnlimitedStrategies())
             return true;
 
-        var activeStrategies = trader.Portfolios
+        var activeStrategies = trader!.Portfolios
             .SelectMany(p => p.Strategies)
             .Count(s => s.IsActive);
 
@@ -33,14 +33,14 @@ public class SubscriptionLimitGuard : ISubscriptionLimitGuard
     public async Task<bool> CanAddAssetAsync(string traderId)
     {
         var trader = await _traderRepository.GetByIdIncludePlanAndPositionsAsync(traderId);
-        if (trader?.SubscriptionPlan == null)
+        var plan = trader?.Subscription?.Plan;
+        if (plan == null)
             return false;
 
-        var plan = trader.SubscriptionPlan;
         if (plan.HasUnlimitedAssets())
             return true;
 
-        var activeAssets = trader.Portfolios
+        var activeAssets = trader!.Portfolios
             .SelectMany(p => p.Positions)
             .Count();
 
@@ -50,7 +50,7 @@ public class SubscriptionLimitGuard : ISubscriptionLimitGuard
     public async Task<bool> CanModifyBalanceAsync(string traderId)
     {
         var trader = await _traderRepository.GetByIdIncludeSubPlanAsync(traderId);
-        return trader?.SubscriptionPlan?.CanModifyVirtualBalance ?? false;
+        return trader?.Subscription?.Plan?.CanModifyVirtualBalance ?? false;
     }
 
     public async Task<bool> CanSwitchToPlanAsync(string traderId, SubscriptionPlan newPlan)

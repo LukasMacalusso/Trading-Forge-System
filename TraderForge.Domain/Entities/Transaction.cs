@@ -5,7 +5,7 @@ public class Transaction
     public Guid Id { get; private set; }
     public Guid PortfolioId { get; private set; }
     public Portfolio Portfolio { get; private set; } = null!;
-    public string Type { get; private set; }
+    public string Type { get; private set; } = null!;
     public string? Symbol { get; private set; }
     public decimal? Quantity { get; private set; }
     public decimal? Price { get; private set; }

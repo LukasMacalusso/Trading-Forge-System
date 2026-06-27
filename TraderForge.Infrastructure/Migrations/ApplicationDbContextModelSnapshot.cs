@@ -154,6 +154,35 @@ namespace TraderForge.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("TraderForge.Domain.Entities.ActiveSubscription", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("SubscriptionPlanId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("TraderId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SubscriptionPlanId");
+
+                    b.HasIndex("TraderId")
+                        .IsUnique();
+
+                    b.ToTable("ActiveSubscriptions");
+                });
+
             modelBuilder.Entity("TraderForge.Domain.Entities.Administrator", b =>
                 {
                     b.Property<string>("Id")
@@ -184,11 +213,8 @@ namespace TraderForge.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("CurrentPrice")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -407,12 +433,6 @@ namespace TraderForge.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("FreeTrialExpirationDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("FreeTrialRegistrationDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<Guid?>("SubscriptionPlanId")
                         .HasColumnType("uuid");
 
@@ -587,6 +607,25 @@ namespace TraderForge.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("TraderForge.Domain.Entities.ActiveSubscription", b =>
+                {
+                    b.HasOne("TraderForge.Domain.Entities.SubscriptionPlan", "Plan")
+                        .WithMany()
+                        .HasForeignKey("SubscriptionPlanId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TraderForge.Domain.Entities.Trader", "Trader")
+                        .WithOne("Subscription")
+                        .HasForeignKey("TraderForge.Domain.Entities.ActiveSubscription", "TraderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Plan");
+
+                    b.Navigation("Trader");
+                });
+
             modelBuilder.Entity("TraderForge.Domain.Entities.Order", b =>
                 {
                     b.HasOne("TraderForge.Domain.Entities.Portfolio", "Portfolio")
@@ -633,11 +672,9 @@ namespace TraderForge.Infrastructure.Migrations
 
             modelBuilder.Entity("TraderForge.Domain.Entities.Trader", b =>
                 {
-                    b.HasOne("TraderForge.Domain.Entities.SubscriptionPlan", "SubscriptionPlan")
+                    b.HasOne("TraderForge.Domain.Entities.SubscriptionPlan", null)
                         .WithMany("Traders")
                         .HasForeignKey("SubscriptionPlanId");
-
-                    b.Navigation("SubscriptionPlan");
                 });
 
             modelBuilder.Entity("TraderForge.Domain.Entities.Transaction", b =>
@@ -670,6 +707,8 @@ namespace TraderForge.Infrastructure.Migrations
             modelBuilder.Entity("TraderForge.Domain.Entities.Trader", b =>
                 {
                     b.Navigation("Portfolios");
+
+                    b.Navigation("Subscription");
                 });
 #pragma warning restore 612, 618
         }

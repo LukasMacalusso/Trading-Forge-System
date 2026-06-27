@@ -1,4 +1,4 @@
-using TraderForge.Application.Common;
+using TraderForge.Domain.Common;
 using TraderForge.Application.DTOs;
 using TraderForge.Domain.Entities;
 using TraderForge.Domain.Repositories;
@@ -54,7 +54,7 @@ public class ChangeSubscriptionCommandHandler
             return Result.Failure("Cannot switch plan: current active strategies or assets exceed the new plan limits.");
         }
 
-        trader.ChangeSubscriptionPlan(newSubscriptionPlan);
+        trader.ProcessPayment(newSubscriptionPlan);
         
         await _traderRepository.SaveChangesAsync();
         

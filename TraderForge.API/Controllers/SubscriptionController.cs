@@ -30,8 +30,8 @@ public class SubscriptionController : ControllerBase
         _getTraderSubscriptionPlanHandler = getTraderSubscriptionPlanHandler;
     }
 
-    [HttpPost("change-plan")]
-    public async Task<IActionResult> ChangePlan([FromBody] ChangeSubscriptionRequest request)
+    [HttpPost("pay")]
+    public async Task<IActionResult> ProcessPayment([FromBody] ChangeSubscriptionRequest request)
     {
         var traderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(traderId)) return Unauthorized(new { error = "Invalid token claims." });

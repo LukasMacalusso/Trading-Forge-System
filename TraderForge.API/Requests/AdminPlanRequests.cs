@@ -2,7 +2,7 @@ namespace TraderForge.API.Requests;
 
 public class CreatePlanRequest
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     public decimal MonthlyPrice { get; set; }
     public decimal InitialVirtualBalance { get; set; }
     public int? MaxActiveStrategies { get; set; }
@@ -12,7 +12,7 @@ public class CreatePlanRequest
 
 public class UpdatePlanRequest
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     public decimal MonthlyPrice { get; set; }
     public decimal InitialVirtualBalance { get; set; }
     public int? MaxActiveStrategies { get; set; }

@@ -4,9 +4,10 @@ using TraderForge.API.Controllers;
 using TraderForge.API.Requests;
 using TraderForge.Application.DTOs;
 using TraderForge.Application.Handlers;
-using TraderForge.Domain.Interfaces;
+
 using TraderForge.Domain.Repositories;
 using TraderForge.Domain.Services;
+using TraderForge.Domain.Common;
 
 namespace TraderForge.API.Tests;
 
@@ -17,7 +18,6 @@ public class IdentityControllerLoginTests
         return new RegisterTraderCommandHandler(
             Mock.Of<IIdentityService>(),
             Mock.Of<ITraderRepository>(),
-            Mock.Of<ITraderFactory>(),
             Mock.Of<ISubscriptionPlanRepository>());
     }
 
@@ -27,7 +27,7 @@ public class IdentityControllerLoginTests
         var identityServiceMock = new Mock<IIdentityService>();
         identityServiceMock
             .Setup(x => x.GetValidatedTokenAsync("test@test.com", "password"))
-            .ReturnsAsync("jwt.token.here");
+            .ReturnsAsync(ResultGeneric<string>.Success("jwt.token.here"));
 
         var loginHandler = new LoginTraderQueryHandler(
             identityServiceMock.Object, Mock.Of<ITraderRepository>());
@@ -49,7 +49,7 @@ public class IdentityControllerLoginTests
         var identityServiceMock = new Mock<IIdentityService>();
         identityServiceMock
             .Setup(x => x.GetValidatedTokenAsync(It.IsAny<string>(), It.IsAny<string>()))
-            .ThrowsAsync(new Exception("Invalid Credentials"));
+            .ReturnsAsync(ResultGeneric<string>.Failure("Invalid Credentials"));
 
         var loginHandler = new LoginTraderQueryHandler(
             identityServiceMock.Object, Mock.Of<ITraderRepository>());
@@ -71,12 +71,11 @@ public class IdentityControllerLoginTests
         var identityServiceMock = new Mock<IIdentityService>();
         identityServiceMock
             .Setup(x => x.RegisterNewAccountAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ThrowsAsync(new Exception("User registration failed: Password too short"));
+            .ReturnsAsync(Result.Failure("Password too short"));
 
         var registerHandler = new RegisterTraderCommandHandler(
             identityServiceMock.Object,
             Mock.Of<ITraderRepository>(),
-            Mock.Of<ITraderFactory>(),
             Mock.Of<ISubscriptionPlanRepository>());
 
         var controller = new IdentityController(

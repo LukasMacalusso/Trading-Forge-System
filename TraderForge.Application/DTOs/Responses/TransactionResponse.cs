@@ -5,7 +5,7 @@ namespace TraderForge.Application.DTOs.Responses;
 public class TransactionResponse
 {
     public Guid Id { get; set; }
-    public string Type { get; set; }
+    public string Type { get; set; } = string.Empty;
     public string? Symbol { get; set; }
     public decimal? Quantity { get; set; }
     public decimal? Price { get; set; }

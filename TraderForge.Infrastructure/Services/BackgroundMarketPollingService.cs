@@ -1,81 +1,149 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
+using System.Net.WebSockets;
+using System.Text;
+using System.Text.Json;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Hosting;
 using TraderForge.Domain.Constants;
-using TraderForge.Domain.Entities;
 using TraderForge.Domain.Services;
-using TraderForge.Domain.Repositories;
 
 namespace TraderForge.Infrastructure.Services;
 
 public class BackgroundMarketPollingService : BackgroundService
 {
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IMarketDataProvider _dataProvider;
     private readonly IMemoryCache _cache;
     private readonly IMarketDataBroadcaster _broadcaster;
-    
+    private readonly Uri _binanceWebSocketUri = new("wss://stream.binance.com:9443/ws/!ticker@arr");
+
     public BackgroundMarketPollingService(
-        IServiceScopeFactory scopeFactory, 
-        IMarketDataProvider dataProvider, 
         IMemoryCache cache,
         IMarketDataBroadcaster broadcaster)
     {
-        _scopeFactory = scopeFactory;
-        _dataProvider = dataProvider;
         _cache = cache;
         _broadcaster = broadcaster;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var timer = new PeriodicTimer(TimeSpan.FromMinutes(1));
-
-        while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
+        while (!stoppingToken.IsCancellationRequested)
         {
-            await ExecutePollingCycle(stoppingToken);
+            await MaintainConnectionAsync(stoppingToken);
         }
     }
-    
-    private async Task ExecutePollingCycle(CancellationToken stoppingToken)
+
+    private async Task MaintainConnectionAsync(CancellationToken stoppingToken)
     {
+        using var webSocket = new ClientWebSocket();
         try
         {
-            var allPrices = await _dataProvider.GetPricesAsync();
-            SaveToCache(allPrices);
-            await SaveToDatabase(allPrices);
-            await _broadcaster.BroadCastPricesAsync(allPrices, stoppingToken);
+            await webSocket.ConnectAsync(_binanceWebSocketUri, stoppingToken);
+            await ListenForMessagesAsync(webSocket, stoppingToken);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[Polling Error]: {ex.Message}");
+            Console.WriteLine($"[WebSocket Error]: {ex.Message}. Reconnecting in 5 seconds...");
+            await Task.Delay(5000, stoppingToken);
         }
     }
-    
-    private void SaveToCache(Dictionary<string, decimal> allPrices)
+
+    private async Task ListenForMessagesAsync(ClientWebSocket webSocket, CancellationToken stoppingToken)
     {
-        _cache.Set(CacheKeys.MarketPrices, allPrices, TimeSpan.FromMinutes(1));
+        var buffer = new byte[1024 * 64];
+
+        while (webSocket.State == WebSocketState.Open && !stoppingToken.IsCancellationRequested)
+        {
+            var json = await ReceiveFullMessageAsync(webSocket, buffer, stoppingToken);
+            if (json == null)
+            {
+                await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, stoppingToken);
+                break;
+            }
+
+            await ProcessWebSocketMessageAsync(json, stoppingToken);
+        }
     }
 
-    private async Task SaveToDatabase(Dictionary<string, decimal> allPrices)
+    private async Task<string?> ReceiveFullMessageAsync(ClientWebSocket webSocket, byte[] buffer, CancellationToken stoppingToken)
     {
-        using var scope = _scopeFactory.CreateScope();
-        var repository = scope.ServiceProvider.GetRequiredService<IMarketAssetRepository>();
+        using var memoryStream = new MemoryStream();
+        WebSocketReceiveResult result;
 
-        foreach (var symbol in SupportedAssets.Symbols)
+        do
         {
-            if (allPrices.TryGetValue(symbol, out var price))
-            {
-                var asset = new MarketAsset
-                {
-                    Symbol = symbol, 
-                    Name = symbol, 
-                    CurrentPrice = price, 
-                    LastUpdated = DateTime.UtcNow
-                };
+            result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), stoppingToken);
+            await memoryStream.WriteAsync(buffer, 0, result.Count, stoppingToken);
+        }
+        while (!result.EndOfMessage && !stoppingToken.IsCancellationRequested);
 
-                await repository.AddAsync(asset);
+        if (result.MessageType == WebSocketMessageType.Close)
+            return null;
+
+        memoryStream.Position = 0;
+        using var reader = new StreamReader(memoryStream, Encoding.UTF8);
+        return await reader.ReadToEndAsync(stoppingToken);
+    }
+
+    private async Task ProcessWebSocketMessageAsync(string json, CancellationToken stoppingToken)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            if (document.RootElement.ValueKind != JsonValueKind.Array) 
+                return;
+
+            var currentPrices = GetOrCreatePriceCache();
+            var pricesUpdated = TryUpdatePrices(document.RootElement, currentPrices);
+
+            if (pricesUpdated)
+            {
+                await SaveAndBroadcastPricesAsync(currentPrices, stoppingToken);
             }
         }
+        catch (JsonException)
+        {
+            // Ignore malformed JSON chunks
+        }
+    }
+
+    private Dictionary<string, decimal> GetOrCreatePriceCache()
+    {
+        return _cache.GetOrCreate(CacheKeys.MarketPrices, entry =>
+        {
+            entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(2));
+            return new Dictionary<string, decimal>();
+        }) ?? new Dictionary<string, decimal>();
+    }
+
+    private bool TryUpdatePrices(JsonElement rootArray, Dictionary<string, decimal> currentPrices)
+    {
+        bool anyUpdated = false;
+
+        foreach (var element in rootArray.EnumerateArray())
+        {
+            if (TryExtractPriceData(element, out var symbol, out var price))
+            {
+                currentPrices[symbol] = price;
+                anyUpdated = true;
+            }
+        }
+
+        return anyUpdated;
+    }
+
+    private static bool TryExtractPriceData(JsonElement element, out string symbol, out decimal price)
+    {
+        symbol = string.Empty;
+        price = 0;
+
+        if (!element.TryGetProperty("s", out var symbolProp) || !element.TryGetProperty("c", out var priceProp))
+            return false;
+
+        symbol = symbolProp.GetString() ?? string.Empty;
+        return decimal.TryParse(priceProp.GetString(), out price);
+    }
+
+    private async Task SaveAndBroadcastPricesAsync(Dictionary<string, decimal> currentPrices, CancellationToken stoppingToken)
+    {
+        _cache.Set(CacheKeys.MarketPrices, currentPrices, TimeSpan.FromMinutes(2));
+        await _broadcaster.BroadCastPricesAsync(currentPrices, stoppingToken);
     }
 }

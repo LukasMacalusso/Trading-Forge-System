@@ -1,7 +1,6 @@
-using TraderForge.Application.Common;
+using TraderForge.Domain.Common;
 using TraderForge.Application.DTOs;
 using TraderForge.Domain.Entities;
-using TraderForge.Domain.Interfaces;
 using TraderForge.Domain.Repositories;
 using TraderForge.Domain.Services;
 
@@ -11,18 +10,15 @@ public class RegisterTraderCommandHandler
 {
     private readonly IIdentityService _identityService;
     private readonly ITraderRepository _traderRepository;
-    private readonly ITraderFactory _traderFactory;
     private readonly ISubscriptionPlanRepository _planRepository;
 
     public RegisterTraderCommandHandler(
         IIdentityService identityService, 
         ITraderRepository traderRepository, 
-        ITraderFactory traderFactory,
         ISubscriptionPlanRepository planRepository) 
     {
         _identityService = identityService;
         _traderRepository = traderRepository;
-        _traderFactory = traderFactory;
         _planRepository = planRepository;
     }
 
@@ -42,11 +38,19 @@ public class RegisterTraderCommandHandler
     {
         string newUserId = GenerateNewAccountId();
         
-        await _identityService.RegisterNewAccountAsync(newUserId, command.Email, command.Password);
-        Trader newTrader = _traderFactory.CreateWithFreeTrial(newUserId, command.Email);
+        var identityResult = await _identityService.RegisterNewAccountAsync(newUserId, command.Email, command.Password);
+        if (!identityResult.IsSuccess)
+        {
+            return Result.Failure(identityResult.ErrorMessage ?? "Registration failed.");
+        }
+
+        Trader newTrader = new Trader(newUserId, command.Email);
         
-        SubscriptionPlan basicPlan = await _planRepository.GetByNameAsync("basic");
-        newTrader.InitializeWithPlan(basicPlan);
+        SubscriptionPlan? basicPlan = await _planRepository.GetByNameAsync("basic");
+        if (basicPlan != null)
+        {
+            newTrader.InitializeWithTrial(basicPlan);
+        }
         
         await _traderRepository.AddAsync(newTrader);
         return Result.Success();
