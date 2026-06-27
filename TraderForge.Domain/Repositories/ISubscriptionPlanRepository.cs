@@ -4,9 +4,9 @@ namespace TraderForge.Domain.Repositories;
 
 public interface ISubscriptionPlanRepository
 {
-    Task<SubscriptionPlan> GetByIdAsync(Guid id);
+    Task<SubscriptionPlan?> GetByIdAsync(Guid id);
 
-    Task<SubscriptionPlan> GetByNameAsync(string subscriptionName);
+    Task<SubscriptionPlan?> GetByNameAsync(string subscriptionName);
     
     Task<IEnumerable<SubscriptionPlan>> GetAllAsync();
 

@@ -4,9 +4,9 @@ namespace TraderForge.Domain.Entities;
 
 public class Trader
 {
-    public string Id { get; private set; }
-    public string UserName { get; set; }
-    public string Email { get; private set; }
+    public string Id { get; private set; } = null!;
+    public string UserName { get; set; } = null!;
+    public string Email { get; private set; } = null!;
     
     public ActiveSubscription? Subscription { get; private set; }
 

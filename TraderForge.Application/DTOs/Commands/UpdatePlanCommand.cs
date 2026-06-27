@@ -3,7 +3,7 @@ namespace TraderForge.Application.DTOs;
 public class UpdatePlanCommand
 {
     public Guid PlanId { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     public decimal MonthlyPrice { get; set; }
     public decimal InitialVirtualBalance { get; set; }
     public int? MaxActiveStrategies { get; set; }

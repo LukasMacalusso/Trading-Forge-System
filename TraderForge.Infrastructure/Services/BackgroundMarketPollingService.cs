@@ -70,7 +70,7 @@ public class BackgroundMarketPollingService : BackgroundService
         do
         {
             result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), stoppingToken);
-            memoryStream.Write(buffer, 0, result.Count);
+            await memoryStream.WriteAsync(buffer, 0, result.Count, stoppingToken);
         }
         while (!result.EndOfMessage && !stoppingToken.IsCancellationRequested);
 
@@ -129,7 +129,7 @@ public class BackgroundMarketPollingService : BackgroundService
         return anyUpdated;
     }
 
-    private bool TryExtractPriceData(JsonElement element, out string symbol, out decimal price)
+    private static bool TryExtractPriceData(JsonElement element, out string symbol, out decimal price)
     {
         symbol = string.Empty;
         price = 0;

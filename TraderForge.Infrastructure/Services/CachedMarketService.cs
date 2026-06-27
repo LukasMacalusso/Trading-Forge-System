@@ -12,12 +12,8 @@ public class CachedMarketService : IMarketService
     
     public async Task<Dictionary<string, decimal>> GetPricesAsync()
     {
-        if (_cache.TryGetValue(CacheKeys.MarketPrices, out Dictionary<string, decimal> cachedPrices))
-        {
-            return cachedPrices;
-        }
-
-        return new Dictionary<string, decimal>();
+        _cache.TryGetValue(CacheKeys.MarketPrices, out Dictionary<string, decimal>? prices);
+        return prices ?? new Dictionary<string, decimal>();
     }
     
     public bool IsMarketOpen(string symbol)

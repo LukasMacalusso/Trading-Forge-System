@@ -2,7 +2,7 @@ namespace TraderForge.Application.DTOs;
 
 public class CreatePlanCommand
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     public decimal MonthlyPrice { get; set; }
     public decimal InitialVirtualBalance { get; set; }
     public int? MaxActiveStrategies { get; set; }

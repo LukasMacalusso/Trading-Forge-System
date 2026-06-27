@@ -64,7 +64,7 @@ public class BinanceMarketProvider : IMarketDataProvider
         );
     }
 
-    private decimal ParseDecimal(JsonElement element)
+    private static decimal ParseDecimal(JsonElement element)
     {
         var value = element.GetString() ?? "0";
         return decimal.Parse(value, CultureInfo.InvariantCulture);

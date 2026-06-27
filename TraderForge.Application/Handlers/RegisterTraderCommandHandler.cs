@@ -46,8 +46,11 @@ public class RegisterTraderCommandHandler
 
         Trader newTrader = new Trader(newUserId, command.Email);
         
-        SubscriptionPlan basicPlan = await _planRepository.GetByNameAsync("basic");
-        newTrader.InitializeWithTrial(basicPlan);
+        SubscriptionPlan? basicPlan = await _planRepository.GetByNameAsync("basic");
+        if (basicPlan != null)
+        {
+            newTrader.InitializeWithTrial(basicPlan);
+        }
         
         await _traderRepository.AddAsync(newTrader);
         return Result.Success();

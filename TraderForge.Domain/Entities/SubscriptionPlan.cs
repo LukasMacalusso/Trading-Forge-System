@@ -3,7 +3,7 @@ namespace TraderForge.Domain.Entities;
 public class SubscriptionPlan
 {
     public Guid Id { get; private set; }
-    public string Name { get; private set; }
+    public string Name { get; private set; } = null!;
     public decimal MonthlyPrice { get; private set; }
     public decimal InitialVirtualBalance { get; private set; }
     

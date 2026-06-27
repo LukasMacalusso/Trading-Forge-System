@@ -8,7 +8,7 @@ using System.Text;
 using System.Collections.Generic;
 using System;
 using System.Linq;
-using System.Security.Claims;
+
 using TraderForge.Domain.Common;
 
 namespace TraderForge.Infrastructure.Services;
@@ -71,7 +71,7 @@ public class IdentityService : IIdentityService
         {
             return await _userManager.FindByEmailAsync(email);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return null;
         }

@@ -3,7 +3,7 @@ namespace TraderForge.Domain.Entities;
 public class ActiveSubscription
 {
     public Guid Id { get; private set; }
-    public string TraderId { get; private set; }
+    public string TraderId { get; private set; } = null!;
     public Trader Trader { get; private set; } = null!;
 
     public Guid SubscriptionPlanId { get; private set; }
