@@ -48,7 +48,7 @@ public class SubscriptionControllerTests
     }
 
     [Fact]
-    public async Task ChangePlan_WhenValid_ReturnsOkWithDiscount()
+    public async Task ProcessPayment_WhenValid_ReturnsOkWithDiscount()
     {
         var planId = Guid.NewGuid();
         var trader = new Trader(TraderId, "test@test.com");
@@ -62,19 +62,19 @@ public class SubscriptionControllerTests
             .ReturnsAsync(new DiscountOffer(10m, 26.99m));
 
         var request = new ChangeSubscriptionRequest { NewPlanId = planId, PromoCode = "SAVE10" };
-        var result = await _controller.ChangePlan(request);
+        var result = await _controller.ProcessPayment(request);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
     }
 
     [Fact]
-    public async Task ChangePlan_WhenHandlerFails_ReturnsBadRequest()
+    public async Task ProcessPayment_WhenHandlerFails_ReturnsBadRequest()
     {
         _traderRepoMock.Setup(x => x.GetByIdIncludeAllAsync(It.IsAny<string>()))
             .ReturnsAsync((Trader?)null!);
 
         var request = new ChangeSubscriptionRequest { NewPlanId = Guid.NewGuid() };
-        var result = await _controller.ChangePlan(request);
+        var result = await _controller.ProcessPayment(request);
 
         var badRequest = Assert.IsType<BadRequestObjectResult>(result);
     }
@@ -109,10 +109,10 @@ public class SubscriptionControllerTests
         var planId = Guid.NewGuid();
         var plan = new SubscriptionPlan(planId, "Basic", 9.99m, 10000m, 2, 5, false);
         var trader = new Trader(TraderId, "test@test.com");
-        trader.AssignSubscriptionPlan(plan);
-        var prop = typeof(Trader).GetProperty("SubscriptionPlan",
+        trader.InitializeWithTrial(plan);
+        var prop = typeof(Trader).GetProperty("Subscription",
             System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-        prop!.SetValue(trader, plan);
+        prop!.SetValue(trader, new ActiveSubscription(TraderId, planId, 7));
 
         _traderRepoMock.Setup(x => x.GetByIdIncludeSubPlanAsync(TraderId)).ReturnsAsync(trader);
 

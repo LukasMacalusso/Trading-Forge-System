@@ -25,11 +25,14 @@ public class GetTraderPlanQueryHandlerTests
         var planId = Guid.NewGuid();
         var plan = new SubscriptionPlan(planId, "Basic", 9.99m, 10000m, 2, 5, false);
         var trader = new Trader(traderId, "test@test.com");
-        trader.AssignSubscriptionPlan(plan);
-
-        var prop = typeof(Trader).GetProperty("SubscriptionPlan", 
+        var activeSub = new ActiveSubscription(traderId, planId, 7);
+        var planProp = typeof(ActiveSubscription).GetProperty("Plan", 
             System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-        prop!.SetValue(trader, plan);
+        planProp!.SetValue(activeSub, plan);
+
+        var prop = typeof(Trader).GetProperty("Subscription", 
+            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+        prop!.SetValue(trader, activeSub);
 
         _traderRepoMock.Setup(x => x.GetByIdIncludeSubPlanAsync(traderId)).ReturnsAsync(trader);
 
