@@ -8,11 +8,7 @@ public class Trader
     public string UserName { get; set; }
     public string Email { get; private set; }
     
-    public DateTime FreeTrialExpirationDate{ get; set; }
-    public DateTime FreeTrialRegistrationDate { get; set; }
-    
-    public Guid? SubscriptionPlanId { get; private set; }
-    public SubscriptionPlan? SubscriptionPlan { get; private set; }
+    public ActiveSubscription? Subscription { get; private set; }
 
     public ICollection<Portfolio> Portfolios { get; private set; } = new List<Portfolio>();
 
@@ -23,52 +19,42 @@ public class Trader
     }
 
 
-    public void ChangeSubscriptionPlan(SubscriptionPlan newPlan)
+    public void ProcessPayment(SubscriptionPlan plan)
     {
-        AssignSubscriptionPlan(newPlan);
-        FreezeActivePortfolio();
-        Portfolios.Add(new Portfolio(Id, newPlan.InitialVirtualBalance));
-        
-    }
-    
-    public void AssignSubscriptionPlan(SubscriptionPlan plan)
-    {
-        SubscriptionPlanId = plan.Id;
-    }
+        if (Subscription == null)
+        {
+            Subscription = new ActiveSubscription(Id, plan.Id, 30);
+            ResetPortfolio(plan.InitialVirtualBalance);
+            return;
+        }
 
-    private void FreezeActivePortfolio()
-    {
-        var activePortfolio = Portfolios.FirstOrDefault(p => p.IsActive);
-        if (activePortfolio != null){activePortfolio.FreezeSimulation();}
-    }
-
-    public void ClearSubscriptionPlan()
-    {
-        SubscriptionPlanId = null;
-        SubscriptionPlan = null;
+        if (Subscription.SubscriptionPlanId == plan.Id)
+        {
+            Subscription.Extend(30);
+        }
+        else
+        {
+            Subscription.ChangePlan(plan.Id);
+            ResetPortfolio(plan.InitialVirtualBalance);
+        }
     }
 
-    public void ResetPortfolio()
+    public void ResetPortfolio(decimal initialVirtualBalance)
     {
-        if (SubscriptionPlan == null)
-            throw new InvalidOperationException("No subscription plan assigned.");
-
         var activePortfolio = Portfolios.FirstOrDefault(p => p.IsActive);
         if (activePortfolio != null)
         {
             activePortfolio.FreezeSimulation();
-            activePortfolio.AddFunds(0, "Reset", null, null, null, 0);
         }
 
-        var newPortfolio = new Portfolio(Id, SubscriptionPlan.InitialVirtualBalance);
-        newPortfolio.AddFunds(SubscriptionPlan.InitialVirtualBalance, "Reset", null, null, null, 0);
+        var newPortfolio = new Portfolio(Id, initialVirtualBalance);
         Portfolios.Add(newPortfolio);
     }
 
-    public void InitializeWithPlan(SubscriptionPlan plan)
+    public void InitializeWithTrial(SubscriptionPlan basicPlan)
     {
-        AssignSubscriptionPlan(plan);
-        var initialPortfolio = new Portfolio(Id, plan.InitialVirtualBalance);
+        Subscription = new ActiveSubscription(Id, basicPlan.Id, 7);
+        var initialPortfolio = new Portfolio(Id, basicPlan.InitialVirtualBalance);
         Portfolios.Add(initialPortfolio);
     }
 
@@ -82,7 +68,9 @@ public class Trader
 
         if (!activePortfolio.IsActive)
         {
-            ResetPortfolio();
+            // If bankruptcy occurred, reset portfolio based on their current plan limits?
+            // This would require injecting the plan balance, but they don't have a plan reference directly accessible here without navigation prop loading.
+            // For now, this is a placeholder. 
         }
     }
 

@@ -31,7 +31,7 @@ public class ResetSimulationCommandHandler
         if (trader == null)
             return Result.Failure("Trader not found.");
 
-        trader.ResetPortfolio();
+        trader.ResetPortfolio(trader.Subscription.Plan.InitialVirtualBalance);
 
         await _traderRepository.SaveChangesAsync();
         return Result.Success();

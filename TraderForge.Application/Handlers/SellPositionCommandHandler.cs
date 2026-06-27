@@ -2,6 +2,7 @@ using TraderForge.Domain.Common;
 using TraderForge.Application.DTOs;
 using TraderForge.Domain.Repositories;
 using TraderForge.Domain.Services;
+using TraderForge.Domain.Entities;
 
 namespace TraderForge.Application.Handlers;
 

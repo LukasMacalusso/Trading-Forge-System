@@ -23,7 +23,7 @@ public class IdentityController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterTraderRequest request)
     {
-        var command = request.ToCommand(); 
+        var command = request.ToCommand();
         var result = await _registerTraderCommandHandler.HandleAsync(command);
 
         if (result.IsSuccess)
@@ -48,15 +48,7 @@ public class IdentityController : ControllerBase
         return Unauthorized(new { error = result.ErrorMessage });
 
     }
-    
-    
-    [Authorize(Roles = "Trader")]
-    [HttpGet("vip-lounge")]
-    public IActionResult GetVipLounge()
-    {
-        return Ok(new { message = "Welcome to the Trade Lounge. The JWT token worked succesfully!" });
-    }
-    
-    
-    
+
+
+
 }

@@ -22,14 +22,15 @@ public class DiscountService : IDiscountService
 
     public async Task<DiscountOffer?> GetEarlyCancellationOfferAsync(string traderId, Guid targetPlanId)
     {
-        var trader = await _traderRepository.GetByIdAsync(traderId);
+        var trader = await _traderRepository.GetByIdIncludeSubPlanAsync(traderId);
         var plan = await _planRepository.GetByIdAsync(targetPlanId);
 
         if (trader is null || plan is null)
             return null;
 
-        bool isOnTrial = trader.FreeTrialRegistrationDate != default
-            && trader.FreeTrialExpirationDate > DateTime.UtcNow;
+        bool isOnTrial = trader.Subscription != null && 
+                         trader.Subscription.IsActive && 
+                         trader.Subscription.Plan.Name.ToLower() == "basic";
 
         if (!isOnTrial)
             return null;

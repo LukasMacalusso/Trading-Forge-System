@@ -29,6 +29,9 @@ public class Portfolio
         VirtualBalance = initialBalance;
         IsActive = true;
         CreatedAt = DateTime.UtcNow;
+
+        Transactions.Add(new Transaction(
+            Id, "Initial Deposit", initialBalance, 0, initialBalance, 0, null, null, null));
     }
 
     public void FreezeSimulation()

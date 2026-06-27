@@ -54,7 +54,7 @@ public class ChangeSubscriptionCommandHandler
             return Result.Failure("Cannot switch plan: current active strategies or assets exceed the new plan limits.");
         }
 
-        trader.ChangeSubscriptionPlan(newSubscriptionPlan);
+        trader.ProcessPayment(newSubscriptionPlan);
         
         await _traderRepository.SaveChangesAsync();
         

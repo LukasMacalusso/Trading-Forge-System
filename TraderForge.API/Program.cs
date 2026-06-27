@@ -6,8 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using TraderForge.API.Hubs;
 using TraderForge.API.Services;
 using TraderForge.Application.Handlers;
-using TraderForge.Domain.Factories;
-using TraderForge.Domain.Interfaces;
+
 using TraderForge.Domain.Repositories;
 using TraderForge.Domain.Services;
 using TraderForge.Infrastructure;
@@ -57,9 +56,9 @@ builder.Services.AddAuthentication(options =>
 // -- Dependency Injection (Repositories & Services) -- //
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<ITraderRepository, TraderRepository>();
-builder.Services.AddScoped<ITraderFactory, TraderFactory>();
+
 builder.Services.AddScoped<IAdministratorRepository, AdministratorRepository>();
-builder.Services.AddScoped<IMarketAssetRepository, MarketAssetRepository>();
+
 builder.Services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
 builder.Services.AddScoped<IStrategyRepository, StrategyRepository>();
 builder.Services.AddScoped<IPositionRepository, PositionRepository>();
@@ -85,7 +84,7 @@ builder.Services.AddTransient<GetPositionsQueryHandler>();
 builder.Services.AddTransient<GetTransactionsQueryHandler>();
 builder.Services.AddTransient<ResetSimulationCommandHandler>();
 builder.Services.AddTransient<GetOrdersQueryHandler>();
-builder.Services.AddHostedService<TrialExpirationService>();
+
 builder.Services.AddScoped<IDiscountService, DiscountService>();
 builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
