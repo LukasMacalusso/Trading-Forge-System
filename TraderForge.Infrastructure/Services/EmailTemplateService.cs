@@ -34,6 +34,14 @@ public class EmailTemplateService : IEmailTemplateService
         return BuildMessage(destination, "Welcome to Trading Forge!", html);
     }
 
+    public EmailMessage CreateCancellationMail(string destination, string username)
+    {
+        string html = LoadHtmlTemplate("SubscriptionCancelled.html")
+            .Replace("{{Name}}", username);
+
+        return BuildMessage(destination, "We hope to see you back soon", html);
+    }
+    
     public EmailMessage CreateRestartSimulationMail(string destination, string username, decimal balanceRestored)
     {
         string html = LoadHtmlTemplate("SimulationResetEmail.html")

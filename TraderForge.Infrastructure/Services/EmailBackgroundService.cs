@@ -28,8 +28,6 @@ public class EmailBackgroundService : BackgroundService
     
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Init EmailBackgroundService");
-
         await foreach (var message in _channelReader.ReadAllAsync(stoppingToken))
         {
             try
@@ -46,14 +44,18 @@ public class EmailBackgroundService : BackgroundService
     private async Task SendEmailAsync(EmailMessage message, CancellationToken stoppingToken)
     {
         var email = new MimeMessage();
+        
         email.From.Add(new MailboxAddress(_emailSettings.SenderName, _emailSettings.SenderEmail));
         email.To.Add(MailboxAddress.Parse(message.To));
         email.Subject = message.Subject;
+        
         var builder = new BodyBuilder();
+        
         if (message.IsHtml) builder.HtmlBody = message.Body;
         else builder.TextBody = message.Body;
         
         email.Body = builder.ToMessageBody();
+        
         using var smtp = new SmtpClient();
 
         await smtp.ConnectAsync(_emailSettings.SmtpServer, _emailSettings.SmtpPort, SecureSocketOptions.StartTls, stoppingToken);
