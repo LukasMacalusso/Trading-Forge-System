@@ -1,4 +1,5 @@
-﻿using TraderForge.Application.DTOs;
+using TraderForge.Application.DTOs;
+using TraderForge.Application.DTOs.Results;
 using TraderForge.Domain.Common;
 using TraderForge.Domain.Repositories;
 using TraderForge.Domain.Services;
@@ -8,20 +9,20 @@ namespace TraderForge.Application.Handlers;
 public class CancelSubscriptionCommandHandler
 {
     private readonly ITraderRepository _traderRepository;
-    private readonly ISubscriptionPlanRepository _subscriptionPlanRepository;
-    private readonly ISubscriptionLimitGuard _limitGuard;
+    private readonly IDiscountService _discountService;
+    private readonly ISubscriptionPlanRepository _planRepository;
 
     public CancelSubscriptionCommandHandler(
         ITraderRepository traderRepository,
-        ISubscriptionPlanRepository subscriptionPlanRepository,
-        ISubscriptionLimitGuard limitGuard)
+        IDiscountService discountService,
+        ISubscriptionPlanRepository planRepository)
     {
         _traderRepository = traderRepository;
-        _subscriptionPlanRepository = subscriptionPlanRepository;
-        _limitGuard = limitGuard;
+        _discountService = discountService;
+        _planRepository = planRepository;
     }
 
-    public async Task<Result> HandleAsync(ChangeSubscriptionCommand command)
+    public async Task<ResultGeneric<CancelSubscriptionResult>> HandleAsync(CancelSubscriptionCommand command)
     {
         try
         {
@@ -29,35 +30,42 @@ public class CancelSubscriptionCommandHandler
         }
         catch (Exception ex)
         {
-            return Result.Failure(ex.Message);
+            return ResultGeneric<CancelSubscriptionResult>.Failure(ex.Message);
         }
     }
 
-    private async Task<Result> ExecuteSubscriptionCancel(ChangeSubscriptionCommand command) 
+    private async Task<ResultGeneric<CancelSubscriptionResult>> ExecuteSubscriptionCancel(CancelSubscriptionCommand command) 
     {
-        /*
         var trader = await _traderRepository.GetByIdIncludeAllAsync(command.TraderId);
-        if (trader == null) 
-        {
-            return Result.Failure("Trader not found.");
-        }
-
-        var newSubscriptionPlan = await _subscriptionPlanRepository.GetByIdAsync(command.NewPlanId);
-        if (newSubscriptionPlan == null) 
-        {
-            return Result.Failure("Subscription Plan not found.");
-        }
-
-        var canSwitch = await _limitGuard.CanSwitchToPlanAsync(trader.Id, newSubscriptionPlan);
-        if (!canSwitch)
-        {
-            return Result.Failure("Cannot switch plan: current active strategies or assets exceed the new plan limits.");
-        }
-
-        trader.ProcessPayment(newSubscriptionPlan);
+        if (trader == null) return ResultGeneric<CancelSubscriptionResult>.Failure("Trader not found.");
         
+        var allPlans = await _planRepository.GetAllAsync();
+        var premiumPlan = allPlans.FirstOrDefault(p => p.Name.ToLower() != "basic");
+
+        DiscountOffer? discountOffer = null;
+        if (premiumPlan != null)
+        {
+            discountOffer = await _discountService.GetEarlyCancellationOfferAsync(trader.Id, premiumPlan.Id);
+        }
+        
+        if (discountOffer != null && !command.ForceCancel)
+        {
+            // Do not cancel yet. Present the retention offer.
+            return ResultGeneric<CancelSubscriptionResult>.Success(new CancelSubscriptionResult 
+            { 
+                WasCancelled = false, 
+                RetentionOffer = discountOffer 
+            });
+        }
+        
+        trader.CancelSubscription();
         await _traderRepository.SaveChangesAsync();
-            */
-        return Result.Success();
+        
+        return ResultGeneric<CancelSubscriptionResult>.Success(new CancelSubscriptionResult 
+        { 
+            WasCancelled = true, 
+            RetentionOffer = discountOffer 
+        });
     }
 }
+

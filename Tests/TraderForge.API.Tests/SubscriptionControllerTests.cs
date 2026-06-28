@@ -29,11 +29,15 @@ public class SubscriptionControllerTests
 
         var changeHandler = new ChangeSubscriptionCommandHandler(
             _traderRepoMock.Object, _planRepoMock.Object, _limitGuardMock.Object);
+        
+        var cancelHandler = new CancelSubscriptionCommandHandler(
+            _traderRepoMock.Object, _discountServiceMock.Object, _planRepoMock.Object);
+            
         var getAllPlansHandler = new GetAllPlansQueryHandler(_planRepoMock.Object);
         var getTraderPlanHandler = new GetTraderPlanQueryHandler(_traderRepoMock.Object);
 
         _controller = new SubscriptionController(
-            changeHandler, _discountServiceMock.Object, getAllPlansHandler, getTraderPlanHandler);
+            changeHandler, cancelHandler, _discountServiceMock.Object, getAllPlansHandler, getTraderPlanHandler);
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
         {

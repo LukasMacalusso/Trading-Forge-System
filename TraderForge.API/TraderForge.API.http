@@ -12,7 +12,7 @@ POST {{hostAddress}}/api/identity/register
 Content-Type: application/json
 
 {
-  "email": "test16@traderforge.com",
+  "email": "ignacioloncon2006@gmail.com",
   "password": "SuperSecretPassword123!"
 }
 
@@ -40,6 +40,14 @@ Authorization: bearer {{token}}
   "newPlanId": "22222222-2222-2222-2222-222222222222"
 }
 
+### Cancel Subscription (Checks for retention offer)
+POST {{hostAddress}}/api/subscription/cancel
+Authorization: bearer {{token}}
+
+### Force Cancel Subscription (Bypasses retention offer)
+POST {{hostAddress}}/api/subscription/cancel?forceCancel=true
+Authorization: bearer {{token}}
+
 ###
 
 ### Login as admin — copy returned token to @adminToken variable above
@@ -47,7 +55,7 @@ POST {{hostAddress}}/api/identity/login
 Content-Type: application/json
 
 {
-  "email": "test16@traderforge.com",
+  "email": "ignacioloncon2006@gmail.com",
   "password": "SuperSecretPassword123!"
 }
 
