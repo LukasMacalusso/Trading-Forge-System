@@ -1,0 +1,38 @@
+/** Drawing tools available in the chart's drawing toolbar. */
+export type DrawingToolId =
+  | 'cursor'
+  | 'trendline'
+  | 'horizontal'
+  | 'vertical'
+  | 'rectangle'
+  | 'ellipse'
+  | 'arrow'
+  | 'brush'
+  | 'text'
+  | 'fib'
+  | 'measure';
+
+/**
+ * A point anchored to chart data by fractional logical index (continuous along
+ * the time axis, unlike a bar time) and price. This keeps drawings smooth while
+ * dragging and lets them sit between bars or past the last one.
+ */
+export interface DrawingPoint {
+  logical: number;
+  price: number;
+}
+
+export interface Drawing {
+  id: string;
+  tool: DrawingToolId;
+  points: DrawingPoint[];
+  color: string;
+  text?: string;
+}
+
+/** Tools that are committed with a single click (the rest need two points). */
+export const SINGLE_POINT_TOOLS: ReadonlySet<DrawingToolId> = new Set([
+  'horizontal',
+  'vertical',
+  'text',
+]);
