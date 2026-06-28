@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Briefcase, CreditCard, Clock, LogIn, LogOut, Globe, User } from 'lucide-react';
+import { LayoutDashboard, Briefcase, CreditCard, Clock, LogIn, LogOut, Globe, User, Workflow } from 'lucide-react';
 import { AlertBanner } from '@components/Notifications/AlertBanner';
 import { useAuthStore } from '@store/authStore';
 
@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/portfolio', icon: Briefcase, label: 'Portfolio' },
   { to: '/all', icon: Globe, label: 'All' },
+  { to: '/strategy', icon: Workflow, label: 'Estrategias' },
   { to: '/pending', icon: Clock, label: 'Pending' },
   { to: '/subscription', icon: CreditCard, label: 'Plan' },
   { to: '/cuenta', icon: User, label: 'Cuenta' },
