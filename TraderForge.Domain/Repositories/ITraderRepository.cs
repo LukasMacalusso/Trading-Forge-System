@@ -17,8 +17,7 @@ public interface ITraderRepository
     Task<Trader?> GetByIdIncludePlanAndStrategyAsync(string id);
 
     Task<Trader?> GetByIdIncludePlanAndPositionsAsync(string id);
-
-
+    Task<IEnumerable<Trader>> GetAllIncludeSubPlanAsync();
     
     Task SaveChangesAsync();
 }
