@@ -10,6 +10,8 @@ import {
 import type { UTCTimestamp, IChartApi, ISeriesApi } from 'lightweight-charts';
 import type { CandlestickBar } from '@models/Asset';
 import { sma, rsi, type IndicatorPoint } from '@utils/indicators';
+import { useChartDrawings } from './useChartDrawings';
+import { DrawingToolbar } from './DrawingToolbar';
 
 interface CandlestickChartProps {
   candles: CandlestickBar[];
@@ -45,6 +47,19 @@ export const CandlestickChart = memo(function CandlestickChart({ candles, symbol
 
   const [activeMas, setActiveMas] = useState<number[]>([7, 25]);
   const [showRsi, setShowRsi] = useState(false);
+  const [chartReady, setChartReady] = useState(false);
+
+  const candlesRef = useRef(candles);
+  candlesRef.current = candles;
+
+  const drawings = useChartDrawings({
+    chartRef,
+    seriesRef: candleRef,
+    containerRef,
+    candlesRef,
+    ready: chartReady,
+    symbol,
+  });
 
   // Create the chart once and keep it alive so toggling indicators or live
   // price updates never reset the user's pan/zoom.
@@ -74,6 +89,7 @@ export const CandlestickChart = memo(function CandlestickChart({ candles, symbol
       wickDownColor: '#ef4444',
     });
     chartRef.current = chart;
+    setChartReady(true);
 
     return () => {
       chart.remove();
@@ -82,6 +98,7 @@ export const CandlestickChart = memo(function CandlestickChart({ candles, symbol
       maRefs.current.clear();
       rsiRef.current = null;
       lastSymbol.current = null;
+      setChartReady(false);
     };
   }, []);
 
@@ -167,8 +184,10 @@ export const CandlestickChart = memo(function CandlestickChart({ candles, symbol
 
   return (
     <div className="w-full h-full relative">
+      {candles.length > 0 && <DrawingToolbar {...drawings} />}
+
       {candles.length > 0 && (
-        <div className="absolute top-2 left-2 z-10 flex flex-wrap items-center gap-1.5">
+        <div className="absolute top-2 left-14 z-10 flex flex-wrap items-center gap-1.5">
           {MA_PRESETS.map((p) => {
             const active = activeMas.includes(p.period);
             return (
@@ -208,7 +227,10 @@ export const CandlestickChart = memo(function CandlestickChart({ candles, symbol
         </div>
       )}
 
-      <div ref={containerRef} className="w-full h-full" />
+      <div
+        ref={containerRef}
+        className={`w-full h-full ${drawings.activeTool !== 'cursor' ? 'cursor-crosshair' : ''}`}
+      />
 
       {candles.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center text-neutral-600 text-sm pointer-events-none">
