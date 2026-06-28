@@ -1,3 +1,6 @@
+using System.Threading.Channels;
+using TraderForge.Application.Interfaces.Email;
+using TraderForge.Application.Models.Email;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +16,8 @@ using TraderForge.Infrastructure;
 using TraderForge.Infrastructure.Persistence;
 using TraderForge.Infrastructure.Repositories;
 using TraderForge.Infrastructure.Services;
+using TraderForge.Infrastructure.Services.Email;
+using TraderForge.Infrastructure.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -98,6 +103,20 @@ builder.Services.AddHttpClient<IMarketDataProvider, BinanceMarketProvider>();
 builder.Services.AddSingleton<IMarketService, CachedMarketService>();
 builder.Services.AddHostedService<BackgroundMarketPollingService>();
 builder.Services.AddSingleton<IMarketDataBroadcaster, SignalRMarketDataBroadcaster>();
+
+// -- CQRS Events (MediatR) -- //
+builder.Services.AddMediatR(cfg => 
+    cfg.RegisterServicesFromAssemblyContaining<TraderForge.Application.Handlers.RegisterTraderCommandHandler>()
+);
+
+// -- Email & Notification Services -- //
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("SmtpSettings"));
+var emailChannel = Channel.CreateUnbounded<EmailMessage>();
+builder.Services.AddSingleton(emailChannel.Writer);
+builder.Services.AddSingleton(emailChannel.Reader);
+builder.Services.AddSingleton<IEmailService, EmailChannel>();
+builder.Services.AddSingleton<IEmailTemplateService, EmailTemplateService>();
+builder.Services.AddHostedService<EmailBackgroundService>();
 
 // -- CORS -- //
 builder.Services.AddCors(options =>

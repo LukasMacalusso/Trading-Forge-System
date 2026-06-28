@@ -12,7 +12,7 @@ POST {{hostAddress}}/api/identity/register
 Content-Type: application/json
 
 {
-  "email": "test16@traderforge.com",
+  "email": "ignacioloncon2006@gmail.com",
   "password": "SuperSecretPassword123!"
 }
 

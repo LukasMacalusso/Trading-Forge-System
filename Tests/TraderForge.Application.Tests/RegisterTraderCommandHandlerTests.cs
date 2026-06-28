@@ -1,3 +1,4 @@
+using MediatR;
 using Moq;
 using TraderForge.Domain.Common;
 using TraderForge.Application.DTOs;
@@ -33,7 +34,8 @@ public class RegisterTraderCommandHandlerTests
         _handler = new RegisterTraderCommandHandler(
             _identityServiceMock.Object,
             _traderRepositoryMock.Object,
-            _planRepositoryMock.Object);
+            _planRepositoryMock.Object,
+            Mock.Of<IPublisher>());
     }
 
     [Fact]
