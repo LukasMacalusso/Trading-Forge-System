@@ -12,7 +12,7 @@ public class BackgroundMarketPollingService : BackgroundService
 {
     private readonly IMemoryCache _cache;
     private readonly IMarketDataBroadcaster _broadcaster;
-    private readonly Uri _binanceWebSocketUri = new("wss://stream.binance.com:9443/ws/!ticker@arr");
+    private readonly Uri _binanceWebSocketUri = new("wss://stream.binance.com:9443/ws/!miniTicker@arr");
 
     public BackgroundMarketPollingService(
         IMemoryCache cache,
@@ -134,11 +134,11 @@ public class BackgroundMarketPollingService : BackgroundService
         symbol = string.Empty;
         price = 0;
 
-        if (!element.TryGetProperty("symbol", out var symbolProp) || !element.TryGetProperty("price", out var priceProp))
+        if (!element.TryGetProperty("s", out var symbolProp) || !element.TryGetProperty("c", out var priceProp))
             return false;
 
         symbol = symbolProp.GetString() ?? string.Empty;
-        return decimal.TryParse(priceProp.GetString(), System.Globalization.CultureInfo.InvariantCulture, out price);
+        return decimal.TryParse(priceProp.GetString(), out price);
     }
 
     private async Task SaveAndBroadcastPricesAsync(MarketPriceCacheItem currentPrices, CancellationToken stoppingToken)
