@@ -1,7 +1,12 @@
+import { useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Briefcase, CreditCard, Clock, LogIn, LogOut, Globe, User } from 'lucide-react';
 import { AlertBanner } from '@components/Notifications/AlertBanner';
+import { OnboardingTour } from '@components/Onboarding/OnboardingTour';
+import { HelpButton } from '@components/Onboarding/HelpButton';
 import { useAuthStore } from '@store/authStore';
+import { useOnboardingStore } from '@store/onboardingStore';
+import { OnboardingRepository } from '@utils/OnboardingRepository';
 
 const NAV_ITEMS = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -14,12 +19,20 @@ const NAV_ITEMS = [
 
 export function AppLayout() {
   const { isAuthenticated, logout } = useAuthStore();
+  const startOnboarding = useOnboardingStore((s) => s.start);
   const navigate = useNavigate();
 
   function handleLogout() {
     logout();
     navigate('/');
   }
+
+  // Auto-launch the tour once for first-time users.
+  useEffect(() => {
+    if (!isAuthenticated || OnboardingRepository.isCompleted()) return;
+    const timer = setTimeout(startOnboarding, 700);
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, startOnboarding]);
 
   return (
     <div className="flex h-screen bg-neutral-950 overflow-hidden">
@@ -31,7 +44,7 @@ export function AppLayout() {
           </h1>
         </div>
 
-        <nav className="flex-1 py-4 flex flex-col gap-1 px-2">
+        <nav data-tour="sidebar" className="flex-1 py-4 flex flex-col gap-1 px-2">
           {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
@@ -50,7 +63,8 @@ export function AppLayout() {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-neutral-800 shrink-0">
+        <div className="p-4 border-t border-neutral-800 shrink-0 flex flex-col gap-1">
+          <HelpButton />
           {isAuthenticated ? (
             <button
               onClick={handleLogout}
@@ -77,6 +91,7 @@ export function AppLayout() {
       </main>
 
       <AlertBanner />
+      <OnboardingTour />
     </div>
   );
 }
