@@ -1,6 +1,6 @@
 import type { Drawing } from '@models/Drawing';
 
-const PREFIX = 'tf_drawings_';
+const PREFIX = 'tf_drawings_v2_';
 
 /**
  * Persists chart drawings per symbol in localStorage so a user's annotations

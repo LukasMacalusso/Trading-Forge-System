@@ -6,6 +6,7 @@ import type {
   IChartApi,
   ISeriesApi,
   Time,
+  Logical,
 } from 'lightweight-charts';
 import type { CanvasRenderingTarget2D } from 'fancy-canvas';
 import type { Drawing, DrawingPoint } from '@models/Drawing';
@@ -67,7 +68,7 @@ export class DrawingPrimitive implements ISeriesPrimitive<Time> {
 
   coord(point: DrawingPoint): Coord | null {
     if (!this._chart || !this._series) return null;
-    const x = this._chart.timeScale().timeToCoordinate(point.time as Time);
+    const x = this._chart.timeScale().logicalToCoordinate(point.logical as Logical);
     const y = this._series.priceToCoordinate(point.price);
     if (x === null || y === null) return null;
     return { x, y };

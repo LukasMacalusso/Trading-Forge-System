@@ -85,21 +85,19 @@ export function useChartDrawings({
       const rect = container.getBoundingClientRect();
       const x = clientX - rect.left;
       const y = clientY - rect.top;
-      const time = chart.timeScale().coordinateToTime(x);
+      const logical = chart.timeScale().coordinateToLogical(x);
       const price = series.coordinateToPrice(y);
-      if (time === null || price === null) return null;
+      if (logical === null || price === null) return null;
 
-      let point: DrawingPoint = { time: time as number, price };
+      let point: DrawingPoint = { logical: logical as number, price };
       if (magnetRef.current && candlesRef.current?.length) {
         const candles = candlesRef.current;
-        let nearest = candles[0];
-        for (const c of candles) {
-          if (Math.abs(c.time - point.time) < Math.abs(nearest.time - point.time)) nearest = c;
-        }
-        const ohlc = [nearest.open, nearest.high, nearest.low, nearest.close];
+        const index = Math.max(0, Math.min(candles.length - 1, Math.round(point.logical)));
+        const bar = candles[index];
+        const ohlc = [bar.open, bar.high, bar.low, bar.close];
         let snapped = ohlc[0];
         for (const v of ohlc) if (Math.abs(v - price) < Math.abs(snapped - price)) snapped = v;
-        point = { time: nearest.time, price: snapped };
+        point = { logical: index, price: snapped };
       }
       return point;
     },
@@ -251,7 +249,7 @@ export function useChartDrawings({
         if (draft.points.length > 1) addDrawing({ tool: 'brush', points: draft.points });
       } else {
         const [a, b] = draft.points;
-        if (a.time !== b.time || a.price !== b.price) addDrawing({ tool: draft.tool, points: [a, b] });
+        if (a.logical !== b.logical || a.price !== b.price) addDrawing({ tool: draft.tool, points: [a, b] });
       }
       setActiveTool('cursor');
     }

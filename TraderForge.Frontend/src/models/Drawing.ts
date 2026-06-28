@@ -13,9 +13,13 @@ export type DrawingToolId =
   | 'fib'
   | 'measure';
 
-/** A point anchored to chart data: a time (UNIX seconds) and a price. */
+/**
+ * A point anchored to chart data by fractional logical index (continuous along
+ * the time axis, unlike a bar time) and price. This keeps drawings smooth while
+ * dragging and lets them sit between bars or past the last one.
+ */
 export interface DrawingPoint {
-  time: number;
+  logical: number;
   price: number;
 }
 
