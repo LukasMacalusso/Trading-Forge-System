@@ -1,6 +1,8 @@
 using Moq;
 using TraderForge.Application.DTOs;
+using TraderForge.Application.DTOs.Responses;
 using TraderForge.Application.Handlers;
+using TraderForge.Domain.Constants;
 using TraderForge.Domain.Entities;
 using TraderForge.Domain.Repositories;
 using TraderForge.Domain.Services;
@@ -26,7 +28,13 @@ public class BuyPositionCommandHandlerTests
     {
         var marketMock = new Mock<IMarketService>();
         marketMock.Setup(m => m.IsMarketOpen(It.IsAny<string>())).Returns(true);
-        marketMock.Setup(m => m.GetPricesAsync()).ReturnsAsync(new Dictionary<string, decimal> { { "BTC", 50000m } });
+        
+        marketMock.Setup(m => m.GetPricesAsync()).ReturnsAsync(new MarketPriceCacheItem() 
+        { 
+            Prices = new Dictionary<string, decimal> { { "BTC", 50000m } },
+            LastUpdated = DateTime.UtcNow
+        });
+        
         var limitGuardMock = new Mock<ISubscriptionLimitGuard>();
         limitGuardMock.Setup(l => l.CanAddAssetAsync(It.IsAny<string>())).ReturnsAsync(true);
         var traderRepo = new Mock<ITraderRepository>();
