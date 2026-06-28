@@ -32,7 +32,14 @@ export interface DrawingToolsApi {
   toggleHidden: () => void;
   hasDrawings: boolean;
   clearAll: () => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 }
+
+const cloneDrawings = (list: Drawing[]): Drawing[] =>
+  list.map((d) => ({ ...d, points: d.points.map((p) => ({ ...p })) }));
 
 function distanceToSegment(px: number, py: number, ax: number, ay: number, bx: number, by: number): number {
   const dx = bx - ax;
@@ -62,11 +69,22 @@ export function useChartDrawings({
   const activeToolRef = useRef<DrawingToolId>('cursor');
   const magnetRef = useRef(false);
   const symbolRef = useRef(symbol);
+  const pastRef = useRef<Drawing[][]>([]);
+  const futureRef = useRef<Drawing[][]>([]);
+  const moveRef = useRef<{
+    id: string;
+    startLogical: number;
+    startPrice: number;
+    origin: DrawingPoint[];
+    moved: boolean;
+  } | null>(null);
 
   const [activeTool, setActiveToolState] = useState<DrawingToolId>('cursor');
   const [magnet, setMagnet] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [hasDrawings, setHasDrawings] = useState(false);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
 
   const repaint = useCallback(() => primitiveRef.current?.requestUpdate(), []);
 
@@ -74,6 +92,41 @@ export function useChartDrawings({
     DrawingRepository.save(symbolRef.current, stateRef.current.drawings);
     setHasDrawings(stateRef.current.drawings.length > 0);
   }, []);
+
+  const updateHistoryFlags = useCallback(() => {
+    setCanUndo(pastRef.current.length > 0);
+    setCanRedo(futureRef.current.length > 0);
+  }, []);
+
+  /** Pushes the current drawings onto the undo stack before a mutation. */
+  const snapshot = useCallback(() => {
+    pastRef.current.push(cloneDrawings(stateRef.current.drawings));
+    if (pastRef.current.length > 60) pastRef.current.shift();
+    futureRef.current = [];
+    updateHistoryFlags();
+  }, [updateHistoryFlags]);
+
+  const undo = useCallback(() => {
+    const prev = pastRef.current.pop();
+    if (!prev) return;
+    futureRef.current.push(cloneDrawings(stateRef.current.drawings));
+    stateRef.current.drawings = prev;
+    stateRef.current.selectedId = null;
+    persist();
+    repaint();
+    updateHistoryFlags();
+  }, [persist, repaint, updateHistoryFlags]);
+
+  const redo = useCallback(() => {
+    const next = futureRef.current.pop();
+    if (!next) return;
+    pastRef.current.push(cloneDrawings(stateRef.current.drawings));
+    stateRef.current.drawings = next;
+    stateRef.current.selectedId = null;
+    persist();
+    repaint();
+    updateHistoryFlags();
+  }, [persist, repaint, updateHistoryFlags]);
 
   const pointAt = useCallback(
     (clientX: number, clientY: number): DrawingPoint | null => {
@@ -147,6 +200,7 @@ export function useChartDrawings({
 
   const addDrawing = useCallback(
     (drawing: Omit<Drawing, 'id' | 'color'> & { color?: string }) => {
+      snapshot();
       stateRef.current.drawings.push({
         ...drawing,
         id: crypto.randomUUID(),
@@ -155,7 +209,7 @@ export function useChartDrawings({
       persist();
       repaint();
     },
-    [persist, repaint],
+    [snapshot, persist, repaint],
   );
 
   const setActiveTool = useCallback(
@@ -183,11 +237,13 @@ export function useChartDrawings({
   }, [repaint]);
 
   const clearAll = useCallback(() => {
+    if (stateRef.current.drawings.length === 0) return;
+    snapshot();
     stateRef.current.drawings = [];
     stateRef.current.selectedId = null;
     persist();
     repaint();
-  }, [persist, repaint]);
+  }, [snapshot, persist, repaint]);
 
   // Attach the primitive and input listeners once the chart is ready.
   useEffect(() => {
@@ -207,7 +263,22 @@ export function useChartDrawings({
       if (!point) return;
 
       if (tool === 'cursor') {
-        stateRef.current.selectedId = hitTest(e.clientX, e.clientY);
+        const id = hitTest(e.clientX, e.clientY);
+        stateRef.current.selectedId = id;
+        if (id) {
+          const target = stateRef.current.drawings.find((d) => d.id === id);
+          if (target) {
+            moveRef.current = {
+              id,
+              startLogical: point.logical,
+              startPrice: point.price,
+              origin: target.points.map((p) => ({ ...p })),
+              moved: false,
+            };
+            // Stop the chart from panning while dragging a drawing.
+            chartRef.current?.applyOptions({ handleScroll: false, handleScale: false });
+          }
+        }
         repaint();
         return;
       }
@@ -232,6 +303,24 @@ export function useChartDrawings({
     }
 
     function onMouseMove(e: MouseEvent) {
+      const move = moveRef.current;
+      if (move) {
+        const point = pointAt(e.clientX, e.clientY);
+        if (!point) return;
+        const dLogical = point.logical - move.startLogical;
+        const dPrice = point.price - move.startPrice;
+        const target = stateRef.current.drawings.find((d) => d.id === move.id);
+        if (target) {
+          if (!move.moved) {
+            // Record the pre-move state once, on the first actual drag.
+            snapshot();
+            move.moved = true;
+          }
+          target.points = move.origin.map((p) => ({ logical: p.logical + dLogical, price: p.price + dPrice }));
+          repaint();
+        }
+        return;
+      }
       const draft = stateRef.current.draft;
       if (!draft) return;
       const point = pointAt(e.clientX, e.clientY);
@@ -242,6 +331,13 @@ export function useChartDrawings({
     }
 
     function onMouseUp() {
+      if (moveRef.current) {
+        const moved = moveRef.current.moved;
+        moveRef.current = null;
+        chartRef.current?.applyOptions({ handleScroll: true, handleScale: true });
+        if (moved) persist();
+        return;
+      }
       const draft = stateRef.current.draft;
       if (!draft) return;
       stateRef.current.draft = null;
@@ -255,12 +351,19 @@ export function useChartDrawings({
     }
 
     function onKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'z' || e.key === 'Z')) {
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+        return;
+      }
       if (e.key === 'Escape') {
         stateRef.current.draft = null;
         setActiveTool('cursor');
         return;
       }
       if ((e.key === 'Delete' || e.key === 'Backspace') && stateRef.current.selectedId) {
+        snapshot();
         stateRef.current.drawings = stateRef.current.drawings.filter(
           (d) => d.id !== stateRef.current.selectedId,
         );
@@ -283,7 +386,7 @@ export function useChartDrawings({
       window.removeEventListener('mouseup', onMouseUp);
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [ready, seriesRef, containerRef, pointAt, hitTest, addDrawing, setActiveTool, persist, repaint]);
+  }, [ready, seriesRef, containerRef, chartRef, pointAt, hitTest, addDrawing, setActiveTool, persist, repaint, snapshot, undo, redo]);
 
   // Load persisted drawings whenever the symbol changes.
   useEffect(() => {
@@ -292,9 +395,12 @@ export function useChartDrawings({
     stateRef.current.drawings = DrawingRepository.load(symbol);
     stateRef.current.selectedId = null;
     stateRef.current.draft = null;
+    pastRef.current = [];
+    futureRef.current = [];
+    updateHistoryFlags();
     setHasDrawings(stateRef.current.drawings.length > 0);
     repaint();
-  }, [ready, symbol, repaint]);
+  }, [ready, symbol, repaint, updateHistoryFlags]);
 
   return {
     activeTool,
@@ -305,5 +411,9 @@ export function useChartDrawings({
     toggleHidden,
     hasDrawings,
     clearAll,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   };
 }

@@ -4,7 +4,6 @@ export type DrawingToolId =
   | 'trendline'
   | 'horizontal'
   | 'vertical'
-  | 'ray'
   | 'rectangle'
   | 'ellipse'
   | 'arrow'

@@ -2,7 +2,6 @@ import {
   MousePointer2,
   Slash,
   Minus,
-  MoveUpRight,
   Square,
   Circle,
   ArrowUpRight,
@@ -14,6 +13,8 @@ import {
   Eye,
   EyeOff,
   Trash2,
+  Undo2,
+  Redo2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { DrawingToolId } from '@models/Drawing';
@@ -32,7 +33,6 @@ const TOOL_GROUPS: ToolDef[][] = [
     { id: 'trendline', icon: Slash, label: 'Línea de tendencia' },
     { id: 'horizontal', icon: Minus, label: 'Línea horizontal' },
     { id: 'vertical', icon: Minus, label: 'Línea vertical', rotate: true },
-    { id: 'ray', icon: MoveUpRight, label: 'Rayo' },
   ],
   [
     { id: 'rectangle', icon: Square, label: 'Rectángulo' },
@@ -59,6 +59,10 @@ export function DrawingToolbar({
   toggleHidden,
   hasDrawings,
   clearAll,
+  undo,
+  redo,
+  canUndo,
+  canRedo,
 }: DrawingToolsApi) {
   return (
     <div className="absolute top-2 left-2 z-20 flex flex-col items-center gap-1 p-1 rounded-xl border border-neutral-800 bg-neutral-900/90 backdrop-blur-sm shadow-xl">
@@ -86,6 +90,28 @@ export function DrawingToolbar({
           })}
         </div>
       ))}
+
+      <span className="my-0.5 h-px w-5 bg-neutral-800" />
+
+      <button
+        onClick={undo}
+        disabled={!canUndo}
+        aria-label="Deshacer"
+        title="Deshacer (⌘Z)"
+        className={`${buttonCls} text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-neutral-400`}
+      >
+        <Undo2 size={16} />
+      </button>
+
+      <button
+        onClick={redo}
+        disabled={!canRedo}
+        aria-label="Rehacer"
+        title="Rehacer (⌘⇧Z)"
+        className={`${buttonCls} text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-neutral-400`}
+      >
+        <Redo2 size={16} />
+      </button>
 
       <span className="my-0.5 h-px w-5 bg-neutral-800" />
 

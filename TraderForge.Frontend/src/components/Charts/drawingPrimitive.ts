@@ -128,9 +128,6 @@ class DrawingRenderer implements IPrimitivePaneRenderer {
       case 'trendline':
         this._line(ctx, coords[0], coords[1]);
         break;
-      case 'ray':
-        this._ray(ctx, coords[0], coords[1], width);
-        break;
       case 'arrow':
         this._line(ctx, coords[0], coords[1]);
         this._arrowHead(ctx, coords[0], coords[1]);
@@ -174,14 +171,6 @@ class DrawingRenderer implements IPrimitivePaneRenderer {
 
   private _line(ctx: CanvasRenderingContext2D, a: Coord, b: Coord): void {
     this._segment(ctx, a.x, a.y, b.x, b.y);
-  }
-
-  private _ray(ctx: CanvasRenderingContext2D, a: Coord, b: Coord, width: number): void {
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    const farX = dx === 0 ? a.x : width + 100;
-    const farY = dx === 0 ? (dy >= 0 ? 100000 : -100000) : a.y + (dy / dx) * (farX - a.x);
-    this._segment(ctx, a.x, a.y, farX, farY);
   }
 
   private _arrowHead(ctx: CanvasRenderingContext2D, a: Coord, b: Coord): void {
