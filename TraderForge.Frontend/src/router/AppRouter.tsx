@@ -6,6 +6,7 @@ import { LandingPage } from '@pages/Landing/LandingPage';
 import { DashboardPage } from '@pages/Dashboard/DashboardPage';
 import { PortfolioPage } from '@pages/Portfolio/PortfolioPage';
 import { AllAssetsPage } from '@pages/Market/AllAssetsPage';
+import { StrategyBuilderPage } from '@pages/Bots/StrategyBuilderPage';
 import { AccountPage } from '@pages/Account/AccountPage';
 import { LoginPage } from '@pages/Auth/LoginPage';
 import { RegisterPage } from '@pages/Auth/RegisterPage';
@@ -29,6 +30,7 @@ export function AppRouter() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/portfolio" element={<PortfolioPage />} />
             <Route path="/all" element={<AllAssetsPage />} />
+            <Route path="/strategy" element={<StrategyBuilderPage />} />
             <Route path="/cuenta" element={<AccountPage />} />
             <Route path="/pending" element={<div className="p-6 text-neutral-400">Pending Operations — coming soon</div>} />
             <Route path="/subscription" element={<div className="p-6 text-neutral-400">Subscription — coming soon</div>} />
