@@ -1,5 +1,7 @@
+using MediatR;
 using TraderForge.Domain.Common;
 using TraderForge.Application.DTOs;
+using TraderForge.Application.Events;
 using TraderForge.Domain.Entities;
 using TraderForge.Domain.Repositories;
 using TraderForge.Domain.Services;
@@ -11,15 +13,18 @@ public class RegisterTraderCommandHandler
     private readonly IIdentityService _identityService;
     private readonly ITraderRepository _traderRepository;
     private readonly ISubscriptionPlanRepository _planRepository;
+    private readonly IPublisher _publisher; 
 
     public RegisterTraderCommandHandler(
         IIdentityService identityService, 
         ITraderRepository traderRepository, 
-        ISubscriptionPlanRepository planRepository) 
+        ISubscriptionPlanRepository planRepository,
+        IPublisher publisher)
     {
         _identityService = identityService;
         _traderRepository = traderRepository;
         _planRepository = planRepository;
+        _publisher = publisher;
     }
 
     public async Task<Result> HandleAsync(RegisterTraderCommand command)
@@ -53,6 +58,7 @@ public class RegisterTraderCommandHandler
         }
         
         await _traderRepository.AddAsync(newTrader);
+        await _publisher.Publish(new TraderRegisteredEvent(command.Email, command.Email.Split('@')[0]));
         return Result.Success();
     }
     private static string GenerateNewAccountId()

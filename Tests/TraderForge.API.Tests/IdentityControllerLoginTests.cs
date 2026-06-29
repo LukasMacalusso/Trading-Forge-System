@@ -1,10 +1,10 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using TraderForge.API.Controllers;
 using TraderForge.API.Requests;
 using TraderForge.Application.DTOs;
 using TraderForge.Application.Handlers;
-
 using TraderForge.Domain.Repositories;
 using TraderForge.Domain.Services;
 using TraderForge.Domain.Common;
@@ -18,7 +18,8 @@ public class IdentityControllerLoginTests
         return new RegisterTraderCommandHandler(
             Mock.Of<IIdentityService>(),
             Mock.Of<ITraderRepository>(),
-            Mock.Of<ISubscriptionPlanRepository>());
+            Mock.Of<ISubscriptionPlanRepository>(),
+            Mock.Of<IPublisher>());
     }
 
     [Fact]
@@ -76,7 +77,9 @@ public class IdentityControllerLoginTests
         var registerHandler = new RegisterTraderCommandHandler(
             identityServiceMock.Object,
             Mock.Of<ITraderRepository>(),
-            Mock.Of<ISubscriptionPlanRepository>());
+            Mock.Of<ISubscriptionPlanRepository>(),
+            Mock.Of<IPublisher>()
+        );
 
         var controller = new IdentityController(
             registerHandler,

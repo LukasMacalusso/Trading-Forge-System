@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using TraderForge.API.Controllers;
@@ -26,7 +27,8 @@ public class SubscriptionControllerNoAuthTests
             new CancelSubscriptionCommandHandler(
                 Mock.Of<ITraderRepository>(),
                 Mock.Of<IDiscountService>(),
-                Mock.Of<ISubscriptionPlanRepository>()),
+                Mock.Of<ISubscriptionPlanRepository>(),
+                Mock.Of<IPublisher>()),
             Mock.Of<IDiscountService>(),
             getAllPlansHandler,
             new GetTraderPlanQueryHandler(Mock.Of<ITraderRepository>()));
