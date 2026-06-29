@@ -319,6 +319,34 @@ public class BotGraphRunnerTests
         Assert.False(engine.IsStrategyRunning(Guid.NewGuid()));
     }
 
+    [Fact]
+    public async Task Engine_EventProcessing_CreatesExecution()
+    {
+        var (s, trigger, _) = CreateBaseStrategy();
+        var bus = new MarketDataEventBus();
+        var execRepo = new MockExecutionRepo();
+        var sp = new ServiceCollection()
+            .AddSingleton<IStrategyRepository>(new MockStrategyRepository(s))
+            .AddSingleton<IStrategyExecutionRepository>(execRepo)
+            .AddSingleton<IMarketDataEventBus>(bus)
+            .AddSingleton<StrategyEngineService>()
+            .BuildServiceProvider();
+
+        var engine = sp.GetRequiredService<StrategyEngineService>();
+
+        bus.Publish(MakePriceEvent("BTCUSDT", 50000));
+
+        using var cts = new CancellationTokenSource();
+        var startTask = engine.StartAsync(cts.Token);
+        await Task.Delay(3000);
+        cts.Cancel();
+        try { await startTask; } catch { }
+
+        Assert.True(engine.IsStrategyRunning(s.Id));
+        var executions = await execRepo.GetAllExecutionsAsync();
+        Assert.NotEmpty(executions);
+    }
+
     // ---- MarketDataEventBus Tests ----
 
     [Fact]
@@ -808,6 +836,50 @@ public class BotGraphRunnerTests
         var execution = Assert.Single(await executionRepo.GetAllExecutionsAsync());
         Assert.Equal(ExecutionStatus.Completed, execution.Status);
         Assert.Equal(actionFalse.Id, execution.CurrentNodeId);
+    }
+
+    [Fact]
+    public async Task Constructor_TriggerWithoutSymbol_FiltersOut()
+    {
+        var s = new Strategy(Guid.NewGuid(), "NoSymbol", Guid.NewGuid());
+        s.StartEngine();
+        var t = new BotNode(s.Id, BotNodeType.Trigger, "NoSymbol", """{"other":"value"}""", 100, 100);
+        s.BotNodes.Add(t);
+        var runner = CreateRunner(s, out _);
+
+        Assert.False(runner.HandlesSymbol("OTHER"));
+        Assert.Empty(runner.GetTriggersForSymbol("OTHER"));
+    }
+
+    [Fact]
+    public async Task WalkGraph_NullNode_SilentlyReturns()
+    {
+        var (s, trigger, _) = CreateBaseStrategy();
+        var missingId = Guid.NewGuid();
+        s.BotEdges.Add(new BotEdge(s.Id, trigger.Id, NodePort.Out, missingId));
+        var runner = CreateRunner(s, out var executionRepo);
+
+        await runner.ExecuteAsync(MakePriceEvent("BTCUSDT", 50000), trigger.Id, CancellationToken.None);
+
+        var execution = Assert.Single(await executionRepo.GetAllExecutionsAsync());
+        Assert.Equal(ExecutionStatus.Completed, execution.Status);
+    }
+
+    [Fact]
+    public async Task ExecuteTrade_MissingSymbol_ReturnsEarly()
+    {
+        var s = new Strategy(Guid.NewGuid(), "NoSym", Guid.NewGuid());
+        s.StartEngine();
+        var t = new BotNode(s.Id, BotNodeType.Trigger, "T", """{"symbol":"BTCUSDT"}""", 100, 100);
+        var a = new BotNode(s.Id, BotNodeType.Action, "Buy", """{"type":"buy","quantity":0.1}""", 100, 300);
+        s.BotNodes.Add(t); s.BotNodes.Add(a);
+        s.BotEdges.Add(new BotEdge(s.Id, t.Id, NodePort.Out, a.Id));
+        var runner = CreateRunner(s, out var executionRepo);
+
+        await runner.ExecuteAsync(new MarketPriceEvent("", 0, DateTime.UtcNow), t.Id, CancellationToken.None);
+
+        var execution = Assert.Single(await executionRepo.GetAllExecutionsAsync());
+        Assert.Equal(ExecutionStatus.Completed, execution.Status);
     }
 
     // ---- Helpers ----

@@ -391,4 +391,30 @@ public class StrategiesControllerTests
         var error = bad.Value.GetType().GetProperty("error")!.GetValue(bad.Value);
         Assert.Equal("stop fail", error);
     }
+
+    [Fact]
+    public async Task AddNode_NoClaim_ReturnsForbid()
+    {
+        var controller = CreateControllerWithoutClaim();
+        var result = await controller.AddNode(Guid.NewGuid(), new AddBotNodeRequest());
+        Assert.IsType<ForbidResult>(result);
+    }
+
+    private StrategiesController CreateControllerWithoutClaim()
+    {
+        var ctrl = new StrategiesController(
+            _strategyRepo.Object, _nodeRepo.Object, _edgeRepo.Object,
+            new AddBotNodeCommandHandler(_nodeRepo.Object),
+            new UpdateBotNodeCommandHandler(_nodeRepo.Object),
+            new RemoveBotNodeCommandHandler(_nodeRepo.Object),
+            new AddBotEdgeCommandHandler(_edgeRepo.Object, _nodeRepo.Object),
+            new RemoveBotEdgeCommandHandler(_edgeRepo.Object),
+            new StartEngineCommandHandler(_strategyRepo.Object, _engine.Object),
+            new StopEngineCommandHandler(_engine.Object));
+        ctrl.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity()) }
+        };
+        return ctrl;
+    }
 }

@@ -89,6 +89,18 @@ public class UpdateBotNodeCommandHandlerTests
         Assert.False(result.IsSuccess);
         Assert.Equal("BotNode not found.", result.ErrorMessage);
     }
+
+    [Fact]
+    public async Task HandleAsync_Exception_ReturnsFailure()
+    {
+        _repo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ThrowsAsync(new Exception("update error"));
+        var cmd = new UpdateBotNodeCommand { Id = Guid.NewGuid(), Name = "X", Config = "{}" };
+
+        var result = await _handler.HandleAsync(cmd);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("update error", result.ErrorMessage);
+    }
 }
 
 public class RemoveBotNodeCommandHandlerTests
@@ -122,6 +134,17 @@ public class RemoveBotNodeCommandHandlerTests
         var result = await _handler.HandleAsync(new RemoveBotNodeCommand { Id = Guid.NewGuid() });
 
         Assert.False(result.IsSuccess);
+    }
+
+    [Fact]
+    public async Task HandleAsync_Exception_ReturnsFailure()
+    {
+        _repo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ThrowsAsync(new Exception("remove node error"));
+
+        var result = await _handler.HandleAsync(new RemoveBotNodeCommand { Id = Guid.NewGuid() });
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("remove node error", result.ErrorMessage);
     }
 }
 
@@ -191,6 +214,17 @@ public class AddBotEdgeCommandHandlerTests
 
         Assert.False(result.IsSuccess);
     }
+
+    [Fact]
+    public async Task HandleAsync_Exception_ReturnsFailure()
+    {
+        _nodeRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ThrowsAsync(new Exception("edge add error"));
+
+        var result = await _handler.HandleAsync(new AddBotEdgeCommand { StrategyId = Guid.NewGuid(), SourceNodeId = Guid.NewGuid(), TargetNodeId = Guid.NewGuid() });
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("edge add error", result.ErrorMessage);
+    }
 }
 
 public class RemoveBotEdgeCommandHandlerTests
@@ -224,6 +258,17 @@ public class RemoveBotEdgeCommandHandlerTests
         var result = await _handler.HandleAsync(new RemoveBotEdgeCommand { Id = Guid.NewGuid() });
 
         Assert.False(result.IsSuccess);
+    }
+
+    [Fact]
+    public async Task HandleAsync_Exception_ReturnsFailure()
+    {
+        _repo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ThrowsAsync(new Exception("remove edge error"));
+
+        var result = await _handler.HandleAsync(new RemoveBotEdgeCommand { Id = Guid.NewGuid() });
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("remove edge error", result.ErrorMessage);
     }
 }
 
@@ -290,6 +335,17 @@ public class StartEngineCommandHandlerTests
 
         Assert.False(result.IsSuccess);
         Assert.Contains("Trigger", result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task HandleAsync_Exception_ReturnsFailure()
+    {
+        _strategyRepo.Setup(r => r.GetByIdWithGraphAsync(It.IsAny<Guid>())).ThrowsAsync(new Exception("start error"));
+
+        var result = await _handler.HandleAsync(new StartEngineCommand { StrategyId = Guid.NewGuid() });
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("start error", result.ErrorMessage);
     }
 }
 
