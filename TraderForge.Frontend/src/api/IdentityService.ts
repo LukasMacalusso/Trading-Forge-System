@@ -22,6 +22,24 @@ export class IdentityService {
       return Result.fail(extractErrorMessage(error, 'Invalid credentials.'));
     }
   }
+
+  /**
+   * Permanently deletes the authenticated trader's account.
+   *
+   * NOTE (backend pending): the API does not yet expose a self-service delete
+   * endpoint — only an admin-scoped `DELETE /api/administrator/{id}` exists.
+   * This targets the conventional `DELETE /api/identity` route so the feature
+   * works end-to-end the moment the backend adds it. Until then it resolves
+   * with an error, which the UI surfaces gracefully.
+   */
+  async deleteAccount(): Promise<Result<void>> {
+    try {
+      await httpClient.delete('/api/identity');
+      return Result.ok(undefined);
+    } catch (error: unknown) {
+      return Result.fail(extractErrorMessage(error, 'No se pudo eliminar la cuenta.'));
+    }
+  }
 }
 
 function extractErrorMessage(error: unknown, fallback: string): string {
