@@ -10,6 +10,7 @@ import { AllAssetsPage } from '@pages/Market/AllAssetsPage';
 import { MyStrategiesPage } from '@pages/Bots/MyStrategiesPage';
 import { StrategyBuilderPage } from '@pages/Bots/StrategyBuilderPage';
 import { AccountPage } from '@pages/Account/AccountPage';
+import { SubscriptionPage } from '@pages/Subscription/SubscriptionPage';
 import { AdminDashboardPage } from '@pages/Admin/AdminDashboardPage';
 import { PendingPage } from '@pages/Pending/PendingPage';
 import { LoginPage } from '@pages/Auth/LoginPage';
@@ -38,7 +39,7 @@ export function AppRouter() {
             <Route path="/strategy/:id" element={<StrategyBuilderPage />} />
             <Route path="/cuenta" element={<AccountPage />} />
             <Route path="/pending" element={<PendingPage />} />
-            <Route path="/subscription" element={<div className="p-6 text-neutral-400">Subscription — coming soon</div>} />
+            <Route path="/subscription" element={<SubscriptionPage />} />
           </Route>
         </Route>
 
