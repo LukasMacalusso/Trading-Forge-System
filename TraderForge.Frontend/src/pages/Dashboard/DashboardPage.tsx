@@ -102,7 +102,10 @@ export function DashboardPage() {
 
           {/* Welcome state — sin activos en watchlist */}
           {!isLoading && !hasWatchedAssets && (
-            <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center">
+            <div
+              data-tour="empty-dashboard"
+              className="flex-1 flex flex-col items-center justify-center gap-3 text-center"
+            >
               <div className="w-16 h-16 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center">
                 <span className="text-2xl">📊</span>
               </div>

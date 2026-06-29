@@ -14,6 +14,24 @@ export const TOUR_STEPS: TourStep[] = [
     route: '/dashboard',
   },
   {
+    id: 'empty-dashboard',
+    target: '[data-tour="empty-dashboard"]',
+    title: 'Tu panel está vacío',
+    body: 'Todavía no sigues ningún activo. Aquí aparecerá el gráfico en cuanto añadas una moneda o acción para operar.',
+    placement: 'top',
+    route: '/dashboard',
+  },
+  {
+    id: 'add-asset',
+    target: '[data-tour="add-asset"]',
+    title: 'Añade un activo',
+    body: 'Pulsa "+ Añadir" (arriba a la derecha) para elegir entre todas las monedas y acciones disponibles, y empieza a ver su gráfico.',
+    // Centered so the tooltip never covers the asset dropdown, which opens just
+    // below the button in the top-right corner.
+    placement: 'center',
+    route: '/dashboard',
+  },
+  {
     id: 'sidebar',
     target: '[data-tour="sidebar"]',
     title: 'Tu navegación',

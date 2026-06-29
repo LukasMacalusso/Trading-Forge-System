@@ -151,9 +151,19 @@ export function OnboardingTour() {
   const position = getTooltipPosition(rect, placement, tooltipHeight);
 
   return createPortal(
-    <div className="fixed inset-0 z-[1000]" role="dialog" aria-modal="true" aria-label="Tutorial de bienvenida">
-      {/* Dimmed backdrop — blocks interaction with the app behind the tour */}
-      {!rect && <div className="absolute inset-0 bg-black/70" onClick={() => stop(false)} />}
+    // pointer-events-none so the tour never blocks the app — the highlighted
+    // element stays usable; only the tooltip (and the centered backdrop) catch
+    // clicks.
+    <div
+      className="fixed inset-0 z-[1000] pointer-events-none"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Tutorial de bienvenida"
+    >
+      {/* Dimmed backdrop for centered steps (no element to interact with) */}
+      {!rect && (
+        <div className="absolute inset-0 bg-black/70 pointer-events-auto" onClick={() => stop(false)} />
+      )}
 
       {/* Spotlight around the highlighted element */}
       {rect && (
@@ -181,7 +191,7 @@ export function OnboardingTour() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.18 }}
-          className="absolute rounded-2xl border border-neutral-700 bg-neutral-900 shadow-2xl p-5"
+          className="absolute rounded-2xl border border-neutral-700 bg-neutral-900 shadow-2xl p-5 pointer-events-auto"
           style={{ top: position.top, left: position.left, width: TOOLTIP_WIDTH }}
         >
           <div className="flex items-start justify-between gap-3 mb-2">
