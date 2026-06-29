@@ -162,7 +162,16 @@ export function OnboardingTour() {
     >
       {/* Dimmed backdrop for centered steps (no element to interact with) */}
       {!rect && (
-        <div className="absolute inset-0 bg-black/70 pointer-events-auto" onClick={() => stop(false)} />
+        <div 
+          className="absolute inset-0 bg-black/70 pointer-events-auto" 
+          onClick={() => stop(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') stop(false);
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label="Cerrar tutorial"
+        />
       )}
 
       {/* Spotlight around the highlighted element */}
