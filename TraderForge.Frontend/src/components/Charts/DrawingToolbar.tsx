@@ -65,7 +65,10 @@ export function DrawingToolbar({
   canRedo,
 }: DrawingToolsApi) {
   return (
-    <div className="absolute top-2 left-2 z-20 flex flex-col items-center gap-1 p-1 rounded-xl border border-neutral-800 bg-neutral-900/90 backdrop-blur-sm shadow-xl">
+    <div
+      data-tour="drawing-tools"
+      className="absolute top-2 left-2 z-20 flex flex-col items-center gap-1 p-1 rounded-xl border border-neutral-800 bg-neutral-900/90 backdrop-blur-sm shadow-xl"
+    >
       {TOOL_GROUPS.map((group, i) => (
         <div key={i} className="flex flex-col items-center gap-1">
           {i > 0 && <span className="my-0.5 h-px w-5 bg-neutral-800" />}

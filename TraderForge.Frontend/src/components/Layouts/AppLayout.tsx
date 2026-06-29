@@ -8,11 +8,11 @@ import { useAuthStore } from '@store/authStore';
 import { useOnboardingStore } from '@store/onboardingStore';
 import { OnboardingRepository } from '@utils/OnboardingRepository';
 
-const NAV_ITEMS = [
+const NAV_ITEMS: { to: string; icon: typeof LayoutDashboard; label: string; tour?: string }[] = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/portfolio', icon: Briefcase, label: 'Portfolio' },
   { to: '/all', icon: Globe, label: 'All' },
-  { to: '/strategy', icon: Workflow, label: 'Estrategias' },
+  { to: '/strategy', icon: Workflow, label: 'Estrategias', tour: 'nav-strategy' },
   { to: '/pending', icon: Clock, label: 'Pending' },
   { to: '/subscription', icon: CreditCard, label: 'Plan' },
   { to: '/cuenta', icon: User, label: 'Cuenta' },
@@ -46,10 +46,11 @@ export function AppLayout() {
         </div>
 
         <nav data-tour="sidebar" className="flex-1 py-4 flex flex-col gap-1 px-2">
-          {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
+          {NAV_ITEMS.map(({ to, icon: Icon, label, tour }) => (
             <NavLink
               key={to}
               to={to}
+              data-tour={tour}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                   isActive
