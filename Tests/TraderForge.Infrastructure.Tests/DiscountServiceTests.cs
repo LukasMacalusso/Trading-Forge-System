@@ -29,7 +29,7 @@ public class DiscountServiceTests
         var activeSub = new ActiveSubscription(traderId, planId, 7);
         typeof(ActiveSubscription).GetProperty("StartDate")!.SetValue(activeSub, DateTime.UtcNow.AddDays(-2));
         typeof(ActiveSubscription).GetProperty("EndDate")!.SetValue(activeSub, DateTime.UtcNow.AddDays(5));
-        
+
         var basicPlan = new SubscriptionPlan(Guid.NewGuid(), "Basic", 0, 0, 0, 0, false);
         typeof(ActiveSubscription).GetProperty("Plan")!.SetValue(activeSub, basicPlan);
 
@@ -83,7 +83,7 @@ public class DiscountServiceTests
         var activeSub = new ActiveSubscription(traderId, planId, 30);
         typeof(ActiveSubscription).GetProperty("StartDate")!.SetValue(activeSub, DateTime.UtcNow.AddDays(-2));
         typeof(ActiveSubscription).GetProperty("EndDate")!.SetValue(activeSub, DateTime.UtcNow.AddDays(28));
-        
+
         var plan = new SubscriptionPlan(planId, "Pro", 29.99m, 50000m, 10, 20, false);
         typeof(ActiveSubscription).GetProperty("Plan")!.SetValue(activeSub, plan);
 

@@ -54,12 +54,12 @@ public class BuyPositionCommandHandler
             throw new InvalidOperationException($"The market for {symbol} is currently closed.");
 
         var cacheItem = await _marketService.GetPricesAsync();
-        
+
         if ((DateTime.UtcNow - cacheItem.LastUpdated) > TimeSpan.FromSeconds(60))
         {
             throw new InvalidOperationException("Cannot execute trade: Market data is outdated.");
         }
-        
+
         if (!cacheItem.Prices.TryGetValue(symbol, out var currentPrice))
         {
             throw new InvalidOperationException($"Current price for {symbol} is unavailable.");

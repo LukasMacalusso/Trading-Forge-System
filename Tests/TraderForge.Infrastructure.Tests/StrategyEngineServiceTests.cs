@@ -190,7 +190,6 @@ public class BotGraphRunnerTests
 
         Assert.Equal(ExecutionStatus.Running, exec.Status);
         Assert.Equal(sid, exec.StrategyId);
-        Assert.NotNull(exec.StartedAt);
 
         exec.Pause();
         Assert.Equal(ExecutionStatus.Paused, exec.Status);

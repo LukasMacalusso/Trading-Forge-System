@@ -59,7 +59,7 @@ public class Trader
         var initialPortfolio = new Portfolio(Id, basicPlan.InitialVirtualBalance);
         Portfolios.Add(initialPortfolio);
     }
-    
+
     public void CancelSubscription()
     {
         Subscription?.Cancel();
@@ -89,13 +89,13 @@ public class Trader
 
         activePortfolio.SellPosition(symbol, quantity, price, commissionService);
     }
-    
+
     public void Suspend(string reason)
     {
         IsSuspended = true;
         SuspensionReason = reason;
     }
-    
+
     public void Unsuspend()
     {
         IsSuspended = false;

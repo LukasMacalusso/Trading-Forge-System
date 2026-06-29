@@ -48,11 +48,11 @@ public class PricesControllerTests
 
         var request = new GetMarketPricesRequest
         { Symbols = ["BTCUSDT", "ETHUSDT"] };
-        
+
         var result = await _controller.GetPrices(request);
         var okResult = Assert.IsType<OkObjectResult>(result);
         var responseDto = Assert.IsType<MarketPricesResponse>(okResult.Value);
-        
+
         Assert.Equal(2, responseDto.Prices.Count);
         Assert.Equal(6500, responseDto.Prices["BTCUSDT"]);
         Assert.Equal(3400, responseDto.Prices["ETHUSDT"]);
@@ -71,7 +71,7 @@ public class PricesControllerTests
         var result = await _controller.GetPrices(request);
         var okResult = Assert.IsType<OkObjectResult>(result);
         var response = Assert.IsType<MarketPricesResponse>(okResult.Value);
-        
+
         Assert.True(response.IsStale);
         Assert.Empty(response.Prices);
     }

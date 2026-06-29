@@ -26,11 +26,11 @@ public class GetTraderPlanQueryHandlerTests
         var plan = new SubscriptionPlan(planId, "Basic", 9.99m, 10000m, 2, 5, false);
         var trader = new Trader(traderId, "test@test.com");
         var activeSub = new ActiveSubscription(traderId, planId, 7);
-        var planProp = typeof(ActiveSubscription).GetProperty("Plan", 
+        var planProp = typeof(ActiveSubscription).GetProperty("Plan",
             System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
         planProp!.SetValue(activeSub, plan);
 
-        var prop = typeof(Trader).GetProperty("Subscription", 
+        var prop = typeof(Trader).GetProperty("Subscription",
             System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
         prop!.SetValue(trader, activeSub);
 

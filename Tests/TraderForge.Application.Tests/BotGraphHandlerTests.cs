@@ -29,7 +29,8 @@ public class AddBotNodeCommandHandlerTests
             Type = BotNodeType.Trigger,
             Name = "Test Trigger",
             Config = """{"symbol":"BTCUSDT"}""",
-            PositionX = 100, PositionY = 200
+            PositionX = 100,
+            PositionY = 200
         };
 
         var result = await _handler.HandleAsync(cmd);

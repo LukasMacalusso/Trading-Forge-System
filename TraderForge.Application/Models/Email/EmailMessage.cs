@@ -1,4 +1,4 @@
-﻿namespace TraderForge.Application.Models.Email;
+namespace TraderForge.Application.Models.Email;
 
 public class EmailMessage
 {

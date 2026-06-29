@@ -1,4 +1,4 @@
-using TraderForge.Application.DTOs.Queries; 
+using TraderForge.Application.DTOs.Queries;
 using TraderForge.Application.DTOs.Responses;
 using TraderForge.Domain.Common;
 using TraderForge.Domain.Repositories;
@@ -17,7 +17,7 @@ public class GetAllTradersQueryHandler
     public async Task<ResultGeneric<IEnumerable<TraderSummaryResponse>>> HandleAsync(GetAllTradersQuery query)
     {
         var traders = await _traderRepository.GetAllIncludeSubPlanAsync();
-        
+
         var response = traders.Select(t => new TraderSummaryResponse
         {
             Id = t.Id,

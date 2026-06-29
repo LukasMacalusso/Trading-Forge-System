@@ -29,13 +29,13 @@ public class BuyPositionCommandHandlerTests
     {
         var marketMock = new Mock<IMarketService>();
         marketMock.Setup(m => m.IsMarketOpen(It.IsAny<string>())).Returns(true);
-        
-        marketMock.Setup(m => m.GetPricesAsync()).ReturnsAsync(new MarketPriceCacheItem() 
-        { 
+
+        marketMock.Setup(m => m.GetPricesAsync()).ReturnsAsync(new MarketPriceCacheItem()
+        {
             Prices = new Dictionary<string, decimal> { { "BTC", 50000m } },
             LastUpdated = DateTime.UtcNow
         });
-        
+
         var limitGuardMock = new Mock<ISubscriptionLimitGuard>();
         limitGuardMock.Setup(l => l.CanAddAssetAsync(It.IsAny<string>())).ReturnsAsync(true);
         var traderRepo = new Mock<ITraderRepository>();
@@ -53,13 +53,13 @@ public class BuyPositionCommandHandlerTests
     {
         var marketMock = new Mock<IMarketService>();
         marketMock.Setup(m => m.IsMarketOpen(It.IsAny<string>())).Returns(true);
-        
-        marketMock.Setup(m => m.GetPricesAsync()).ReturnsAsync(new MarketPriceCacheItem() 
-        { 
+
+        marketMock.Setup(m => m.GetPricesAsync()).ReturnsAsync(new MarketPriceCacheItem()
+        {
             Prices = new Dictionary<string, decimal> { { "BTC", 50000m } },
             LastUpdated = DateTime.UtcNow
         });
-        
+
         var limitGuardMock = new Mock<ISubscriptionLimitGuard>();
         limitGuardMock.Setup(l => l.CanAddAssetAsync(It.IsAny<string>())).ReturnsAsync(false);
         var traderRepo = new Mock<ITraderRepository>();
@@ -76,13 +76,13 @@ public class BuyPositionCommandHandlerTests
     {
         var marketMock = new Mock<IMarketService>();
         marketMock.Setup(m => m.IsMarketOpen(It.IsAny<string>())).Returns(true);
-        
-        marketMock.Setup(m => m.GetPricesAsync()).ReturnsAsync(new MarketPriceCacheItem() 
-        { 
+
+        marketMock.Setup(m => m.GetPricesAsync()).ReturnsAsync(new MarketPriceCacheItem()
+        {
             Prices = new Dictionary<string, decimal> { { "BTC", 50000m } },
             LastUpdated = DateTime.UtcNow.AddMinutes(-5) // Outdated
         });
-        
+
         var handler = new BuyPositionCommandHandler(new Mock<ITraderRepository>().Object, new Mock<ISubscriptionLimitGuard>().Object, new Mock<ICommissionService>().Object, marketMock.Object);
 
         var result = await handler.HandleAsync(new BuyPositionCommand { TraderId = "u1", Symbol = "BTC", Quantity = 1 });
@@ -95,13 +95,13 @@ public class BuyPositionCommandHandlerTests
     {
         var marketMock = new Mock<IMarketService>();
         marketMock.Setup(m => m.IsMarketOpen(It.IsAny<string>())).Returns(true);
-        
-        marketMock.Setup(m => m.GetPricesAsync()).ReturnsAsync(new MarketPriceCacheItem() 
-        { 
+
+        marketMock.Setup(m => m.GetPricesAsync()).ReturnsAsync(new MarketPriceCacheItem()
+        {
             Prices = new Dictionary<string, decimal>(), // No prices
             LastUpdated = DateTime.UtcNow
         });
-        
+
         var handler = new BuyPositionCommandHandler(new Mock<ITraderRepository>().Object, new Mock<ISubscriptionLimitGuard>().Object, new Mock<ICommissionService>().Object, marketMock.Object);
 
         var result = await handler.HandleAsync(new BuyPositionCommand { TraderId = "u1", Symbol = "BTC", Quantity = 1 });
@@ -114,21 +114,21 @@ public class BuyPositionCommandHandlerTests
     {
         var marketMock = new Mock<IMarketService>();
         marketMock.Setup(m => m.IsMarketOpen(It.IsAny<string>())).Returns(true);
-        marketMock.Setup(m => m.GetPricesAsync()).ReturnsAsync(new MarketPriceCacheItem() 
-        { 
+        marketMock.Setup(m => m.GetPricesAsync()).ReturnsAsync(new MarketPriceCacheItem()
+        {
             Prices = new Dictionary<string, decimal> { { "BTC", 50000m } },
             LastUpdated = DateTime.UtcNow
         });
-        
+
         var limitGuardMock = new Mock<ISubscriptionLimitGuard>();
         limitGuardMock.Setup(l => l.CanAddAssetAsync(It.IsAny<string>())).ReturnsAsync(true);
-        
+
         var traderRepo = new Mock<ITraderRepository>();
         var trader = new Trader("u1", "test@test.com");
         var plan = new SubscriptionPlan(Guid.NewGuid(), "Free", 100m, 1000m, 10, 1, false);
         trader.InitializeWithTrial(plan);
         trader.Portfolios.First().AddFunds(100000m, "Deposit", null, null, null, 0m); // Add enough funds
-        
+
         traderRepo.Setup(t => t.GetByIdIncludePlanAndPositionsAsync("u1")).ReturnsAsync(trader);
 
         var handler = new BuyPositionCommandHandler(traderRepo.Object, limitGuardMock.Object, new Mock<ICommissionService>().Object, marketMock.Object);

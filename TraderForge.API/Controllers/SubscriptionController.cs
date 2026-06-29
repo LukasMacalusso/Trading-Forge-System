@@ -8,6 +8,7 @@ using TraderForge.Application.Handlers;
 using TraderForge.Domain.Services;
 
 namespace TraderForge.API.Controllers;
+
 [ApiController]
 [Route("/api/[controller]")]
 [Authorize(Roles = "Trader")]
@@ -20,7 +21,7 @@ public class SubscriptionController : ControllerBase
     private readonly IDiscountService _discountService;
 
     public SubscriptionController(
-        ChangeSubscriptionCommandHandler changeSubscriptionCommandHandler, 
+        ChangeSubscriptionCommandHandler changeSubscriptionCommandHandler,
         CancelSubscriptionCommandHandler cancelSubscriptionHandler,
         IDiscountService discountService,
         GetAllPlansQueryHandler getAllPlansHandler,
@@ -55,19 +56,19 @@ public class SubscriptionController : ControllerBase
             discount = discountOffer
         });
     }
-    
+
     [HttpPost("cancel")]
     public async Task<IActionResult> CancelSubscription([FromQuery] bool forceCancel = false)
     {
         var traderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(traderId)) return Unauthorized(new { error = "Invalid token claims." });
-        
+
         var command = new CancelSubscriptionCommand { TraderId = traderId, ForceCancel = forceCancel };
         var result = await _cancelSubscriptionHandler.HandleAsync(command);
-        
+
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });
-            
+
         if (!result.Value!.WasCancelled)
         {
             return Ok(new
@@ -77,7 +78,7 @@ public class SubscriptionController : ControllerBase
                 requiresForceCancel = true
             });
         }
-        
+
         return Ok(new
         {
             message = "Subscription successfully cancelled.",
@@ -95,7 +96,7 @@ public class SubscriptionController : ControllerBase
             return BadRequest(new { error = result.ErrorMessage });
         return Ok(result.Value);
     }
-    
+
     [HttpGet("trader-plan")]
     public async Task<IActionResult> GetTraderPlan()
     {
@@ -106,5 +107,5 @@ public class SubscriptionController : ControllerBase
             return BadRequest(new { error = result.ErrorMessage });
         return Ok(new { plan = result.Value });
     }
-    
+
 }

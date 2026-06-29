@@ -81,7 +81,7 @@ public class AdministratorController : ControllerBase
             return BadRequest(new { error = result.ErrorMessage });
         return Ok(new { message = "Plan deleted successfully." });
     }
-    
+
     [HttpGet("traders")]
     public async Task<IActionResult> GetAllTraders([FromServices] GetAllTradersQueryHandler getTradersHandler)
     {
@@ -96,22 +96,22 @@ public class AdministratorController : ControllerBase
     {
         var command = new SuspendTraderCommand(id, request.Reason);
         var result = await suspendHandler.HandleAsync(command);
-        
+
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });
-            
+
         return Ok(new { message = "Trader suspended successfully." });
     }
-    
+
     [HttpPost("traders/{id}/unsuspend")]
     public async Task<IActionResult> UnsuspendTrader(string id, [FromServices] UnsuspendTraderCommandHandler unsuspendHandler)
     {
         var command = new UnsuspendTraderCommand(id);
         var result = await unsuspendHandler.HandleAsync(command);
-        
+
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });
-            
+
         return Ok(new { message = "Trader unsuspended successfully." });
     }
 }

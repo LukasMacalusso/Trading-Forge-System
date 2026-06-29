@@ -28,6 +28,12 @@ jobs:
       - name: Install SonarScanner
         run: dotnet tool install --global dotnet-sonarscanner
 
+      - name: Format Check (indentation, spacing)
+        run: make format
+
+      - name: Lint Check (style, best practices)
+        run: make lint
+
       - name: Build, Test and Analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -55,3 +61,9 @@ jobs:
             -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
           
           dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
+
+      - name: Integration Tests
+        run: make test-integration
+
+      - name: E2E API Tests
+        run: make test-e2e

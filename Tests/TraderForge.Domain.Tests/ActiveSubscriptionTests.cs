@@ -49,7 +49,7 @@ public class ActiveSubscriptionTests
     public void IsActive_ShouldBeFalse_WhenEndDateIsPast()
     {
         var sub = new ActiveSubscription("user-1", Guid.NewGuid(), 10);
-        
+
         typeof(ActiveSubscription).GetProperty("EndDate")!.SetValue(sub, DateTime.UtcNow.AddDays(-1));
 
         Assert.False(sub.IsActive);

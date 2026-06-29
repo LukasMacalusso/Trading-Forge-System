@@ -13,11 +13,11 @@ public class RegisterTraderCommandHandler
     private readonly IIdentityService _identityService;
     private readonly ITraderRepository _traderRepository;
     private readonly ISubscriptionPlanRepository _planRepository;
-    private readonly IPublisher _publisher; 
+    private readonly IPublisher _publisher;
 
     public RegisterTraderCommandHandler(
-        IIdentityService identityService, 
-        ITraderRepository traderRepository, 
+        IIdentityService identityService,
+        ITraderRepository traderRepository,
         ISubscriptionPlanRepository planRepository,
         IPublisher publisher)
     {
@@ -42,7 +42,7 @@ public class RegisterTraderCommandHandler
     private async Task<Result> ExecuteRegistration(RegisterTraderCommand command)
     {
         string newUserId = GenerateNewAccountId();
-        
+
         var identityResult = await _identityService.RegisterNewAccountAsync(newUserId, command.Email, command.Password);
         if (!identityResult.IsSuccess)
         {
@@ -50,13 +50,13 @@ public class RegisterTraderCommandHandler
         }
 
         Trader newTrader = new Trader(newUserId, command.Email);
-        
+
         SubscriptionPlan? basicPlan = await _planRepository.GetByNameAsync("basic");
         if (basicPlan != null)
         {
             newTrader.InitializeWithTrial(basicPlan);
         }
-        
+
         await _traderRepository.AddAsync(newTrader);
         await _publisher.Publish(new TraderRegisteredEvent(command.Email, command.Email.Split('@')[0]));
         return Result.Success();

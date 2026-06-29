@@ -1,4 +1,4 @@
-﻿using TraderForge.Domain.Constants;
+using TraderForge.Domain.Constants;
 
 namespace TraderForge.Domain.Services;
 

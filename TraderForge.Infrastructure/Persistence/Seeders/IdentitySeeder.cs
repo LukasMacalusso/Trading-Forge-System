@@ -105,14 +105,14 @@ public static class IdentitySeeder
     private static async Task EnsurePasswordIsSynchronizedAsync(UserManager<Account> userManager, Account user, string expectedPassword, ILogger logger)
     {
         var isPasswordValid = await userManager.CheckPasswordAsync(user, expectedPassword);
-        
+
         if (!isPasswordValid)
         {
             logger.LogInformation($"Updating password for existing admin: {user.Email}");
-            
+
             var token = await userManager.GeneratePasswordResetTokenAsync(user);
             var resetResult = await userManager.ResetPasswordAsync(user, token, expectedPassword);
-            
+
             if (!resetResult.Succeeded)
             {
                 logger.LogError($"Failed to reset password for {user.Email}: {string.Join(", ", resetResult.Errors.Select(e => e.Description))}");
@@ -123,7 +123,7 @@ public static class IdentitySeeder
     private static async Task EnsureDomainAdminExistsAsync(IAdministratorRepository adminRepository, string id, string email, ILogger logger)
     {
         var existingDomainAdmin = await adminRepository.GetByIdAsync(id);
-        
+
         if (existingDomainAdmin == null)
         {
             var domainAdmin = new Administrator(id, email);

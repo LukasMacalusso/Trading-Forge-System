@@ -74,11 +74,20 @@ public class StrategiesController : ControllerBase
             strategy.IsEngineActive,
             Nodes = strategy.BotNodes.Select(n => new
             {
-                n.Id, n.Type, n.Name, n.Config, n.PositionX, n.PositionY, n.IsActive
+                n.Id,
+                n.Type,
+                n.Name,
+                n.Config,
+                n.PositionX,
+                n.PositionY,
+                n.IsActive
             }),
             Edges = strategy.BotEdges.Select(e => new
             {
-                e.Id, e.SourceNodeId, e.SourcePort, e.TargetNodeId
+                e.Id,
+                e.SourceNodeId,
+                e.SourcePort,
+                e.TargetNodeId
             })
         });
     }

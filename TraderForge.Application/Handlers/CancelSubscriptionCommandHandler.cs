@@ -39,11 +39,11 @@ public class CancelSubscriptionCommandHandler
         }
     }
 
-    private async Task<ResultGeneric<CancelSubscriptionResult>> ExecuteSubscriptionCancel(CancelSubscriptionCommand command) 
+    private async Task<ResultGeneric<CancelSubscriptionResult>> ExecuteSubscriptionCancel(CancelSubscriptionCommand command)
     {
         var trader = await _traderRepository.GetByIdIncludeAllAsync(command.TraderId);
         if (trader == null) return ResultGeneric<CancelSubscriptionResult>.Failure("Trader not found.");
-        
+
         var allPlans = await _planRepository.GetAllAsync();
         var premiumPlan = allPlans.FirstOrDefault(p => p.Name.ToLower() != "basic");
 
@@ -52,26 +52,26 @@ public class CancelSubscriptionCommandHandler
         {
             discountOffer = await _discountService.GetEarlyCancellationOfferAsync(trader.Id, premiumPlan.Id);
         }
-        
+
         if (discountOffer != null && !command.ForceCancel)
         {
             // Do not cancel yet. Present the retention offer.
-            return ResultGeneric<CancelSubscriptionResult>.Success(new CancelSubscriptionResult 
-            { 
-                WasCancelled = false, 
-                RetentionOffer = discountOffer 
+            return ResultGeneric<CancelSubscriptionResult>.Success(new CancelSubscriptionResult
+            {
+                WasCancelled = false,
+                RetentionOffer = discountOffer
             });
         }
-        
+
         trader.CancelSubscription();
         await _traderRepository.SaveChangesAsync();
-        
+
         await _publisher.Publish(new SubscriptionCancelledEvent(trader.Email, trader.UserName));
-        
-        return ResultGeneric<CancelSubscriptionResult>.Success(new CancelSubscriptionResult 
-        { 
-            WasCancelled = true, 
-            RetentionOffer = discountOffer 
+
+        return ResultGeneric<CancelSubscriptionResult>.Success(new CancelSubscriptionResult
+        {
+            WasCancelled = true,
+            RetentionOffer = discountOffer
         });
     }
 }

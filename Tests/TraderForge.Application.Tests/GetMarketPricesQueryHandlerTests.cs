@@ -33,7 +33,7 @@ public class GetMarketPricesQueryHandlerTests
             },
             LastUpdated = DateTime.UtcNow
         };
-        
+
         _marketServiceMock
             .Setup(x => x.GetPricesAsync())
             .ReturnsAsync(cacheItem);
@@ -42,7 +42,7 @@ public class GetMarketPricesQueryHandlerTests
         {
             Symbols = new List<string> { "BTCUSDT", "ETHUSDT" }
         };
-        
+
         ResultGeneric<MarketPricesResponse> result = await _handler.HandleAsync(query);
 
         Assert.True(result.IsSuccess);
