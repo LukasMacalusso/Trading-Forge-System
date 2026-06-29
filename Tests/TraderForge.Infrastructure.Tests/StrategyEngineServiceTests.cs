@@ -945,11 +945,12 @@ public class MockStrategyRepository : IStrategyRepository
     public MockStrategyRepository(Strategy? s) => _s = s;
     public Task<Strategy?> GetByIdAsync(Guid id) => Task.FromResult(_s?.Id == id ? _s : null);
     public Task<Strategy?> GetByIdWithGraphAsync(Guid id) => GetByIdAsync(id);
-    public Task<List<Strategy>> GetByTraderIdAsync(string _) =>
+    public Task<List<Strategy>> GetByPortfolioIdAsync(Guid _) =>
         Task.FromResult(_s != null ? new List<Strategy> { _s } : new List<Strategy>());
     public Task<List<Strategy>> GetActiveWithEngineRunningAsync() =>
         Task.FromResult(_s != null ? new List<Strategy> { _s } : new List<Strategy>());
     public Task AddAsync(Strategy s) => Task.CompletedTask;
+    public void Remove(Strategy s) { }
     public Task SaveChangesAsync() => Task.CompletedTask;
 }
 

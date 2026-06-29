@@ -22,7 +22,7 @@ public class CreateStrategyCommandHandler
         _limitGuard = limitGuard;
     }
 
-    public async Task<Result> HandleAsync(CreateStrategyCommand command)
+    public async Task<ResultGeneric<Guid>> HandleAsync(CreateStrategyCommand command)
     {
         try
         {
@@ -30,24 +30,24 @@ public class CreateStrategyCommandHandler
         }
         catch (Exception ex)
         {
-            return Result.Failure(ex.Message);
+            return ResultGeneric<Guid>.Failure(ex.Message);
         }
     }
 
-    private async Task<Result> ExecuteAsync(CreateStrategyCommand command)
+    private async Task<ResultGeneric<Guid>> ExecuteAsync(CreateStrategyCommand command)
     {
         var canAdd = await _limitGuard.CanAddStrategyAsync(command.TraderId);
         if (!canAdd)
-            return Result.Failure("Subscription limit reached: maximum active strategies exceeded.");
+            return ResultGeneric<Guid>.Failure("Subscription limit reached: maximum active strategies exceeded.");
 
         var trader = await _traderRepository.GetByIdIncludePortfolioAsync(command.TraderId);
         var activePortfolio = trader?.Portfolios.FirstOrDefault(p => p.IsActive);
         if (activePortfolio == null)
-            return Result.Failure("No active portfolio found.");
+            return ResultGeneric<Guid>.Failure("No active portfolio found.");
 
         var strategy = new Strategy(Guid.NewGuid(), command.Name, activePortfolio.Id);
         await _strategyRepository.AddAsync(strategy);
 
-        return Result.Success();
+        return ResultGeneric<Guid>.Success(strategy.Id);
     }
 }

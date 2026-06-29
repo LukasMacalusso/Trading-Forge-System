@@ -48,11 +48,11 @@ public class PortfolioControllerTests
         });
 
         var getPortfolioHandler = new GetActivePortfolioQueryHandler(_traderRepo.Object);
-        var getStrategiesHandler = new GetStrategiesQueryHandler(_strategyRepo.Object);
-        var getPositionsHandler = new GetPositionsQueryHandler(_positionRepo.Object);
+        var getPortfolioHistoryHandler = new GetPortfolioHistoryQueryHandler(_traderRepo.Object);
+        var getStrategiesHandler = new GetStrategiesQueryHandler(_traderRepo.Object, _strategyRepo.Object);
+        var getPositionsHandler = new GetPositionsQueryHandler(_traderRepo.Object, _positionRepo.Object);
         var createStrategyHandler = new CreateStrategyCommandHandler(
             _strategyRepo.Object, _traderRepo.Object, _limitGuard.Object);
-        var updateStrategyStateHandler = new UpdateStrategyStateCommandHandler(_strategyRepo.Object);
         var buyPositionHandler = new BuyPositionCommandHandler(
             _traderRepo.Object, _limitGuard.Object, _commissionService.Object, _marketService.Object);
         var sellPositionHandler = new SellPositionCommandHandler(
@@ -63,10 +63,10 @@ public class PortfolioControllerTests
 
         _controller = new PortfolioController(
             getPortfolioHandler,
+            getPortfolioHistoryHandler,
             getStrategiesHandler,
             getPositionsHandler,
             createStrategyHandler,
-            updateStrategyStateHandler,
             buyPositionHandler,
             sellPositionHandler,
             getTransactionsHandler,
@@ -102,7 +102,9 @@ public class PortfolioControllerTests
         var result = await _controller.CreateStrategy(new CreateStrategyRequest { Name = "New Strategy" });
 
         var ok = Assert.IsType<OkObjectResult>(result);
+        var id = ok.Value.GetType().GetProperty("id")!.GetValue(ok.Value);
         var msg = ok.Value.GetType().GetProperty("message")!.GetValue(ok.Value);
+        Assert.NotEqual(Guid.Empty, id);
         Assert.Equal("Strategy created successfully.", msg);
     }
 
@@ -127,60 +129,14 @@ public class PortfolioControllerTests
         Assert.IsType<UnauthorizedObjectResult>(result);
     }
 
-    // --- UpdateStrategyState ---
-
-    [Fact]
-    public async Task UpdateStrategyState_Activate_ReturnsOk()
-    {
-        var strategyId = Guid.NewGuid();
-        var strategy = new Strategy(strategyId, "Test", Guid.NewGuid());
-        strategy.Deactivate();
-        _strategyRepo.Setup(r => r.GetByIdAsync(strategyId)).ReturnsAsync(strategy);
-
-        var result = await _controller.UpdateStrategyState(strategyId,
-            new UpdateStrategyStateRequest { IsActive = true });
-
-        var ok = Assert.IsType<OkObjectResult>(result);
-        var msg = ok.Value.GetType().GetProperty("message")!.GetValue(ok.Value);
-        Assert.Equal("Strategy activated successfully.", msg);
-    }
-
-    [Fact]
-    public async Task UpdateStrategyState_Deactivate_ReturnsOk()
-    {
-        var strategyId = Guid.NewGuid();
-        var strategy = new Strategy(strategyId, "Test", Guid.NewGuid());
-        _strategyRepo.Setup(r => r.GetByIdAsync(strategyId)).ReturnsAsync(strategy);
-
-        var result = await _controller.UpdateStrategyState(strategyId,
-            new UpdateStrategyStateRequest { IsActive = false });
-
-        var ok = Assert.IsType<OkObjectResult>(result);
-        var msg = ok.Value.GetType().GetProperty("message")!.GetValue(ok.Value);
-        Assert.Equal("Strategy deactivated successfully.", msg);
-    }
-
-    [Fact]
-    public async Task UpdateStrategyState_StrategyNotFound_ReturnsBadRequest()
-    {
-        _strategyRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((Strategy?)null);
-
-        var result = await _controller.UpdateStrategyState(Guid.NewGuid(),
-            new UpdateStrategyStateRequest { IsActive = true });
-
-        var bad = Assert.IsType<BadRequestObjectResult>(result);
-        var error = bad.Value.GetType().GetProperty("error")!.GetValue(bad.Value);
-        Assert.Equal("Strategy not found.", error);
-    }
-
     private PortfolioController CreateControllerWithoutClaim()
     {
         var ctrl = new PortfolioController(
             new GetActivePortfolioQueryHandler(_traderRepo.Object),
-            new GetStrategiesQueryHandler(_strategyRepo.Object),
-            new GetPositionsQueryHandler(_positionRepo.Object),
+            new GetPortfolioHistoryQueryHandler(_traderRepo.Object),
+            new GetStrategiesQueryHandler(_traderRepo.Object, _strategyRepo.Object),
+            new GetPositionsQueryHandler(_traderRepo.Object, _positionRepo.Object),
             new CreateStrategyCommandHandler(_strategyRepo.Object, _traderRepo.Object, _limitGuard.Object),
-            new UpdateStrategyStateCommandHandler(_strategyRepo.Object),
             new BuyPositionCommandHandler(_traderRepo.Object, _limitGuard.Object, _commissionService.Object, _marketService.Object),
             new SellPositionCommandHandler(_positionRepo.Object, _traderRepo.Object, _commissionService.Object, _marketService.Object),
             new GetTransactionsQueryHandler(_traderRepo.Object, _transactionRepo.Object),

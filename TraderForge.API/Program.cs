@@ -100,6 +100,7 @@ builder.Services.AddTransient<UpdatePlanCommandHandler>();
 builder.Services.AddTransient<DeletePlanCommandHandler>();
 builder.Services.AddTransient<CreateStrategyCommandHandler>();
 builder.Services.AddTransient<UpdateStrategyStateCommandHandler>();
+builder.Services.AddTransient<RemoveStrategyCommandHandler>();
 builder.Services.AddTransient<BuyPositionCommandHandler>();
 builder.Services.AddTransient<SellPositionCommandHandler>();
 builder.Services.AddTransient<GetActivePortfolioQueryHandler>();

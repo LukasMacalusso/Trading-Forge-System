@@ -24,6 +24,8 @@ public class StrategiesController : ControllerBase
     private readonly RemoveBotEdgeCommandHandler _removeEdgeHandler;
     private readonly StartEngineCommandHandler _startEngineHandler;
     private readonly StopEngineCommandHandler _stopEngineHandler;
+    private readonly UpdateStrategyStateCommandHandler _updateStrategyStateHandler;
+    private readonly RemoveStrategyCommandHandler _removeStrategyHandler;
 
     public StrategiesController(
         IStrategyRepository strategyRepository,
@@ -35,7 +37,9 @@ public class StrategiesController : ControllerBase
         AddBotEdgeCommandHandler addEdgeHandler,
         RemoveBotEdgeCommandHandler removeEdgeHandler,
         StartEngineCommandHandler startEngineHandler,
-        StopEngineCommandHandler stopEngineHandler)
+        StopEngineCommandHandler stopEngineHandler,
+        UpdateStrategyStateCommandHandler updateStrategyStateHandler,
+        RemoveStrategyCommandHandler removeStrategyHandler)
     {
         _strategyRepository = strategyRepository;
         _nodeRepository = nodeRepository;
@@ -47,6 +51,8 @@ public class StrategiesController : ControllerBase
         _removeEdgeHandler = removeEdgeHandler;
         _startEngineHandler = startEngineHandler;
         _stopEngineHandler = stopEngineHandler;
+        _updateStrategyStateHandler = updateStrategyStateHandler;
+        _removeStrategyHandler = removeStrategyHandler;
     }
 
     [HttpGet("{id:guid}/graph")]
@@ -176,6 +182,46 @@ public class StrategiesController : ControllerBase
             return BadRequest(new { error = result.ErrorMessage });
 
         return Ok(new { message = "Engine stopped." });
+    }
+
+    [HttpPut("{id:guid}/state")]
+    public async Task<IActionResult> UpdateStrategyState(Guid id, [FromBody] UpdateStrategyStateRequest request)
+    {
+        var strategy = await _strategyRepository.GetByIdAsync(id);
+        if (strategy == null)
+            return NotFound(new { error = "Strategy not found." });
+
+        var traderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(traderId) || strategy.Portfolio.TraderId != traderId)
+            return Forbid();
+
+        var command = request.ToCommand(id);
+        var result = await _updateStrategyStateHandler.HandleAsync(command);
+
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.ErrorMessage });
+
+        var state = command.IsActive ? "activated" : "deactivated";
+        return Ok(new { message = $"Strategy {state} successfully." });
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> RemoveStrategy(Guid id)
+    {
+        var strategy = await _strategyRepository.GetByIdAsync(id);
+        if (strategy == null)
+            return NotFound(new { error = "Strategy not found." });
+
+        var traderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(traderId) || strategy.Portfolio.TraderId != traderId)
+            return Forbid();
+
+        var result = await _removeStrategyHandler.HandleAsync(new RemoveStrategyCommand { StrategyId = id });
+
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.ErrorMessage });
+
+        return Ok(new { message = "Strategy deleted successfully." });
     }
 
     private async Task<bool> OwnsStrategyAsync(Guid strategyId)

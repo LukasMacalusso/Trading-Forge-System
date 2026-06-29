@@ -41,6 +41,8 @@ public class StrategiesControllerTests
         var removeEdgeHandler = new RemoveBotEdgeCommandHandler(_edgeRepo.Object);
         var startEngineHandler = new StartEngineCommandHandler(_strategyRepo.Object, _engine.Object);
         var stopEngineHandler = new StopEngineCommandHandler(_engine.Object);
+        var updateStrategyStateHandler = new UpdateStrategyStateCommandHandler(_strategyRepo.Object);
+        var removeStrategyHandler = new RemoveStrategyCommandHandler(_strategyRepo.Object);
 
         _controller = new StrategiesController(
             _strategyRepo.Object,
@@ -52,7 +54,9 @@ public class StrategiesControllerTests
             addEdgeHandler,
             removeEdgeHandler,
             startEngineHandler,
-            stopEngineHandler);
+            stopEngineHandler,
+            updateStrategyStateHandler,
+            removeStrategyHandler);
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
         {
@@ -393,6 +397,112 @@ public class StrategiesControllerTests
     }
 
     [Fact]
+    public async Task UpdateStrategyState_StrategyNotFound_ReturnsNotFound()
+    {
+        _strategyRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((Strategy?)null);
+
+        var result = await _controller.UpdateStrategyState(Guid.NewGuid(),
+            new UpdateStrategyStateRequest { IsActive = true });
+
+        Assert.IsType<NotFoundObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task UpdateStrategyState_NotOwner_ReturnsForbid()
+    {
+        var strategy = CreateStrategyWithPortfolio(Guid.NewGuid(), "other-trader");
+        _strategyRepo.Setup(r => r.GetByIdAsync(strategy.Id)).ReturnsAsync(strategy);
+
+        var result = await _controller.UpdateStrategyState(strategy.Id,
+            new UpdateStrategyStateRequest { IsActive = true });
+
+        Assert.IsType<ForbidResult>(result);
+    }
+
+    [Fact]
+    public async Task UpdateStrategyState_Activate_ReturnsOk()
+    {
+        var strategyId = Guid.NewGuid();
+        var strategy = CreateStrategyWithPortfolio(strategyId, _traderId);
+        strategy.Deactivate();
+        _strategyRepo.Setup(r => r.GetByIdAsync(strategyId)).ReturnsAsync(strategy);
+
+        var result = await _controller.UpdateStrategyState(strategyId,
+            new UpdateStrategyStateRequest { IsActive = true });
+
+        var ok = Assert.IsType<OkObjectResult>(result);
+        var msg = ok.Value.GetType().GetProperty("message")!.GetValue(ok.Value);
+        Assert.Equal("Strategy activated successfully.", msg);
+    }
+
+    [Fact]
+    public async Task UpdateStrategyState_Deactivate_ReturnsOk()
+    {
+        var strategyId = Guid.NewGuid();
+        var strategy = CreateStrategyWithPortfolio(strategyId, _traderId);
+        _strategyRepo.Setup(r => r.GetByIdAsync(strategyId)).ReturnsAsync(strategy);
+
+        var result = await _controller.UpdateStrategyState(strategyId,
+            new UpdateStrategyStateRequest { IsActive = false });
+
+        var ok = Assert.IsType<OkObjectResult>(result);
+        var msg = ok.Value.GetType().GetProperty("message")!.GetValue(ok.Value);
+        Assert.Equal("Strategy deactivated successfully.", msg);
+    }
+
+    [Fact]
+    public async Task RemoveStrategy_StrategyNotFound_ReturnsNotFound()
+    {
+        _strategyRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((Strategy?)null);
+
+        var result = await _controller.RemoveStrategy(Guid.NewGuid());
+
+        Assert.IsType<NotFoundObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task RemoveStrategy_NotOwner_ReturnsForbid()
+    {
+        var strategy = CreateStrategyWithPortfolio(Guid.NewGuid(), "other-trader");
+        _strategyRepo.Setup(r => r.GetByIdAsync(strategy.Id)).ReturnsAsync(strategy);
+
+        var result = await _controller.RemoveStrategy(strategy.Id);
+
+        Assert.IsType<ForbidResult>(result);
+    }
+
+    [Fact]
+    public async Task RemoveStrategy_DeletesStrategy_ReturnsOk()
+    {
+        var strategyId = Guid.NewGuid();
+        var strategy = CreateStrategyWithPortfolio(strategyId, _traderId);
+        _strategyRepo.Setup(r => r.GetByIdAsync(strategyId)).ReturnsAsync(strategy);
+
+        var result = await _controller.RemoveStrategy(strategyId);
+
+        var ok = Assert.IsType<OkObjectResult>(result);
+        var msg = ok.Value.GetType().GetProperty("message")!.GetValue(ok.Value);
+        Assert.Equal("Strategy deleted successfully.", msg);
+        _strategyRepo.Verify(r => r.Remove(strategy), Times.Once);
+        _strategyRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task RemoveStrategy_HandlerFails_ReturnsBadRequest()
+    {
+        var strategyId = Guid.NewGuid();
+        var strategy = CreateStrategyWithPortfolio(strategyId, _traderId);
+        _strategyRepo.Setup(r => r.GetByIdAsync(strategyId)).ReturnsAsync(strategy);
+        _strategyRepo.Setup(r => r.SaveChangesAsync()).ThrowsAsync(new Exception("db error"));
+
+        var result = await _controller.RemoveStrategy(strategyId);
+
+        var bad = Assert.IsType<BadRequestObjectResult>(result);
+        var error = bad.Value.GetType().GetProperty("error")!.GetValue(bad.Value);
+        Assert.Equal("An unexpected error occurred.", error);
+    }
+
+    [Fact]
     public async Task AddNode_NoClaim_ReturnsForbid()
     {
         var controller = CreateControllerWithoutClaim();
@@ -410,7 +520,9 @@ public class StrategiesControllerTests
             new AddBotEdgeCommandHandler(_edgeRepo.Object, _nodeRepo.Object),
             new RemoveBotEdgeCommandHandler(_edgeRepo.Object),
             new StartEngineCommandHandler(_strategyRepo.Object, _engine.Object),
-            new StopEngineCommandHandler(_engine.Object));
+            new StopEngineCommandHandler(_engine.Object),
+            new UpdateStrategyStateCommandHandler(_strategyRepo.Object),
+            new RemoveStrategyCommandHandler(_strategyRepo.Object));
         ctrl.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity()) }
