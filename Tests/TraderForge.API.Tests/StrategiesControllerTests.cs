@@ -499,7 +499,7 @@ public class StrategiesControllerTests
 
         var bad = Assert.IsType<BadRequestObjectResult>(result);
         var error = bad.Value.GetType().GetProperty("error")!.GetValue(bad.Value);
-        Assert.Equal("db error", error);
+        Assert.Equal("An unexpected error occurred.", error);
     }
 
     [Fact]

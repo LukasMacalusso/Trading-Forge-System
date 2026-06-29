@@ -192,7 +192,7 @@ public class StrategiesController : ControllerBase
             return NotFound(new { error = "Strategy not found." });
 
         var traderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (strategy.Portfolio.TraderId != traderId)
+        if (string.IsNullOrEmpty(traderId) || strategy.Portfolio.TraderId != traderId)
             return Forbid();
 
         var command = request.ToCommand(id);
@@ -213,7 +213,7 @@ public class StrategiesController : ControllerBase
             return NotFound(new { error = "Strategy not found." });
 
         var traderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (strategy.Portfolio.TraderId != traderId)
+        if (string.IsNullOrEmpty(traderId) || strategy.Portfolio.TraderId != traderId)
             return Forbid();
 
         var result = await _removeStrategyHandler.HandleAsync(new RemoveStrategyCommand { StrategyId = id });

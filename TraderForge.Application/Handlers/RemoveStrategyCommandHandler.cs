@@ -26,9 +26,9 @@ public class RemoveStrategyCommandHandler
 
             return Result.Success();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return Result.Failure(ex.Message);
+            return Result.Failure("An unexpected error occurred.");
         }
     }
 }
