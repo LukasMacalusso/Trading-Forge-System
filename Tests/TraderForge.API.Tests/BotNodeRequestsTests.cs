@@ -90,4 +90,32 @@ public class BotNodeRequestsTests
         Assert.Equal(NodePort.False, request.SourcePort);
         Assert.Equal(tgtId, request.TargetNodeId);
     }
+
+    [Fact]
+    public void CreateStrategyRequest_DefaultValues()
+    {
+        var request = new CreateStrategyRequest();
+        Assert.Equal(string.Empty, request.Name);
+    }
+
+    [Fact]
+    public void CreateStrategyRequest_CanSetName()
+    {
+        var request = new CreateStrategyRequest { Name = "My Bot Strategy" };
+        Assert.Equal("My Bot Strategy", request.Name);
+    }
+
+    [Fact]
+    public void UpdateStrategyStateRequest_DefaultValues()
+    {
+        var request = new UpdateStrategyStateRequest();
+        Assert.False(request.IsActive);
+    }
+
+    [Fact]
+    public void UpdateStrategyStateRequest_CanSetIsActive()
+    {
+        var request = new UpdateStrategyStateRequest { IsActive = true };
+        Assert.True(request.IsActive);
+    }
 }
