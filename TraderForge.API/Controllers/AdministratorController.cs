@@ -3,13 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 using TraderForge.API.Mappers;
 using TraderForge.API.Requests;
 using TraderForge.Application.DTOs;
+using TraderForge.Application.DTOs.Queries;
 using TraderForge.Application.Handlers;
 using TraderForge.Domain.Repositories;
 
 namespace TraderForge.API.Controllers;
 
 [ApiController]
-[Route("/api/admin/plans")]
+[Route("/api/admin")]
 [Authorize(Roles = "SystemAdmin")]
 public class AdministratorController : ControllerBase
 {
@@ -33,7 +34,7 @@ public class AdministratorController : ControllerBase
         _planRepository = planRepository;
     }
 
-    [HttpGet]
+    [HttpGet("plans")]
     public async Task<IActionResult> GetAll()
     {
         var result = await _getAllPlansHandler.HandleAsync(new GetAllPlansQuery());
@@ -42,7 +43,7 @@ public class AdministratorController : ControllerBase
         return Ok(result.Value);
     }
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("plans/{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
         var plan = await _planRepository.GetByIdAsync(id);
@@ -51,7 +52,7 @@ public class AdministratorController : ControllerBase
         return Ok(plan);
     }
 
-    [HttpPost]
+    [HttpPost("plans")]
     public async Task<IActionResult> Create([FromBody] CreatePlanRequest request)
     {
         var command = request.ToCommand();
@@ -61,7 +62,7 @@ public class AdministratorController : ControllerBase
         return Ok(new { message = "Plan created successfully." });
     }
 
-    [HttpPut("{id:guid}")]
+    [HttpPut("plans/{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePlanRequest request)
     {
         var command = request.ToCommand(id);
@@ -71,12 +72,33 @@ public class AdministratorController : ControllerBase
         return Ok(new { message = "Plan updated successfully." });
     }
 
-    [HttpDelete("{id:guid}")]
+    [HttpDelete("plans/{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var result = await _deletePlanHandler.HandleAsync(id);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });
         return Ok(new { message = "Plan deleted successfully." });
+    }
+    
+    [HttpGet("traders")]
+    public async Task<IActionResult> GetAllTraders([FromServices] GetAllTradesQueryHandler getTradersHandler)
+    {
+        var result = await getTradersHandler.HandleAsync(new GetAllTradesQuery());
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.ErrorMessage });
+        return Ok(result.Value);
+    }
+
+    [HttpPost("traders/{id}/suspend")]
+    public async Task<IActionResult> SuspendTrader(string id, [FromBody] SuspendTraderRequest request, [FromServices] SuspendTraderCommandHandler suspendHandler)
+    {
+        var command = new SuspendTraderCommand(id, request.Reason);
+        var result = await suspendHandler.HandleAsync(command);
+        
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.ErrorMessage });
+            
+        return Ok(new { message = "Trader suspended successfully." });
     }
 }

@@ -84,6 +84,8 @@ builder.Services.AddTransient<GetPositionsQueryHandler>();
 builder.Services.AddTransient<GetTransactionsQueryHandler>();
 builder.Services.AddTransient<ResetSimulationCommandHandler>();
 builder.Services.AddTransient<GetOrdersQueryHandler>();
+builder.Services.AddTransient<GetAllTradesQueryHandler>();
+builder.Services.AddTransient<SuspendTraderCommandHandler>();
 
 builder.Services.AddScoped<IDiscountService, DiscountService>();
 builder.Services.AddControllers().AddJsonOptions(options =>
