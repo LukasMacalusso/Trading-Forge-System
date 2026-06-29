@@ -90,4 +90,10 @@ public class Trader
         IsSuspended = true;
         SuspensionReason = reason;
     }
+    
+    public void Unsuspend()
+    {
+        IsSuspended = false;
+        SuspensionReason = string.Empty;
+    }
 }

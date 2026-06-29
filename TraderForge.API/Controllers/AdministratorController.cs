@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TraderForge.API.Mappers;
 using TraderForge.API.Requests;
 using TraderForge.Application.DTOs;
+using TraderForge.Application.DTOs.Commands;
 using TraderForge.Application.DTOs.Queries;
 using TraderForge.Application.Handlers;
 using TraderForge.Domain.Repositories;
@@ -82,9 +83,9 @@ public class AdministratorController : ControllerBase
     }
     
     [HttpGet("traders")]
-    public async Task<IActionResult> GetAllTraders([FromServices] GetAllTradesQueryHandler getTradersHandler)
+    public async Task<IActionResult> GetAllTraders([FromServices] GetAllTradersQueryHandler getTradersHandler)
     {
-        var result = await getTradersHandler.HandleAsync(new GetAllTradesQuery());
+        var result = await getTradersHandler.HandleAsync(new GetAllTradersQuery());
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });
         return Ok(result.Value);
@@ -100,5 +101,17 @@ public class AdministratorController : ControllerBase
             return BadRequest(new { error = result.ErrorMessage });
             
         return Ok(new { message = "Trader suspended successfully." });
+    }
+    
+    [HttpPost("traders/{id}/unsuspend")]
+    public async Task<IActionResult> UnsuspendTrader(string id, [FromServices] UnsuspendTraderCommandHandler unsuspendHandler)
+    {
+        var command = new UnsuspendTraderCommand(id);
+        var result = await unsuspendHandler.HandleAsync(command);
+        
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.ErrorMessage });
+            
+        return Ok(new { message = "Trader unsuspended successfully." });
     }
 }
