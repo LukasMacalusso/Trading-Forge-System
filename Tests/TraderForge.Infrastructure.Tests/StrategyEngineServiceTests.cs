@@ -284,6 +284,41 @@ public class BotGraphRunnerTests
         Assert.Null(ex);
     }
 
+    [Fact]
+    public async Task Engine_StartStrategy_StrategyNotFound_DoesNotThrow()
+    {
+        var engine = BuildEngine(null);
+        var ex = await Record.ExceptionAsync(() => engine.StartStrategyAsync(Guid.NewGuid()));
+        Assert.Null(ex);
+    }
+
+    [Fact]
+    public async Task Engine_StartStrategy_WithExistingExecution_PausesIt()
+    {
+        var (s, _, _) = CreateBaseStrategy();
+        var engine = BuildEngine(s, withActiveExecution: true);
+        await engine.StartStrategyAsync(s.Id);
+        Assert.True(engine.IsStrategyRunning(s.Id));
+    }
+
+    [Fact]
+    public async Task Engine_StopStrategy_WithExistingExecution_PausesIt()
+    {
+        var (s, _, _) = CreateBaseStrategy();
+        var engine = BuildEngine(s, withActiveExecution: true);
+        await engine.StartStrategyAsync(s.Id);
+        await engine.StopStrategyAsync(s.Id);
+        Assert.False(engine.IsStrategyRunning(s.Id));
+    }
+
+    [Fact]
+    public async Task Engine_StartStrategy_StrategyNotFound_NotAddedToActive()
+    {
+        var engine = BuildEngine(null);
+        await engine.StartStrategyAsync(Guid.NewGuid());
+        Assert.False(engine.IsStrategyRunning(Guid.NewGuid()));
+    }
+
     // ---- MarketDataEventBus Tests ----
 
     [Fact]
@@ -810,11 +845,17 @@ public class BotGraphRunnerTests
         return new BotGraphRunner(s, sp.GetRequiredService<IServiceScopeFactory>());
     }
 
-    private static IStrategyEngine BuildEngine(Strategy? s)
+    private static IStrategyEngine BuildEngine(Strategy? s, bool withActiveExecution = false)
     {
+        var execRepo = new MockExecutionRepo();
+        if (withActiveExecution && s != null)
+        {
+            var execution = new StrategyExecution(s.Id);
+            execRepo.AddActiveExecution(execution);
+        }
         var sp = new ServiceCollection()
             .AddSingleton<IStrategyRepository>(new MockStrategyRepository(s))
-            .AddSingleton<IStrategyExecutionRepository>(new MockExecutionRepo())
+            .AddSingleton<IStrategyExecutionRepository>(execRepo)
             .AddSingleton<IMarketDataEventBus>(new MarketDataEventBus())
             .AddSingleton<StrategyEngineService>()
             .AddSingleton<IStrategyEngine>(sp => sp.GetRequiredService<StrategyEngineService>())
@@ -843,6 +884,7 @@ public class MockStrategyRepository : IStrategyRepository
 public class MockExecutionRepo : IStrategyExecutionRepository
 {
     private readonly List<StrategyExecution> _list = new();
+    public void AddActiveExecution(StrategyExecution e) => _list.Add(e);
     public Task<StrategyExecution?> GetActiveByStrategyIdAsync(Guid id) =>
         Task.FromResult(_list.FirstOrDefault(e => e.StrategyId == id && e.Status == ExecutionStatus.Running));
     public Task<List<StrategyExecution>> GetAllExecutionsAsync() => Task.FromResult(_list.ToList());
