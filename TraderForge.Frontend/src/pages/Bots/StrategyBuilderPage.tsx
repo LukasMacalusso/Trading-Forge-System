@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { DragEvent } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   ReactFlow,
   Background,
@@ -25,6 +26,7 @@ import {
   MousePointerClick,
   PanelLeft,
   SlidersHorizontal,
+  ArrowLeft,
   X,
 } from 'lucide-react';
 import { NODE_TYPES } from './BotNodes';
@@ -35,11 +37,8 @@ import type {
   NotificationBotConfig,
   ActionBotConfig,
 } from '@models/BotFlow';
-import {
-  StrategyRepository,
-  type StrategyNode,
-  type WorkspaceStatus,
-} from '@utils/StrategyRepository';
+import { StrategyRepository } from '@utils/StrategyRepository';
+import type { StrategyNode, StrategyStatus } from '@models/Strategy';
 import { useNotificationStore } from '@store/notificationStore';
 
 const PALETTE_ITEMS: {
@@ -113,28 +112,36 @@ export function StrategyBuilderPage() {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [strategyName, setStrategyName] = useState('Nueva Estrategia');
-  const [status, setStatus] = useState<WorkspaceStatus>('draft');
+  const [status, setStatus] = useState<StrategyStatus>('draft');
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance<StrategyNode> | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const createdAtRef = useRef(new Date().toISOString());
 
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const addNotification = useNotificationStore((s) => s.addNotification);
   const selectedNode = nodes.find((n) => n.id === selectedNodeId) ?? null;
 
-  // Restore the locally saved draft on first mount (mock persistence — see TFS-23).
+  // Load the strategy for this route. If it doesn't exist, return to the list.
   useEffect(() => {
-    const saved = StrategyRepository.load();
-    if (!saved) return;
-    setNodes(saved.nodes);
-    setEdges(saved.edges);
-    setStrategyName(saved.name);
-    setStatus(saved.status);
-    nodeIdCounter = saved.nodes.reduce((max, n) => {
+    if (!id) return;
+    const strategy = StrategyRepository.get(id);
+    if (!strategy) {
+      navigate('/strategy', { replace: true });
+      return;
+    }
+    setNodes(strategy.nodes);
+    setEdges(strategy.edges);
+    setStrategyName(strategy.name);
+    setStatus(strategy.status);
+    createdAtRef.current = strategy.createdAt;
+    nodeIdCounter = strategy.nodes.reduce((max, n) => {
       const num = Number(n.id.replace('node-', ''));
       return Number.isFinite(num) && num > max ? num : max;
     }, nodeIdCounter);
-  }, [setNodes, setEdges]);
+  }, [id, navigate, setNodes, setEdges]);
 
   const onConnect = useCallback(
     (params: Connection) =>
@@ -209,19 +216,22 @@ export function StrategyBuilderPage() {
     setConfigOpen(false);
   }
 
-  function persist(nextStatus: WorkspaceStatus) {
-    StrategyRepository.save({
+  function persist(nextStatus: StrategyStatus) {
+    if (!id) return;
+    StrategyRepository.upsert({
+      id,
       name: strategyName.trim() || 'Estrategia sin nombre',
       status: nextStatus,
       nodes,
       edges,
-      savedAt: new Date().toISOString(),
+      createdAt: createdAtRef.current,
+      updatedAt: new Date().toISOString(),
     });
     setStatus(nextStatus);
   }
 
   function handleSave() {
-    persist('draft');
+    persist(status);
     addNotification('success', 'Estrategia guardada');
   }
 
@@ -238,6 +248,14 @@ export function StrategyBuilderPage() {
     <div className="flex flex-col h-full bg-neutral-950">
       {/* Toolbar */}
       <div className="min-h-14 shrink-0 border-b border-neutral-800 flex flex-wrap items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2">
+        <button
+          onClick={() => navigate('/strategy')}
+          aria-label="Volver a mis estrategias"
+          title="Volver a mis estrategias"
+          className="p-2 rounded-lg text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800 transition-colors"
+        >
+          <ArrowLeft size={16} />
+        </button>
         <button
           onClick={() => setPaletteOpen((v) => !v)}
           aria-label="Mostrar u ocultar panel de nodos"
@@ -256,10 +274,12 @@ export function StrategyBuilderPage() {
           className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
             status === 'active'
               ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-              : 'bg-neutral-800 border-neutral-700 text-neutral-500'
+              : status === 'paused'
+                ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                : 'bg-neutral-800 border-neutral-700 text-neutral-500'
           }`}
         >
-          {status === 'active' ? 'Activa' : 'Borrador'}
+          {status === 'active' ? 'Activa' : status === 'paused' ? 'Pausada' : 'Borrador'}
         </span>
 
         <div className="flex items-center gap-2 ml-auto">
