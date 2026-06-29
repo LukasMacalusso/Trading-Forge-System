@@ -6,6 +6,7 @@ using TraderForge.Domain.Constants;
 using TraderForge.Domain.Entities;
 using TraderForge.Domain.Repositories;
 using TraderForge.Domain.Services;
+using TraderForge.Domain.Constants;
 
 namespace TraderForge.Application.Tests;
 
@@ -45,5 +46,95 @@ public class BuyPositionCommandHandlerTests
         var result = await handler.HandleAsync(new BuyPositionCommand { TraderId = "u1", Symbol = "BTC", Quantity = 1 });
         Assert.False(result.IsSuccess);
         Assert.Equal("Trader not found.", result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task HandleAsync_SubscriptionLimitReached_ReturnsFailure()
+    {
+        var marketMock = new Mock<IMarketService>();
+        marketMock.Setup(m => m.IsMarketOpen(It.IsAny<string>())).Returns(true);
+        
+        marketMock.Setup(m => m.GetPricesAsync()).ReturnsAsync(new MarketPriceCacheItem() 
+        { 
+            Prices = new Dictionary<string, decimal> { { "BTC", 50000m } },
+            LastUpdated = DateTime.UtcNow
+        });
+        
+        var limitGuardMock = new Mock<ISubscriptionLimitGuard>();
+        limitGuardMock.Setup(l => l.CanAddAssetAsync(It.IsAny<string>())).ReturnsAsync(false);
+        var traderRepo = new Mock<ITraderRepository>();
+
+        var handler = new BuyPositionCommandHandler(traderRepo.Object, limitGuardMock.Object, new Mock<ICommissionService>().Object, marketMock.Object);
+
+        var result = await handler.HandleAsync(new BuyPositionCommand { TraderId = "u1", Symbol = "BTC", Quantity = 1 });
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Subscription limit reached.", result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task HandleAsync_OutdatedMarketData_ReturnsFailure()
+    {
+        var marketMock = new Mock<IMarketService>();
+        marketMock.Setup(m => m.IsMarketOpen(It.IsAny<string>())).Returns(true);
+        
+        marketMock.Setup(m => m.GetPricesAsync()).ReturnsAsync(new MarketPriceCacheItem() 
+        { 
+            Prices = new Dictionary<string, decimal> { { "BTC", 50000m } },
+            LastUpdated = DateTime.UtcNow.AddMinutes(-5) // Outdated
+        });
+        
+        var handler = new BuyPositionCommandHandler(new Mock<ITraderRepository>().Object, new Mock<ISubscriptionLimitGuard>().Object, new Mock<ICommissionService>().Object, marketMock.Object);
+
+        var result = await handler.HandleAsync(new BuyPositionCommand { TraderId = "u1", Symbol = "BTC", Quantity = 1 });
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Cannot execute trade: Market data is outdated.", result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task HandleAsync_PriceUnavailable_ReturnsFailure()
+    {
+        var marketMock = new Mock<IMarketService>();
+        marketMock.Setup(m => m.IsMarketOpen(It.IsAny<string>())).Returns(true);
+        
+        marketMock.Setup(m => m.GetPricesAsync()).ReturnsAsync(new MarketPriceCacheItem() 
+        { 
+            Prices = new Dictionary<string, decimal>(), // No prices
+            LastUpdated = DateTime.UtcNow
+        });
+        
+        var handler = new BuyPositionCommandHandler(new Mock<ITraderRepository>().Object, new Mock<ISubscriptionLimitGuard>().Object, new Mock<ICommissionService>().Object, marketMock.Object);
+
+        var result = await handler.HandleAsync(new BuyPositionCommand { TraderId = "u1", Symbol = "BTC", Quantity = 1 });
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Current price for BTC is unavailable.", result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task HandleAsync_Success()
+    {
+        var marketMock = new Mock<IMarketService>();
+        marketMock.Setup(m => m.IsMarketOpen(It.IsAny<string>())).Returns(true);
+        marketMock.Setup(m => m.GetPricesAsync()).ReturnsAsync(new MarketPriceCacheItem() 
+        { 
+            Prices = new Dictionary<string, decimal> { { "BTC", 50000m } },
+            LastUpdated = DateTime.UtcNow
+        });
+        
+        var limitGuardMock = new Mock<ISubscriptionLimitGuard>();
+        limitGuardMock.Setup(l => l.CanAddAssetAsync(It.IsAny<string>())).ReturnsAsync(true);
+        
+        var traderRepo = new Mock<ITraderRepository>();
+        var trader = new Trader("u1", "test@test.com");
+        var plan = new SubscriptionPlan(Guid.NewGuid(), "Free", 100m, 1000m, 10, 1, false);
+        trader.InitializeWithTrial(plan);
+        trader.Portfolios.First().AddFunds(100000m, "Deposit", null, null, null, 0m); // Add enough funds
+        
+        traderRepo.Setup(t => t.GetByIdIncludePlanAndPositionsAsync("u1")).ReturnsAsync(trader);
+
+        var handler = new BuyPositionCommandHandler(traderRepo.Object, limitGuardMock.Object, new Mock<ICommissionService>().Object, marketMock.Object);
+
+        var result = await handler.HandleAsync(new BuyPositionCommand { TraderId = "u1", Symbol = "BTC", Quantity = 1 });
+        Assert.True(result.IsSuccess);
+        traderRepo.Verify(t => t.SaveChangesAsync(), Times.Once);
     }
 }
