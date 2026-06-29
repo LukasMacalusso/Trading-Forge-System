@@ -201,3 +201,19 @@ Authorization: bearer {{traderToken}}
 
 ###
 
+### ============================================================
+### GROUP 5 — Market Prices 
+### ============================================================
+
+### Get current market prices (and check isStale)
+POST {{hostAddress}}/api/prices
+Content-Type: application/json
+
+{
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT"
+  ]
+}
+
