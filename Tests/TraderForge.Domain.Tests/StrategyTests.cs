@@ -38,4 +38,61 @@ public class StrategyTests
 
         Assert.True(strategy.IsActive);
     }
+
+    [Fact]
+    public void StartEngine_ShouldSetIsEngineActiveToTrue()
+    {
+        var strategy = new Strategy(Guid.NewGuid(), "Test", Guid.NewGuid());
+
+        strategy.StartEngine();
+
+        Assert.True(strategy.IsEngineActive);
+    }
+
+    [Fact]
+    public void StopEngine_ShouldSetIsEngineActiveToFalse()
+    {
+        var strategy = new Strategy(Guid.NewGuid(), "Test", Guid.NewGuid());
+        strategy.StartEngine();
+
+        strategy.StopEngine();
+
+        Assert.False(strategy.IsEngineActive);
+    }
+
+    [Fact]
+    public void IsEngineActive_DefaultsToFalse()
+    {
+        var strategy = new Strategy(Guid.NewGuid(), "Test", Guid.NewGuid());
+
+        Assert.False(strategy.IsEngineActive);
+    }
+
+    [Fact]
+    public void BotNodes_IsInitializedAsEmpty()
+    {
+        var strategy = new Strategy(Guid.NewGuid(), "Test", Guid.NewGuid());
+
+        Assert.NotNull(strategy.BotNodes);
+        Assert.Empty(strategy.BotNodes);
+    }
+
+    [Fact]
+    public void BotEdges_IsInitializedAsEmpty()
+    {
+        var strategy = new Strategy(Guid.NewGuid(), "Test", Guid.NewGuid());
+
+        Assert.NotNull(strategy.BotEdges);
+        Assert.Empty(strategy.BotEdges);
+    }
+
+    [Fact]
+    public void CreatedAt_IsSetToUtcNow()
+    {
+        var before = DateTime.UtcNow;
+        var strategy = new Strategy(Guid.NewGuid(), "Test", Guid.NewGuid());
+        var after = DateTime.UtcNow;
+
+        Assert.InRange(strategy.CreatedAt, before, after);
+    }
 }
