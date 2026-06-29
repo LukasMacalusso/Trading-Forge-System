@@ -31,7 +31,7 @@ public class EmailBackgroundServiceTests
             SmtpPort = 587,
             SenderName = "Test",
             SenderEmail = "test@test.com",
-            Password = "bad"
+            Password = Guid.NewGuid().ToString("N")
         });
         var loggerMock = new Mock<ILogger<EmailBackgroundService>>();
 
@@ -63,7 +63,7 @@ public class EmailBackgroundServiceTests
             SmtpPort = 587,
             SenderName = "Test",
             SenderEmail = "test@test.com",
-            Password = "bad"
+            Password = Guid.NewGuid().ToString("N")
         });
         var loggerMock = new Mock<ILogger<EmailBackgroundService>>();
 
@@ -95,7 +95,7 @@ public class EmailBackgroundServiceTests
             SmtpPort = 587,
             SenderName = "Test",
             SenderEmail = "test@test.com",
-            Password = "bad"
+            Password = Guid.NewGuid().ToString("N")
         });
         var loggerMock = new Mock<ILogger<EmailBackgroundService>>();
 

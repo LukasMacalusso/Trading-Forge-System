@@ -7,20 +7,21 @@ public class EmailSettingsTests
     [Fact]
     public void Properties_RoundTrip()
     {
+        var pwd = Guid.NewGuid().ToString("N");
         var settings = new EmailSettings
         {
             SmtpServer = "smtp.test.com",
             SmtpPort = 587,
             SenderName = "Test",
             SenderEmail = "test@test.com",
-            Password = "secret"
+            Password = pwd
         };
 
         Assert.Equal("smtp.test.com", settings.SmtpServer);
         Assert.Equal(587, settings.SmtpPort);
         Assert.Equal("Test", settings.SenderName);
         Assert.Equal("test@test.com", settings.SenderEmail);
-        Assert.Equal("secret", settings.Password);
+        Assert.Equal(pwd, settings.Password);
     }
 
     [Fact]
