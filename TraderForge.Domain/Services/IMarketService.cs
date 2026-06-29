@@ -1,7 +1,9 @@
-﻿namespace TraderForge.Domain.Services;
+﻿using TraderForge.Domain.Constants;
+
+namespace TraderForge.Domain.Services;
 
 public interface IMarketService
 {
-    Task<Dictionary<string, decimal>> GetPricesAsync();
+    Task<MarketPriceCacheItem> GetPricesAsync();
     bool IsMarketOpen(string symbol);
 }

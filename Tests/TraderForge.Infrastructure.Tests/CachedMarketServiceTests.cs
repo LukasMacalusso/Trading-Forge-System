@@ -24,18 +24,25 @@ public class CachedMarketServiceTests
             { "BTCUSDT", 65432.10m },
             { "ETHUSDT", 3456.78m },
         };
+        
+        var expectedCacheItem = new MarketPriceCacheItem 
+        { 
+            Prices = expectedPrices,
+            LastUpdated = DateTime.UtcNow
+        };
 
-        _cache.Set(CacheKeys.MarketPrices, expectedPrices);
+        _cache.Set(CacheKeys.MarketPrices, expectedCacheItem);
+        
         var result = await _service.GetPricesAsync();
-
-        Assert.Equal(expectedPrices, result);
+        
+        Assert.NotNull(result);
+        Assert.Equal(expectedPrices, result.Prices);
     }
-
     [Fact]
     public async Task GetPricesAsync_WhenCacheIsEmpty_ReturnsEmptyDictionary()
     {
         var result = await _service.GetPricesAsync();
-        Assert.NotNull(result);
-        Assert.Empty(result);
+        Assert.NotNull(result.Prices);
+        Assert.Empty(result.Prices);
     }
 }

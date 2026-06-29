@@ -62,8 +62,9 @@ public class SellPositionCommandHandler
         if (!_marketService.IsMarketOpen(symbol))
             throw new InvalidOperationException($"The market for {symbol} is currently closed.");
 
-        var prices = await _marketService.GetPricesAsync();
-        if (!prices.TryGetValue(symbol, out var currentPrice))
+        var cacheItem = await _marketService.GetPricesAsync();
+        
+        if (!cacheItem.Prices.TryGetValue(symbol, out var currentPrice))
             throw new InvalidOperationException($"Current price for {symbol} is unavailable.");
 
         return currentPrice;

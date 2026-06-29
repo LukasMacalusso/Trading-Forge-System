@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { usePortfolioStore } from '@store/portfolioStore';
 import { PortfolioService } from '@api/PortfolioService';
 import { TradingService } from '@api/TradingService';
@@ -13,42 +13,58 @@ export function usePortfolio() {
   const { portfolio, orderHistory, simulationHistory, isLoading, setPortfolio, setOrderHistory, setSimulationHistory, setLoading, setInitialBalance } = usePortfolioStore();
   const { addNotification } = useNotificationStore();
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
+  const load = useCallback(async () => {
+    setLoading(true);
 
-      const [planResult, historyResult, ordersResult] = await Promise.all([
-        subscriptionService.getMyPlan(),
-        portfolioService.getSimulationHistory(),
-        tradingService.getOrderHistory(),
-      ]);
+    const [planResult, historyResult, ordersResult] = await Promise.all([
+      subscriptionService.getMyPlan(),
+      portfolioService.getSimulationHistory(),
+      tradingService.getOrderHistory(),
+    ]);
 
-      const initialBalance = planResult.isSuccess
-        ? planResult.value!.initialVirtualBalance
-        : 10_000;
-      setInitialBalance(initialBalance);
+    const initialBalance = planResult.isSuccess
+      ? planResult.value!.initialVirtualBalance
+      : 10_000;
+    setInitialBalance(initialBalance);
 
-      const portfolioResult = await portfolioService.getPortfolio(initialBalance);
-      if (portfolioResult.isSuccess) {
-        setPortfolio(portfolioResult.value!);
-      } else if (
-        !portfolioResult.errorMessage?.includes('Cannot reach') &&
-        portfolioResult.errorMessage !== 'UNAUTHORIZED'
-      ) {
-        addNotification('error', portfolioResult.errorMessage ?? 'Could not load portfolio.');
-      }
-      if (historyResult.isSuccess) setSimulationHistory(historyResult.value!);
-      if (ordersResult.isSuccess) setOrderHistory(ordersResult.value!);
-      setLoading(false);
+    const portfolioResult = await portfolioService.getPortfolio(initialBalance);
+    if (portfolioResult.isSuccess) {
+      setPortfolio(portfolioResult.value!);
+    } else if (
+      !portfolioResult.errorMessage?.includes('Cannot reach') &&
+      portfolioResult.errorMessage !== 'UNAUTHORIZED'
+    ) {
+      addNotification('error', portfolioResult.errorMessage ?? 'Could not load portfolio.');
     }
+    if (historyResult.isSuccess) setSimulationHistory(historyResult.value!);
+    if (ordersResult.isSuccess) setOrderHistory(ordersResult.value!);
+    setLoading(false);
+  }, [setLoading, setInitialBalance, setPortfolio, setSimulationHistory, setOrderHistory, addNotification]);
+
+  useEffect(() => {
     load();
-  }, []);
+  }, [load]);
+
+  /**
+   * Resets the simulation on the backend, then reloads the portfolio.
+   * Returns whether the reset succeeded so callers can drive their own UI.
+   */
+  const resetSimulation = useCallback(async (): Promise<boolean> => {
+    const result = await portfolioService.resetSimulation();
+    if (result.isSuccess) {
+      await load();
+      addNotification('success', 'Simulación reiniciada. Tu capital virtual fue restaurado.');
+      return true;
+    }
+    addNotification('error', result.errorMessage ?? 'No se pudo reiniciar la simulación.');
+    return false;
+  }, [load, addNotification]);
 
   return {
     portfolio,
     orderHistory,
     simulationHistory,
     isLoading,
-    resetSimulation: () => addNotification('error', 'Reset simulation no está disponible aún.'),
+    resetSimulation,
   };
 }
