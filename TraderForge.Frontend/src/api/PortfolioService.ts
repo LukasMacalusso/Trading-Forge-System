@@ -88,6 +88,16 @@ export class PortfolioService {
   async getSimulationHistory(): Promise<Result<[]>> {
     return Result.ok([]);
   }
+
+  /** Wipes the trader's positions and restores the initial virtual balance. */
+  async resetSimulation(): Promise<Result<void>> {
+    try {
+      await httpClient.post('/api/portfolio/reset');
+      return Result.ok(undefined);
+    } catch (error) {
+      return Result.fail(extractErrorMessage(error, 'Failed to reset simulation.'));
+    }
+  }
 }
 
 function extractErrorMessage(error: unknown, fallback: string): string {
