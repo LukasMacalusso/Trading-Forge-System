@@ -18,7 +18,6 @@ public class PortfolioController : ControllerBase
     private readonly GetStrategiesQueryHandler _getStrategiesHandler;
     private readonly GetPositionsQueryHandler _getPositionsHandler;
     private readonly CreateStrategyCommandHandler _createStrategyHandler;
-    private readonly UpdateStrategyStateCommandHandler _updateStrategyStateHandler;
     private readonly BuyPositionCommandHandler _buyPositionHandler;
     private readonly SellPositionCommandHandler _sellPositionHandler;
     private readonly GetTransactionsQueryHandler _getTransactionsHandler;
@@ -31,7 +30,6 @@ public class PortfolioController : ControllerBase
         GetStrategiesQueryHandler getStrategiesHandler,
         GetPositionsQueryHandler getPositionsHandler,
         CreateStrategyCommandHandler createStrategyHandler,
-        UpdateStrategyStateCommandHandler updateStrategyStateHandler,
         BuyPositionCommandHandler buyPositionHandler,
         SellPositionCommandHandler sellPositionHandler,
         GetTransactionsQueryHandler getTransactionsHandler,
@@ -43,7 +41,6 @@ public class PortfolioController : ControllerBase
         _getStrategiesHandler = getStrategiesHandler;
         _getPositionsHandler = getPositionsHandler;
         _createStrategyHandler = createStrategyHandler;
-        _updateStrategyStateHandler = updateStrategyStateHandler;
         _buyPositionHandler = buyPositionHandler;
         _sellPositionHandler = sellPositionHandler;
         _getTransactionsHandler = getTransactionsHandler;
@@ -92,20 +89,7 @@ public class PortfolioController : ControllerBase
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });
 
-        return Ok(new { message = "Strategy created successfully." });
-    }
-
-    [HttpPut("strategies/{id:guid}/state")]
-    public async Task<IActionResult> UpdateStrategyState(Guid id, [FromBody] UpdateStrategyStateRequest request)
-    {
-        var command = request.ToCommand(id);
-        var result = await _updateStrategyStateHandler.HandleAsync(command);
-
-        if (!result.IsSuccess)
-            return BadRequest(new { error = result.ErrorMessage });
-
-        var state = command.IsActive ? "activated" : "deactivated";
-        return Ok(new { message = $"Strategy {state} successfully." });
+        return Ok(new { id = result.Value, message = "Strategy created successfully." });
     }
 
     [HttpGet("positions")]

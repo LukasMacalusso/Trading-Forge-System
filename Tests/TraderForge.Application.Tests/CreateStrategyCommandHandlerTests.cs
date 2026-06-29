@@ -38,6 +38,7 @@ public class CreateStrategyCommandHandlerTests
         var result = await _handler.HandleAsync(command);
 
         Assert.True(result.IsSuccess);
+        Assert.NotEqual(Guid.Empty, result.Value);
         _strategyRepoMock.Verify(x => x.AddAsync(It.Is<Strategy>(s => s.Name == "My Strategy")), Times.Once);
     }
 
