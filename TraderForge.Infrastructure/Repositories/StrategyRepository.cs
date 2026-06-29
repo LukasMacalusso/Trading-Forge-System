@@ -49,6 +49,11 @@ public class StrategyRepository : IStrategyRepository
         await SaveChangesAsync();
     }
 
+    public void Remove(Strategy strategy)
+    {
+        _dbContext.Strategies.Remove(strategy);
+    }
+
     public async Task SaveChangesAsync()
     {
         await _dbContext.SaveChangesAsync();

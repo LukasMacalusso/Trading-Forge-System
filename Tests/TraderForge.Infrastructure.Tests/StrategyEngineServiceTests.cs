@@ -950,6 +950,7 @@ public class MockStrategyRepository : IStrategyRepository
     public Task<List<Strategy>> GetActiveWithEngineRunningAsync() =>
         Task.FromResult(_s != null ? new List<Strategy> { _s } : new List<Strategy>());
     public Task AddAsync(Strategy s) => Task.CompletedTask;
+    public void Remove(Strategy s) { }
     public Task SaveChangesAsync() => Task.CompletedTask;
 }
 

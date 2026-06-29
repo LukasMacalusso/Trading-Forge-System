@@ -42,6 +42,7 @@ public class StrategiesControllerTests
         var startEngineHandler = new StartEngineCommandHandler(_strategyRepo.Object, _engine.Object);
         var stopEngineHandler = new StopEngineCommandHandler(_engine.Object);
         var updateStrategyStateHandler = new UpdateStrategyStateCommandHandler(_strategyRepo.Object);
+        var removeStrategyHandler = new RemoveStrategyCommandHandler(_strategyRepo.Object);
 
         _controller = new StrategiesController(
             _strategyRepo.Object,
@@ -54,7 +55,8 @@ public class StrategiesControllerTests
             removeEdgeHandler,
             startEngineHandler,
             stopEngineHandler,
-            updateStrategyStateHandler);
+            updateStrategyStateHandler,
+            removeStrategyHandler);
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
         {
@@ -449,6 +451,58 @@ public class StrategiesControllerTests
     }
 
     [Fact]
+    public async Task RemoveStrategy_StrategyNotFound_ReturnsNotFound()
+    {
+        _strategyRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((Strategy?)null);
+
+        var result = await _controller.RemoveStrategy(Guid.NewGuid());
+
+        Assert.IsType<NotFoundObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task RemoveStrategy_NotOwner_ReturnsForbid()
+    {
+        var strategy = CreateStrategyWithPortfolio(Guid.NewGuid(), "other-trader");
+        _strategyRepo.Setup(r => r.GetByIdAsync(strategy.Id)).ReturnsAsync(strategy);
+
+        var result = await _controller.RemoveStrategy(strategy.Id);
+
+        Assert.IsType<ForbidResult>(result);
+    }
+
+    [Fact]
+    public async Task RemoveStrategy_DeletesStrategy_ReturnsOk()
+    {
+        var strategyId = Guid.NewGuid();
+        var strategy = CreateStrategyWithPortfolio(strategyId, _traderId);
+        _strategyRepo.Setup(r => r.GetByIdAsync(strategyId)).ReturnsAsync(strategy);
+
+        var result = await _controller.RemoveStrategy(strategyId);
+
+        var ok = Assert.IsType<OkObjectResult>(result);
+        var msg = ok.Value.GetType().GetProperty("message")!.GetValue(ok.Value);
+        Assert.Equal("Strategy deleted successfully.", msg);
+        _strategyRepo.Verify(r => r.Remove(strategy), Times.Once);
+        _strategyRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task RemoveStrategy_HandlerFails_ReturnsBadRequest()
+    {
+        var strategyId = Guid.NewGuid();
+        var strategy = CreateStrategyWithPortfolio(strategyId, _traderId);
+        _strategyRepo.Setup(r => r.GetByIdAsync(strategyId)).ReturnsAsync(strategy);
+        _strategyRepo.Setup(r => r.SaveChangesAsync()).ThrowsAsync(new Exception("db error"));
+
+        var result = await _controller.RemoveStrategy(strategyId);
+
+        var bad = Assert.IsType<BadRequestObjectResult>(result);
+        var error = bad.Value.GetType().GetProperty("error")!.GetValue(bad.Value);
+        Assert.Equal("db error", error);
+    }
+
+    [Fact]
     public async Task AddNode_NoClaim_ReturnsForbid()
     {
         var controller = CreateControllerWithoutClaim();
@@ -467,7 +521,8 @@ public class StrategiesControllerTests
             new RemoveBotEdgeCommandHandler(_edgeRepo.Object),
             new StartEngineCommandHandler(_strategyRepo.Object, _engine.Object),
             new StopEngineCommandHandler(_engine.Object),
-            new UpdateStrategyStateCommandHandler(_strategyRepo.Object));
+            new UpdateStrategyStateCommandHandler(_strategyRepo.Object),
+            new RemoveStrategyCommandHandler(_strategyRepo.Object));
         ctrl.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity()) }

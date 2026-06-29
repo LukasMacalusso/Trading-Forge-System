@@ -9,5 +9,6 @@ public interface IStrategyRepository
     Task<List<Strategy>> GetByPortfolioIdAsync(Guid portfolioId);
     Task<List<Strategy>> GetActiveWithEngineRunningAsync();
     Task AddAsync(Strategy strategy);
+    void Remove(Strategy strategy);
     Task SaveChangesAsync();
 }
