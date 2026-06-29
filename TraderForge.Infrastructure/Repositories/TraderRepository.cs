@@ -70,6 +70,12 @@ public class TraderRepository : ITraderRepository
             .ToListAsync();
     }
 
+    public Task DeleteAsync(Trader trader)
+    {
+        _dbContext.Traders.Remove(trader);
+        return Task.CompletedTask;
+    }
+
     public async Task SaveChangesAsync()
     {
         await _dbContext.SaveChangesAsync();

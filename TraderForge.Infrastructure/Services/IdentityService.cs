@@ -53,6 +53,24 @@ public class IdentityService : IIdentityService
         }
     }
 
+    public async Task<Result> DeleteAccountAsync(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return Result.Failure("Account not found.");
+        }
+
+        var result = await _userManager.DeleteAsync(user);
+        if (!result.Succeeded)
+        {
+            var errorMessage = result.Errors.FirstOrDefault()?.Description ?? "Unknown deletion error";
+            return Result.Failure(errorMessage);
+        }
+
+        return Result.Success();
+    }
+
     public async Task<ResultGeneric<string>> GetValidatedTokenAsync(string email, string password)
     {
         Account? user = await GetApplicationUserByEmailAsync(email);
