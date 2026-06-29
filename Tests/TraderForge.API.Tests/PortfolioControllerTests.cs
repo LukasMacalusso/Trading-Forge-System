@@ -48,8 +48,9 @@ public class PortfolioControllerTests
         });
 
         var getPortfolioHandler = new GetActivePortfolioQueryHandler(_traderRepo.Object);
-        var getStrategiesHandler = new GetStrategiesQueryHandler(_strategyRepo.Object);
-        var getPositionsHandler = new GetPositionsQueryHandler(_positionRepo.Object);
+        var getPortfolioHistoryHandler = new GetPortfolioHistoryQueryHandler(_traderRepo.Object);
+        var getStrategiesHandler = new GetStrategiesQueryHandler(_traderRepo.Object, _strategyRepo.Object);
+        var getPositionsHandler = new GetPositionsQueryHandler(_traderRepo.Object, _positionRepo.Object);
         var createStrategyHandler = new CreateStrategyCommandHandler(
             _strategyRepo.Object, _traderRepo.Object, _limitGuard.Object);
         var buyPositionHandler = new BuyPositionCommandHandler(
@@ -62,6 +63,7 @@ public class PortfolioControllerTests
 
         _controller = new PortfolioController(
             getPortfolioHandler,
+            getPortfolioHistoryHandler,
             getStrategiesHandler,
             getPositionsHandler,
             createStrategyHandler,
@@ -131,8 +133,9 @@ public class PortfolioControllerTests
     {
         var ctrl = new PortfolioController(
             new GetActivePortfolioQueryHandler(_traderRepo.Object),
-            new GetStrategiesQueryHandler(_strategyRepo.Object),
-            new GetPositionsQueryHandler(_positionRepo.Object),
+            new GetPortfolioHistoryQueryHandler(_traderRepo.Object),
+            new GetStrategiesQueryHandler(_traderRepo.Object, _strategyRepo.Object),
+            new GetPositionsQueryHandler(_traderRepo.Object, _positionRepo.Object),
             new CreateStrategyCommandHandler(_strategyRepo.Object, _traderRepo.Object, _limitGuard.Object),
             new BuyPositionCommandHandler(_traderRepo.Object, _limitGuard.Object, _commissionService.Object, _marketService.Object),
             new SellPositionCommandHandler(_positionRepo.Object, _traderRepo.Object, _commissionService.Object, _marketService.Object),
