@@ -106,6 +106,7 @@ builder.Services.AddTransient<GetOrdersQueryHandler>();
 builder.Services.AddTransient<GetAllTradersQueryHandler>();
 builder.Services.AddTransient<SuspendTraderCommandHandler>();
 builder.Services.AddScoped<UnsuspendTraderCommandHandler>();
+builder.Services.AddTransient<DeleteTraderCommandHandler>();
 
 builder.Services.AddScoped<IDiscountService, DiscountService>();
 builder.Services.AddControllers().AddJsonOptions(options =>
