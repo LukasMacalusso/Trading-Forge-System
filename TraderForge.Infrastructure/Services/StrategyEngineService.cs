@@ -1,12 +1,15 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using TraderForge.Domain.Entities;
 using TraderForge.Domain.Enums;
 using TraderForge.Domain.Events;
 using TraderForge.Domain.Repositories;
 using TraderForge.Domain.Services;
+using TraderForge.Infrastructure.Persistence;
 
 namespace TraderForge.Infrastructure.Services;
 
@@ -112,7 +115,7 @@ public class StrategyEngineService : BackgroundService, IStrategyEngine
     public bool IsStrategyRunning(Guid strategyId) => _activeStrategies.ContainsKey(strategyId);
 }
 
-internal class BotGraphRunner : IDisposable
+public class BotGraphRunner : IDisposable
 {
     private readonly Strategy _strategy;
     private readonly Dictionary<Guid, BotNode> _nodes;
@@ -240,12 +243,141 @@ internal class BotGraphRunner : IDisposable
 
     private static Task<bool> EvaluateConditionAsync(string configJson, Dictionary<string, object> flag)
     {
-        return Task.FromResult(true);
+        try
+        {
+            using var doc = JsonDocument.Parse(configJson);
+            var root = doc.RootElement;
+            var indicator = root.TryGetProperty("indicator", out var i) ? i.GetString() ?? "price" : "price";
+            var operatorStr = root.TryGetProperty("operator", out var o) ? o.GetString() ?? "greater_than" : "greater_than";
+            var comparisonValue = root.TryGetProperty("value", out var v) ? v.GetDecimal() : 0m;
+
+            var currentValue = indicator switch
+            {
+                "price" when flag.TryGetValue("price", out var p) => Convert.ToDecimal(p),
+                _ => 0m
+            };
+
+            return Task.FromResult(operatorStr switch
+            {
+                "greater_than" => currentValue > comparisonValue,
+                "less_than" => currentValue < comparisonValue,
+                "equal_to" => currentValue == comparisonValue,
+                "greater_or_equal" => currentValue >= comparisonValue,
+                "less_or_equal" => currentValue <= comparisonValue,
+                "cross_above" => currentValue > comparisonValue,
+                "cross_below" => currentValue < comparisonValue,
+                _ => currentValue > comparisonValue
+            });
+        }
+        catch
+        {
+            return Task.FromResult(true);
+        }
     }
 
-    private static Task ExecuteActionAsync(string configJson, Dictionary<string, object> flag, IServiceScopeFactory scopeFactory)
+    private async Task ExecuteActionAsync(string configJson, Dictionary<string, object> flag, IServiceScopeFactory scopeFactory)
     {
-        return Task.CompletedTask;
+        try
+        {
+            using var doc = JsonDocument.Parse(configJson);
+            var root = doc.RootElement;
+            var type = root.TryGetProperty("type", out var t) ? t.GetString() ?? "" : "";
+
+            switch (type)
+            {
+                case "buy":
+                    await ExecuteBuyAsync(root, flag, scopeFactory);
+                    break;
+                case "sell":
+                    await ExecuteSellAsync(root, flag, scopeFactory);
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                using var logScope = scopeFactory.CreateScope();
+                var logger = logScope.ServiceProvider.GetRequiredService<ILogger<BotGraphRunner>>();
+                logger.LogWarning(ex, "Action execution failed for strategy {StrategyId}. Config: {Config}",
+                    _strategy.Id, configJson);
+            }
+            catch { }
+        }
+    }
+
+    private async Task ExecuteBuyAsync(JsonElement config, Dictionary<string, object> flag, IServiceScopeFactory scopeFactory)
+    {
+        using var scope = scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var commissionService = scope.ServiceProvider.GetRequiredService<ICommissionService>();
+        var logger = scope.ServiceProvider.GetService<ILogger<BotGraphRunner>>();
+
+        var symbol = flag.GetValueOrDefault("symbol")?.ToString() ?? "";
+        var price = flag.TryGetValue("price", out var p) ? Convert.ToDecimal(p) : 0m;
+        var quantity = config.TryGetProperty("quantity", out var q) ? q.GetDecimal() : 0m;
+
+        if (string.IsNullOrEmpty(symbol) || price <= 0 || quantity <= 0)
+        {
+            logger?.LogWarning("Invalid buy params for strategy {Sid}: Symbol={Sym}, Price={Prc}, Qty={Qty}",
+                _strategy.Id, symbol, price, quantity);
+            return;
+        }
+
+        var portfolio = await db.Portfolios
+            .Include(p => p.Positions)
+            .Include(p => p.Orders)
+            .Include(p => p.Transactions)
+            .FirstOrDefaultAsync(p => p.Id == _strategy.PortfolioId);
+
+        if (portfolio == null)
+        {
+            logger?.LogWarning("Portfolio {Pid} not found for buy action (strategy {Sid})",
+                _strategy.PortfolioId, _strategy.Id);
+            return;
+        }
+
+        portfolio.BuyPosition(symbol, quantity, price, commissionService);
+        await db.SaveChangesAsync();
+        logger?.LogInformation("Bot Buy executed: {Symbol} x {Qty} @ {Price} for strategy {Sid}",
+            symbol, quantity, price, _strategy.Id);
+    }
+
+    private async Task ExecuteSellAsync(JsonElement config, Dictionary<string, object> flag, IServiceScopeFactory scopeFactory)
+    {
+        using var scope = scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var commissionService = scope.ServiceProvider.GetRequiredService<ICommissionService>();
+        var logger = scope.ServiceProvider.GetService<ILogger<BotGraphRunner>>();
+
+        var symbol = flag.GetValueOrDefault("symbol")?.ToString() ?? "";
+        var price = flag.TryGetValue("price", out var p) ? Convert.ToDecimal(p) : 0m;
+        var quantity = config.TryGetProperty("quantity", out var q) ? q.GetDecimal() : 0m;
+
+        if (string.IsNullOrEmpty(symbol) || price <= 0 || quantity <= 0)
+        {
+            logger?.LogWarning("Invalid sell params for strategy {Sid}: Symbol={Sym}, Price={Prc}, Qty={Qty}",
+                _strategy.Id, symbol, price, quantity);
+            return;
+        }
+
+        var portfolio = await db.Portfolios
+            .Include(p => p.Positions)
+            .Include(p => p.Orders)
+            .Include(p => p.Transactions)
+            .FirstOrDefaultAsync(p => p.Id == _strategy.PortfolioId);
+
+        if (portfolio == null)
+        {
+            logger?.LogWarning("Portfolio {Pid} not found for sell action (strategy {Sid})",
+                _strategy.PortfolioId, _strategy.Id);
+            return;
+        }
+
+        portfolio.SellPosition(symbol, quantity, price, commissionService);
+        await db.SaveChangesAsync();
+        logger?.LogInformation("Bot Sell executed: {Symbol} x {Qty} @ {Price} for strategy {Sid}",
+            symbol, quantity, price, _strategy.Id);
     }
 
     public void Dispose()
