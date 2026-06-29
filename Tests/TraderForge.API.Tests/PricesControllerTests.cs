@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 using TraderForge.API.Controllers;
 using TraderForge.API.Requests;
@@ -59,7 +59,7 @@ public class PricesControllerTests
     }
 
     [Fact]
-    public async Task GetPrices_WhenHandlerReturnsFailure_ReturnsOkWithNull()
+    public async Task GetPrices_WhenCacheIsEmpty_ReturnsOkWithStaleResponse()
     {
         _marketServiceMock
             .Setup(x => x.GetPricesAsync())
@@ -70,6 +70,9 @@ public class PricesControllerTests
 
         var result = await _controller.GetPrices(request);
         var okResult = Assert.IsType<OkObjectResult>(result);
-        Assert.Null(okResult.Value);
+        var response = Assert.IsType<MarketPricesResponse>(okResult.Value);
+        
+        Assert.True(response.IsStale);
+        Assert.Empty(response.Prices);
     }
 }
