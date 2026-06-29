@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Hosting;
 using TraderForge.Domain.Constants;
+using TraderForge.Domain.Events;
 using TraderForge.Domain.Services;
 
 namespace TraderForge.Infrastructure.Services;
@@ -12,14 +13,17 @@ public class BackgroundMarketPollingService : BackgroundService
 {
     private readonly IMemoryCache _cache;
     private readonly IMarketDataBroadcaster _broadcaster;
+    private readonly IMarketDataEventBus _eventBus;
     private readonly Uri _binanceWebSocketUri = new("wss://stream.binance.com:9443/ws/!miniTicker@arr");
 
     public BackgroundMarketPollingService(
         IMemoryCache cache,
-        IMarketDataBroadcaster broadcaster)
+        IMarketDataBroadcaster broadcaster,
+        IMarketDataEventBus eventBus)
     {
         _cache = cache;
         _broadcaster = broadcaster;
+        _eventBus = eventBus;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -146,5 +150,10 @@ public class BackgroundMarketPollingService : BackgroundService
         currentPrices.LastUpdated = DateTime.UtcNow; 
         _cache.Set(CacheKeys.MarketPrices, currentPrices, TimeSpan.FromMinutes(2));
         await _broadcaster.BroadCastPricesAsync(currentPrices.Prices, stoppingToken);
+
+        foreach (var (symbol, price) in currentPrices.Prices)
+        {
+            _eventBus.Publish(new MarketPriceEvent(symbol, price, DateTime.UtcNow));
+        }
     }
 }

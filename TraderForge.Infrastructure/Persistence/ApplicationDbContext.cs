@@ -17,6 +17,10 @@ public class ApplicationDbContext : IdentityDbContext<Account>
     public DbSet<Position> Positions { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<Order> Orders { get; set; }
+
+    public DbSet<BotNode> BotNodes { get; set; }
+    public DbSet<BotEdge> BotEdges { get; set; }
+    public DbSet<StrategyExecution> StrategyExecutions { get; set; }
     
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     

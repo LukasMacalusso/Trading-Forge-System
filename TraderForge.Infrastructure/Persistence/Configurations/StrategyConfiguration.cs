@@ -12,6 +12,7 @@ public class StrategyConfiguration : IEntityTypeConfiguration<Strategy>
         builder.HasKey(s => s.Id);
         builder.Property(s => s.Id).ValueGeneratedNever();
         builder.Property(s => s.Name).IsRequired().HasMaxLength(100);
+        builder.Property(s => s.IsEngineActive).HasDefaultValue(false);
 
         builder.HasOne(s => s.Portfolio)
             .WithMany(p => p.Strategies)

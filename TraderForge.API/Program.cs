@@ -66,6 +66,24 @@ builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ISubscriptionLimitGuard, SubscriptionLimitGuard>();
 builder.Services.AddScoped<ICommissionService, CommissionService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+
+// -- Bot Engine (Task 4.1) -- //
+builder.Services.AddScoped<IBotNodeRepository, BotNodeRepository>();
+builder.Services.AddScoped<IBotEdgeRepository, BotEdgeRepository>();
+builder.Services.AddScoped<IStrategyExecutionRepository, StrategyExecutionRepository>();
+
+builder.Services.AddSingleton<IMarketDataEventBus, MarketDataEventBus>();
+builder.Services.AddSingleton<IStrategyEngine>(sp => sp.GetRequiredService<StrategyEngineService>());
+builder.Services.AddHostedService<StrategyEngineService>();
+
+builder.Services.AddTransient<AddBotNodeCommandHandler>();
+builder.Services.AddTransient<UpdateBotNodeCommandHandler>();
+builder.Services.AddTransient<RemoveBotNodeCommandHandler>();
+builder.Services.AddTransient<AddBotEdgeCommandHandler>();
+builder.Services.AddTransient<RemoveBotEdgeCommandHandler>();
+builder.Services.AddTransient<StartEngineCommandHandler>();
+builder.Services.AddTransient<StopEngineCommandHandler>();
+
 builder.Services.AddTransient<RegisterTraderCommandHandler>();
 builder.Services.AddTransient<LoginTraderQueryHandler>();
 builder.Services.AddTransient<ChangeSubscriptionCommandHandler>();
