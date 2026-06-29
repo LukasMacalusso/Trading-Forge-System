@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -11,8 +11,7 @@ namespace TraderForge.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "MarketAssets");
+            migrationBuilder.Sql("DROP TABLE IF EXISTS \"MarketAssets\" CASCADE;");
         }
 
         /// <inheritdoc />
