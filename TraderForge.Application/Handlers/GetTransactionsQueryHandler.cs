@@ -36,11 +36,14 @@ public class GetTransactionsQueryHandler
         if (trader == null)
             return ResultGeneric<List<TransactionResponse>>.Failure("Trader not found.");
 
-        var activePortfolio = trader.Portfolios.FirstOrDefault(p => p.IsActive);
-        if (activePortfolio == null)
-            return ResultGeneric<List<TransactionResponse>>.Failure("No active portfolio found.");
+        var portfolio = query.PortfolioId.HasValue 
+            ? trader.Portfolios.FirstOrDefault(p => p.Id == query.PortfolioId.Value)
+            : trader.Portfolios.FirstOrDefault(p => p.IsActive);
 
-        var transactions = await _transactionRepository.GetByPortfolioIdAsync(activePortfolio.Id);
+        if (portfolio == null)
+            return ResultGeneric<List<TransactionResponse>>.Failure("Portfolio not found.");
+
+        var transactions = await _transactionRepository.GetByPortfolioIdAsync(portfolio.Id);
 
         var response = transactions.Select(TransactionResponse.FromEntity).ToList();
         return ResultGeneric<List<TransactionResponse>>.Success(response);

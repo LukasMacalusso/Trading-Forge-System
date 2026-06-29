@@ -6,7 +6,7 @@ public interface IStrategyRepository
 {
     Task<Strategy?> GetByIdAsync(Guid id);
     Task<Strategy?> GetByIdWithGraphAsync(Guid id);
-    Task<List<Strategy>> GetByTraderIdAsync(string traderId);
+    Task<List<Strategy>> GetByPortfolioIdAsync(Guid portfolioId);
     Task<List<Strategy>> GetActiveWithEngineRunningAsync();
     Task AddAsync(Strategy strategy);
     Task SaveChangesAsync();
