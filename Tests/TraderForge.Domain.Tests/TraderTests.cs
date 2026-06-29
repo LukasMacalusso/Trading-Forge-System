@@ -80,4 +80,28 @@ public class TraderTests
         var newPortfolio = trader.Portfolios.First(p => p.IsActive);
         Assert.Equal(newPlan.InitialVirtualBalance, newPortfolio.VirtualBalance);
     }
+
+    [Fact]
+    public void Suspend_WhenCalled_SetsIsSuspendedAndReason()
+    {
+        var trader = new Trader(_traderId, Email);
+        var reason = "Violation of terms";
+
+        trader.Suspend(reason);
+
+        Assert.True(trader.IsSuspended);
+        Assert.Equal(reason, trader.SuspensionReason);
+    }
+
+    [Fact]
+    public void Unsuspend_WhenCalled_SetsIsSuspendedToFalseAndClearsReason()
+    {
+        var trader = new Trader(_traderId, Email);
+        trader.Suspend("Violation");
+        
+        trader.Unsuspend();
+
+        Assert.False(trader.IsSuspended);
+        Assert.Equal(string.Empty, trader.SuspensionReason);
+    }
 }

@@ -133,4 +133,43 @@ public class AdministratorControllerTests
         var result = await _controller.Delete(Guid.NewGuid());
         Assert.IsType<BadRequestObjectResult>(result);
     }
+
+    [Fact]
+    public async Task GetAllTraders_WhenCalled_ReturnsOk()
+    {
+        var traderRepo = new Mock<ITraderRepository>();
+        traderRepo.Setup(x => x.GetAllIncludeSubPlanAsync()).ReturnsAsync(new List<Trader>());
+        var handler = new GetAllTradersQueryHandler(traderRepo.Object);
+
+        var result = await _controller.GetAllTraders(handler);
+        Assert.IsType<OkObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task SuspendTrader_WhenValid_ReturnsOk()
+    {
+        var traderRepo = new Mock<ITraderRepository>();
+        var trader = new Trader(Guid.NewGuid().ToString(), "test@traderforge.com");
+        traderRepo.Setup(x => x.GetByIdAsync(trader.Id)).ReturnsAsync(trader);
+        traderRepo.Setup(x => x.SaveChangesAsync()).Returns(Task.CompletedTask);
+        var handler = new SuspendTraderCommandHandler(traderRepo.Object);
+        var request = new SuspendTraderRequest { Reason = "Spam" };
+
+        var result = await _controller.SuspendTrader(trader.Id, request, handler);
+        Assert.IsType<OkObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task UnsuspendTrader_WhenValid_ReturnsOk()
+    {
+        var traderRepo = new Mock<ITraderRepository>();
+        var trader = new Trader(Guid.NewGuid().ToString(), "test@traderforge.com");
+        trader.Suspend("Spam");
+        traderRepo.Setup(x => x.GetByIdAsync(trader.Id)).ReturnsAsync(trader);
+        traderRepo.Setup(x => x.SaveChangesAsync()).Returns(Task.CompletedTask);
+        var handler = new UnsuspendTraderCommandHandler(traderRepo.Object);
+
+        var result = await _controller.UnsuspendTrader(trader.Id, handler);
+        Assert.IsType<OkObjectResult>(result);
+    }
 }

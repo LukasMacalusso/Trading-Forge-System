@@ -62,6 +62,13 @@ public class TraderRepository : ITraderRepository
             .ThenInclude(p => p.Positions)
             .FirstOrDefaultAsync(t => t.Id == id);
     }
+    
+    public async Task<IEnumerable<Trader>> GetAllIncludeSubPlanAsync()
+    {
+        return await _dbContext.Traders
+            .Include(t => t.Subscription)
+            .ToListAsync();
+    }
 
     public async Task SaveChangesAsync()
     {
