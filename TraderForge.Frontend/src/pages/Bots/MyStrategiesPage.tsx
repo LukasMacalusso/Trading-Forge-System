@@ -98,6 +98,7 @@ export function MyStrategiesPage() {
           </div>
           <button
             onClick={handleCreate}
+            data-tour="new-strategy"
             className="flex items-center gap-2 px-4 py-2 text-sm bg-emerald-500 text-neutral-950 rounded-lg font-semibold hover:bg-emerald-400 transition-colors shrink-0"
           >
             <Plus size={16} />

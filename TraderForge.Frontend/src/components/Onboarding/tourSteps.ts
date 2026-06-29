@@ -2,14 +2,14 @@ import type { TourStep } from '@models/Onboarding';
 
 /**
  * Beginner onboarding flow (TFS-37). Steps are config-driven so the order or
- * copy can change without touching the renderer. The `bots` step is centered
- * for now because the Strategy Builder route is not part of this branch yet.
+ * copy can change without touching the renderer. It now walks through the live
+ * chart and its analysis tools, manual trading and the Strategies manager.
  */
 export const TOUR_STEPS: TourStep[] = [
   {
     id: 'welcome',
     title: 'Bienvenido a Trading Forge',
-    body: 'En menos de un minuto te mostramos cómo operar y cómo automatizar con bots. Puedes saltar el tutorial cuando quieras.',
+    body: 'En menos de un minuto te mostramos cómo analizar el mercado, operar y automatizar con estrategias. Puedes saltar el tutorial cuando quieras.',
     placement: 'center',
     route: '/dashboard',
   },
@@ -25,8 +25,16 @@ export const TOUR_STEPS: TourStep[] = [
     id: 'chart',
     target: '[data-tour="chart"]',
     title: 'Gráfico en vivo',
-    body: 'Sigue el precio con velas japonesas y cambia el intervalo de tiempo para analizar el mercado a tu ritmo.',
+    body: 'Sigue el precio con velas japonesas, cambia el intervalo y activa indicadores como medias móviles (MA) y RSI para analizar el mercado.',
     placement: 'left',
+    route: '/dashboard',
+  },
+  {
+    id: 'drawing-tools',
+    target: '[data-tour="drawing-tools"]',
+    title: 'Herramientas de dibujo',
+    body: 'Marca tus análisis sobre el gráfico: líneas de tendencia, Fibonacci, figuras o la regla. Puedes mover, deshacer y ocultar tus dibujos.',
+    placement: 'right',
     route: '/dashboard',
   },
   {
@@ -46,16 +54,25 @@ export const TOUR_STEPS: TourStep[] = [
     route: '/dashboard',
   },
   {
-    id: 'bots',
-    title: 'Bots y estrategias',
-    body: '¿Prefieres automatizar? En Estrategias armas flujos visuales: un bot analiza el mercado, otro te avisa y otro ejecuta la orden por ti.',
-    placement: 'center',
+    id: 'strategies-nav',
+    target: '[data-tour="nav-strategy"]',
+    title: 'Estrategias automatizadas',
+    body: 'Una estrategia es el entorno donde conectas bots: uno analiza el mercado, otro avisa y otro ejecuta la orden por ti. Entra a "Estrategias" para gestionarlas.',
+    placement: 'right',
     route: '/dashboard',
+  },
+  {
+    id: 'strategies-manager',
+    target: '[data-tour="new-strategy"]',
+    title: 'Crea tu primera estrategia',
+    body: 'Aquí creas, abres, activas y duplicas tus estrategias. Pulsa "Nueva estrategia" para abrir el lienzo y conectar tus bots.',
+    placement: 'bottom',
+    route: '/strategy',
   },
   {
     id: 'done',
     title: '¡Todo listo!',
-    body: 'Ya conoces lo esencial. Puedes repetir este tutorial cuando quieras desde el botón de ayuda en la barra lateral.',
+    body: 'Ya conoces lo esencial. Puedes repetir este tutorial cuando quieras desde el botón "Tutorial" en la barra lateral.',
     placement: 'center',
   },
 ];
