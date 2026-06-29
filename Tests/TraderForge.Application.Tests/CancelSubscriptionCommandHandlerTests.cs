@@ -1,3 +1,4 @@
+using MediatR;
 using Moq;
 using TraderForge.Application.DTOs;
 using TraderForge.Application.Handlers;
@@ -24,7 +25,8 @@ public class CancelSubscriptionCommandHandlerTests
         _handler = new CancelSubscriptionCommandHandler(
             _traderRepoMock.Object,
             _discountServiceMock.Object,
-            _planRepoMock.Object);
+            _planRepoMock.Object,
+            Mock.Of<IPublisher>());
     }
 
     [Fact]

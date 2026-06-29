@@ -1,5 +1,7 @@
+using MediatR;
 using TraderForge.Application.DTOs;
 using TraderForge.Application.DTOs.Results;
+using TraderForge.Application.Events;
 using TraderForge.Domain.Common;
 using TraderForge.Domain.Repositories;
 using TraderForge.Domain.Services;
@@ -11,15 +13,18 @@ public class CancelSubscriptionCommandHandler
     private readonly ITraderRepository _traderRepository;
     private readonly IDiscountService _discountService;
     private readonly ISubscriptionPlanRepository _planRepository;
+    private readonly IPublisher _publisher;
 
     public CancelSubscriptionCommandHandler(
         ITraderRepository traderRepository,
         IDiscountService discountService,
-        ISubscriptionPlanRepository planRepository)
+        ISubscriptionPlanRepository planRepository,
+        IPublisher publisher)
     {
         _traderRepository = traderRepository;
         _discountService = discountService;
         _planRepository = planRepository;
+        _publisher = publisher;
     }
 
     public async Task<ResultGeneric<CancelSubscriptionResult>> HandleAsync(CancelSubscriptionCommand command)
@@ -60,6 +65,8 @@ public class CancelSubscriptionCommandHandler
         
         trader.CancelSubscription();
         await _traderRepository.SaveChangesAsync();
+        
+        await _publisher.Publish(new SubscriptionCancelledEvent(trader.Email, trader.UserName));
         
         return ResultGeneric<CancelSubscriptionResult>.Success(new CancelSubscriptionResult 
         { 

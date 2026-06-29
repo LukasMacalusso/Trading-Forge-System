@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -31,7 +32,7 @@ public class SubscriptionControllerTests
             _traderRepoMock.Object, _planRepoMock.Object, _limitGuardMock.Object);
         
         var cancelHandler = new CancelSubscriptionCommandHandler(
-            _traderRepoMock.Object, _discountServiceMock.Object, _planRepoMock.Object);
+            _traderRepoMock.Object, _discountServiceMock.Object, _planRepoMock.Object, Mock.Of<IPublisher>());
             
         var getAllPlansHandler = new GetAllPlansQueryHandler(_planRepoMock.Object);
         var getTraderPlanHandler = new GetTraderPlanQueryHandler(_traderRepoMock.Object);
