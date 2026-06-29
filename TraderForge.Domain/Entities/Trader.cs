@@ -7,7 +7,8 @@ public class Trader
     public string Id { get; private set; } = null!;
     public string UserName { get; set; } = null!;
     public string Email { get; private set; } = null!;
-    
+    public bool IsSuspended { get; private set; } = false;
+    public string SuspensionReason { get; private set; } = "";
     public ActiveSubscription? Subscription { get; private set; }
 
     public ICollection<Portfolio> Portfolios { get; private set; } = new List<Portfolio>();
@@ -58,6 +59,11 @@ public class Trader
         var initialPortfolio = new Portfolio(Id, basicPlan.InitialVirtualBalance);
         Portfolios.Add(initialPortfolio);
     }
+    
+    public void CancelSubscription()
+    {
+        Subscription?.Cancel();
+    }
 
     public void BuyPosition(string symbol, decimal quantity, decimal price, ICommissionService commissionService)
     {
@@ -82,5 +88,17 @@ public class Trader
             throw new InvalidOperationException("No active portfolio found.");
 
         activePortfolio.SellPosition(symbol, quantity, price, commissionService);
+    }
+    
+    public void Suspend(string reason)
+    {
+        IsSuspended = true;
+        SuspensionReason = reason;
+    }
+    
+    public void Unsuspend()
+    {
+        IsSuspended = false;
+        SuspensionReason = string.Empty;
     }
 }

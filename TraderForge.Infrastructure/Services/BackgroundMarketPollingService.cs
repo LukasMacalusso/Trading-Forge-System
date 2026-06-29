@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Hosting;
 using TraderForge.Domain.Constants;
+using TraderForge.Domain.Events;
 using TraderForge.Domain.Services;
 
 namespace TraderForge.Infrastructure.Services;
@@ -12,14 +13,17 @@ public class BackgroundMarketPollingService : BackgroundService
 {
     private readonly IMemoryCache _cache;
     private readonly IMarketDataBroadcaster _broadcaster;
-    private readonly Uri _binanceWebSocketUri = new("wss://stream.binance.com:9443/ws/!ticker@arr");
+    private readonly IMarketDataEventBus _eventBus;
+    private readonly Uri _binanceWebSocketUri = new("wss://stream.binance.com:9443/ws/!miniTicker@arr");
 
     public BackgroundMarketPollingService(
         IMemoryCache cache,
-        IMarketDataBroadcaster broadcaster)
+        IMarketDataBroadcaster broadcaster,
+        IMarketDataEventBus eventBus)
     {
         _cache = cache;
         _broadcaster = broadcaster;
+        _eventBus = eventBus;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -91,7 +95,7 @@ public class BackgroundMarketPollingService : BackgroundService
                 return;
 
             var currentPrices = GetOrCreatePriceCache();
-            var pricesUpdated = TryUpdatePrices(document.RootElement, currentPrices);
+            var pricesUpdated = TryUpdatePrices(document.RootElement, currentPrices.Prices);
 
             if (pricesUpdated)
             {
@@ -104,15 +108,15 @@ public class BackgroundMarketPollingService : BackgroundService
         }
     }
 
-    private Dictionary<string, decimal> GetOrCreatePriceCache()
+    private MarketPriceCacheItem GetOrCreatePriceCache()
     {
         return _cache.GetOrCreate(CacheKeys.MarketPrices, entry =>
         {
-            entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(2));
-            return new Dictionary<string, decimal>();
-        }) ?? new Dictionary<string, decimal>();
+            entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(2)); 
+            return new MarketPriceCacheItem { LastUpdated = DateTime.UtcNow };
+        }) ?? new MarketPriceCacheItem();
     }
-
+    
     private bool TryUpdatePrices(JsonElement rootArray, Dictionary<string, decimal> currentPrices)
     {
         bool anyUpdated = false;
@@ -141,9 +145,15 @@ public class BackgroundMarketPollingService : BackgroundService
         return decimal.TryParse(priceProp.GetString(), out price);
     }
 
-    private async Task SaveAndBroadcastPricesAsync(Dictionary<string, decimal> currentPrices, CancellationToken stoppingToken)
+    private async Task SaveAndBroadcastPricesAsync(MarketPriceCacheItem currentPrices, CancellationToken stoppingToken)
     {
+        currentPrices.LastUpdated = DateTime.UtcNow; 
         _cache.Set(CacheKeys.MarketPrices, currentPrices, TimeSpan.FromMinutes(2));
-        await _broadcaster.BroadCastPricesAsync(currentPrices, stoppingToken);
+        await _broadcaster.BroadCastPricesAsync(currentPrices.Prices, stoppingToken);
+
+        foreach (var (symbol, price) in currentPrices.Prices)
+        {
+            _eventBus.Publish(new MarketPriceEvent(symbol, price, DateTime.UtcNow));
+        }
     }
 }

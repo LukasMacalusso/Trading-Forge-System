@@ -205,6 +205,83 @@ namespace TraderForge.Infrastructure.Migrations
                     b.ToTable("Administrators");
                 });
 
+            modelBuilder.Entity("TraderForge.Domain.Entities.BotEdge", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SourceNodeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SourcePort")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasDefaultValue("Out");
+
+                    b.Property<Guid>("StrategyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TargetNodeId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StrategyId");
+
+                    b.HasIndex("TargetNodeId");
+
+                    b.HasIndex("SourceNodeId", "SourcePort");
+
+                    b.ToTable("BotEdges", (string)null);
+                });
+
+            modelBuilder.Entity("TraderForge.Domain.Entities.BotNode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Config")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<double>("PositionX")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("double precision")
+                        .HasDefaultValue(0.0);
+
+                    b.Property<double>("PositionY")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("double precision")
+                        .HasDefaultValue(0.0);
+
+                    b.Property<Guid>("StrategyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StrategyId");
+
+                    b.ToTable("BotNodes", (string)null);
+                });
+
             modelBuilder.Entity("TraderForge.Domain.Entities.Order", b =>
                 {
                     b.Property<Guid>("Id")
@@ -324,6 +401,11 @@ namespace TraderForge.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsEngineActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -337,6 +419,41 @@ namespace TraderForge.Infrastructure.Migrations
                     b.HasIndex("PortfolioId");
 
                     b.ToTable("Strategies", (string)null);
+                });
+
+            modelBuilder.Entity("TraderForge.Domain.Entities.StrategyExecution", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CurrentFlag")
+                        .HasColumnType("jsonb");
+
+                    b.Property<Guid?>("CurrentNodeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("LastActivityAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("StrategyId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StrategyId");
+
+                    b.ToTable("StrategyExecutions", (string)null);
                 });
 
             modelBuilder.Entity("TraderForge.Domain.Entities.SubscriptionPlan", b =>
@@ -409,8 +526,15 @@ namespace TraderForge.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsSuspended")
+                        .HasColumnType("boolean");
+
                     b.Property<Guid?>("SubscriptionPlanId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("SuspensionReason")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("UserName")
                         .IsRequired()
@@ -602,6 +726,44 @@ namespace TraderForge.Infrastructure.Migrations
                     b.Navigation("Trader");
                 });
 
+            modelBuilder.Entity("TraderForge.Domain.Entities.BotEdge", b =>
+                {
+                    b.HasOne("TraderForge.Domain.Entities.BotNode", "SourceNode")
+                        .WithMany("OutgoingEdges")
+                        .HasForeignKey("SourceNodeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TraderForge.Domain.Entities.Strategy", "Strategy")
+                        .WithMany("BotEdges")
+                        .HasForeignKey("StrategyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TraderForge.Domain.Entities.BotNode", "TargetNode")
+                        .WithMany("IncomingEdges")
+                        .HasForeignKey("TargetNodeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SourceNode");
+
+                    b.Navigation("Strategy");
+
+                    b.Navigation("TargetNode");
+                });
+
+            modelBuilder.Entity("TraderForge.Domain.Entities.BotNode", b =>
+                {
+                    b.HasOne("TraderForge.Domain.Entities.Strategy", "Strategy")
+                        .WithMany("BotNodes")
+                        .HasForeignKey("StrategyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Strategy");
+                });
+
             modelBuilder.Entity("TraderForge.Domain.Entities.Order", b =>
                 {
                     b.HasOne("TraderForge.Domain.Entities.Portfolio", "Portfolio")
@@ -646,6 +808,17 @@ namespace TraderForge.Infrastructure.Migrations
                     b.Navigation("Portfolio");
                 });
 
+            modelBuilder.Entity("TraderForge.Domain.Entities.StrategyExecution", b =>
+                {
+                    b.HasOne("TraderForge.Domain.Entities.Strategy", "Strategy")
+                        .WithMany()
+                        .HasForeignKey("StrategyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Strategy");
+                });
+
             modelBuilder.Entity("TraderForge.Domain.Entities.Trader", b =>
                 {
                     b.HasOne("TraderForge.Domain.Entities.SubscriptionPlan", null)
@@ -664,6 +837,13 @@ namespace TraderForge.Infrastructure.Migrations
                     b.Navigation("Portfolio");
                 });
 
+            modelBuilder.Entity("TraderForge.Domain.Entities.BotNode", b =>
+                {
+                    b.Navigation("IncomingEdges");
+
+                    b.Navigation("OutgoingEdges");
+                });
+
             modelBuilder.Entity("TraderForge.Domain.Entities.Portfolio", b =>
                 {
                     b.Navigation("Orders");
@@ -673,6 +853,13 @@ namespace TraderForge.Infrastructure.Migrations
                     b.Navigation("Strategies");
 
                     b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("TraderForge.Domain.Entities.Strategy", b =>
+                {
+                    b.Navigation("BotEdges");
+
+                    b.Navigation("BotNodes");
                 });
 
             modelBuilder.Entity("TraderForge.Domain.Entities.SubscriptionPlan", b =>

@@ -71,9 +71,28 @@ builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ISubscriptionLimitGuard, SubscriptionLimitGuard>();
 builder.Services.AddScoped<ICommissionService, CommissionService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+
+// -- Bot Engine (Task 4.1) -- //
+builder.Services.AddScoped<IBotNodeRepository, BotNodeRepository>();
+builder.Services.AddScoped<IBotEdgeRepository, BotEdgeRepository>();
+builder.Services.AddScoped<IStrategyExecutionRepository, StrategyExecutionRepository>();
+
+builder.Services.AddSingleton<IMarketDataEventBus, MarketDataEventBus>();
+builder.Services.AddSingleton<IStrategyEngine>(sp => sp.GetRequiredService<StrategyEngineService>());
+builder.Services.AddHostedService<StrategyEngineService>();
+
+builder.Services.AddTransient<AddBotNodeCommandHandler>();
+builder.Services.AddTransient<UpdateBotNodeCommandHandler>();
+builder.Services.AddTransient<RemoveBotNodeCommandHandler>();
+builder.Services.AddTransient<AddBotEdgeCommandHandler>();
+builder.Services.AddTransient<RemoveBotEdgeCommandHandler>();
+builder.Services.AddTransient<StartEngineCommandHandler>();
+builder.Services.AddTransient<StopEngineCommandHandler>();
+
 builder.Services.AddTransient<RegisterTraderCommandHandler>();
 builder.Services.AddTransient<LoginTraderQueryHandler>();
 builder.Services.AddTransient<ChangeSubscriptionCommandHandler>();
+builder.Services.AddTransient<CancelSubscriptionCommandHandler>();
 builder.Services.AddTransient<GetAllPlansQueryHandler>();
 builder.Services.AddTransient<GetTraderPlanQueryHandler>();
 builder.Services.AddTransient<CreatePlanCommandHandler>();
@@ -89,6 +108,9 @@ builder.Services.AddTransient<GetPositionsQueryHandler>();
 builder.Services.AddTransient<GetTransactionsQueryHandler>();
 builder.Services.AddTransient<ResetSimulationCommandHandler>();
 builder.Services.AddTransient<GetOrdersQueryHandler>();
+builder.Services.AddTransient<GetAllTradersQueryHandler>();
+builder.Services.AddTransient<SuspendTraderCommandHandler>();
+builder.Services.AddScoped<UnsuspendTraderCommandHandler>();
 
 builder.Services.AddScoped<IDiscountService, DiscountService>();
 builder.Services.AddControllers().AddJsonOptions(options =>

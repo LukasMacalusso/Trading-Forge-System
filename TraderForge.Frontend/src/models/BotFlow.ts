@@ -10,17 +10,35 @@ export interface AnalysisBotConfig {
   targetValue: number;
 }
 
+export interface NotificationBotConfig {
+  message: string;
+}
+
 export interface ActionBotConfig {
   action: ActionType;
   symbol: string;
   quantity: number;
 }
 
+export type BotConfig = AnalysisBotConfig | NotificationBotConfig | ActionBotConfig;
+
+/** Canvas node kind used by the Strategy Builder (React Flow node `type`). */
+export type BotNodeKind = 'analysisBot' | 'notificationBot' | 'actionBot';
+
+/**
+ * Discriminated data carried by each canvas node. The `kind` discriminant lets
+ * the UI narrow `config` to the correct shape without casts.
+ */
+export type BotNodeData =
+  | { kind: 'analysisBot'; label: string; config: AnalysisBotConfig }
+  | { kind: 'notificationBot'; label: string; config: NotificationBotConfig }
+  | { kind: 'actionBot'; label: string; config: ActionBotConfig };
+
 export interface BotNode {
   id: string;
   type: BotType;
   label: string;
-  config: AnalysisBotConfig | ActionBotConfig | Record<string, unknown>;
+  config: BotConfig;
 }
 
 export interface BotFlow {

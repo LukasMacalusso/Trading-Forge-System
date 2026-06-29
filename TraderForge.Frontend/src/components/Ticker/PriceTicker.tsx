@@ -133,7 +133,10 @@ export const PriceTicker = memo(function PriceTicker({
       </div>
 
       {/* Add asset button — sibling of scroll container so dropdown renders outside its clip area */}
-      <div className="relative flex items-center px-3 shrink-0 border-l border-neutral-800">
+      <div
+        data-tour="add-asset"
+        className="relative flex items-center px-3 shrink-0 border-l border-neutral-800"
+      >
         <button
           onClick={() => setDropdownOpen((o) => !o)}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition-colors"

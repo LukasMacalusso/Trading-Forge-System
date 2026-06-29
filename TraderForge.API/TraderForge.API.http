@@ -1,6 +1,6 @@
 @hostAddress = http://localhost:5116
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1M2I1MjRhNS04Y2M0LTQzZDEtOTQ3YS03ZTk4YmEwZTRjN2MiLCJlbWFpbCI6InRlc3QxNkB0cmFkZXJmb3JnZS5jb20iLCJyb2xlIjoiVHJhZGVyIiwibmJmIjoxNzc4MzczNjk4LCJleHAiOjE3NzgzODA4OTgsImlhdCI6MTc3ODM3MzY5OCwiaXNzIjoiVHJhZGVyRm9yZ2VBUEkiLCJhdWQiOiJUcmFkZXJGb3JnZVJlYWN0QXBwIn0.nprgBliTLePAqMQROBeFMJ7Hkg8BPpnGiR9d1l9Kxdo
-@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNjAxODRiNi0zMDJiLTQ1NzctYmI5Zi04NTBiNjMwMTlhM2YiLCJlbWFpbCI6ImxtYWNhbHVzc29AdHJhZGVyZm9yZ2UuY29tIiwicm9sZSI6IlN5c3RlbUFkbWluIiwibmJmIjoxNzc4MzY1MTEzLCJleHAiOjE3NzgzNzIzMTMsImlhdCI6MTc3ODM2NTExMywiaXNzIjoiVHJhZGVyRm9yZ2VBUEkiLCJhdWQiOiJUcmFkZXJGb3JnZVJlYWN0QXBwIn0.mbvVQxPzw046eY7Be0wYJbvIk9qhnk072ufXF8LtA3A
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwOGZjOTk4Yy0zMDQ2LTRkYmItYjEzOS1lYmJmYTNkMjAxM2IiLCJlbWFpbCI6ImFkbWluQHRyYWRlcmZvcmdlLmNvbSIsInJvbGUiOiJTeXN0ZW1BZG1pbiIsIm5iZiI6MTc4MjcwODI1NywiZXhwIjoxNzgyNzE1NDU3LCJpYXQiOjE3ODI3MDgyNTcsImlzcyI6IlRyYWRlckZvcmdlQVBJIiwiYXVkIjoiVHJhZGVyRm9yZ2VSZWFjdEFwcCJ9.YGIXAEOVxmY6F8BrobfkZgxQxx0HUuNZjy7__itEdLU
 @traderToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZDc0Y2VhMi1iYzM1LTQwMzgtYTlkZC1jMjI2MmJkNjM4YjgiLCJlbWFpbCI6InRlc3Rncm91cDRAdHJhZGVyZm9yZ2UuY29tIiwicm9sZSI6IlRyYWRlciIsIm5iZiI6MTc3ODM3NjY5MSwiZXhwIjoxNzc4MzgzODkxLCJpYXQiOjE3NzgzNzY2OTEsImlzcyI6IlRyYWRlckZvcmdlQVBJIiwiYXVkIjoiVHJhZGVyRm9yZ2VSZWFjdEFwcCJ9.EGXZKEZAYDPY0rMKcTz8isc3KXDdHJ7vmKCRVgV2MEk
 
 GET {{hostAddress}}/weatherforecast/
@@ -12,7 +12,11 @@ POST {{hostAddress}}/api/identity/register
 Content-Type: application/json
 
 {
+<<<<<<< HEAD
   "email": "ignacioloncon2006@gmail.com",
+=======
+  "email": "test6@traderforge.com",
+>>>>>>> 025c15dfa3dc8327b289ef5d6ce3597a332df983
   "password": "SuperSecretPassword123!"
 }
 
@@ -40,6 +44,14 @@ Authorization: bearer {{token}}
   "newPlanId": "22222222-2222-2222-2222-222222222222"
 }
 
+### Cancel Subscription (Checks for retention offer)
+POST {{hostAddress}}/api/subscription/cancel
+Authorization: bearer {{token}}
+
+### Force Cancel Subscription (Bypasses retention offer)
+POST {{hostAddress}}/api/subscription/cancel?forceCancel=true
+Authorization: bearer {{token}}
+
 ###
 
 ### Login as admin — copy returned token to @adminToken variable above
@@ -47,7 +59,7 @@ POST {{hostAddress}}/api/identity/login
 Content-Type: application/json
 
 {
-  "email": "test16@traderforge.com",
+  "email": "admin@traderforge.com",
   "password": "SuperSecretPassword123!"
 }
 
@@ -201,3 +213,45 @@ Authorization: bearer {{traderToken}}
 
 ###
 
+### ============================================================
+### GROUP 5 — Admin Dashboard (User Management)
+### ============================================================
+
+### List all traders (Requires Admin Token)
+GET {{hostAddress}}/api/admin/traders
+Authorization: bearer {{adminToken}}
+
+###
+
+### Suspend a trader — replace id with a trader's GUID
+POST {{hostAddress}}/api/admin/traders/{id}/suspend
+Content-Type: application/json
+Authorization: bearer {{adminToken}}
+
+{
+  "reason": "Suspicious fraudulent activity detected."
+}
+
+###
+
+### Unsuspend a trader — replace id with a trader's GUID
+POST {{hostAddress}}/api/admin/traders/{id}/unsuspend
+Authorization: bearer {{adminToken}}
+
+###
+
+### ============================================================
+### GROUP 6 — Market Prices 
+### ============================================================
+
+### Get current market prices (and check isStale)
+POST {{hostAddress}}/api/prices
+Content-Type: application/json
+
+{
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT"
+  ]
+}

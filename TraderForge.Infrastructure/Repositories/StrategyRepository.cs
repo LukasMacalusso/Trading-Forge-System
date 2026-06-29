@@ -26,6 +26,23 @@ public class StrategyRepository : IStrategyRepository
         return await _dbContext.Strategies.FirstOrDefaultAsync(s => s.Id == id);
     }
 
+    public async Task<Strategy?> GetByIdWithGraphAsync(Guid id)
+    {
+        return await _dbContext.Strategies
+            .Include(s => s.BotNodes.OrderBy(n => n.CreatedAt))
+            .Include(s => s.BotEdges)
+            .FirstOrDefaultAsync(s => s.Id == id);
+    }
+
+    public async Task<List<Strategy>> GetActiveWithEngineRunningAsync()
+    {
+        return await _dbContext.Strategies
+            .Where(s => s.IsActive && s.IsEngineActive)
+            .Include(s => s.BotNodes.OrderBy(n => n.CreatedAt))
+            .Include(s => s.BotEdges)
+            .ToListAsync();
+    }
+
     public async Task AddAsync(Strategy strategy)
     {
         await _dbContext.Strategies.AddAsync(strategy);
