@@ -58,6 +58,11 @@ public class Trader
         var initialPortfolio = new Portfolio(Id, basicPlan.InitialVirtualBalance);
         Portfolios.Add(initialPortfolio);
     }
+    
+    public void CancelSubscription()
+    {
+        Subscription?.Cancel();
+    }
 
     public void BuyPosition(string symbol, decimal quantity, decimal price, ICommissionService commissionService)
     {

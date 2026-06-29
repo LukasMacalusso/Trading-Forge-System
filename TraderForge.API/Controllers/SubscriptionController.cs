@@ -13,18 +13,22 @@ namespace TraderForge.API.Controllers;
 [Authorize(Roles = "Trader")]
 public class SubscriptionController : ControllerBase
 {
-    private readonly ChangeSubscriptionCommandHandler _commandHandler;
+    private readonly ChangeSubscriptionCommandHandler _changeSubscriptionCommandHandler;
+    private readonly CancelSubscriptionCommandHandler _cancelSubscriptionHandler;
     private readonly GetAllPlansQueryHandler _getAllPlansHandler;
     private readonly GetTraderPlanQueryHandler _getTraderSubscriptionPlanHandler;
     private readonly IDiscountService _discountService;
 
-    public SubscriptionController(ChangeSubscriptionCommandHandler commandHandler, 
+    public SubscriptionController(
+        ChangeSubscriptionCommandHandler changeSubscriptionCommandHandler, 
+        CancelSubscriptionCommandHandler cancelSubscriptionHandler,
         IDiscountService discountService,
         GetAllPlansQueryHandler getAllPlansHandler,
         GetTraderPlanQueryHandler getTraderSubscriptionPlanHandler
         )
     {
-        _commandHandler = commandHandler;
+        _changeSubscriptionCommandHandler = changeSubscriptionCommandHandler;
+        _cancelSubscriptionHandler = cancelSubscriptionHandler;
         _discountService = discountService;
         _getAllPlansHandler = getAllPlansHandler;
         _getTraderSubscriptionPlanHandler = getTraderSubscriptionPlanHandler;
@@ -38,7 +42,7 @@ public class SubscriptionController : ControllerBase
 
         var command = request.ToCommand(traderId);
 
-        var result = await _commandHandler.HandleAsync(command);
+        var result = await _changeSubscriptionCommandHandler.HandleAsync(command);
 
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });
@@ -51,6 +55,36 @@ public class SubscriptionController : ControllerBase
             discount = discountOffer
         });
     }
+    
+    [HttpPost("cancel")]
+    public async Task<IActionResult> CancelSubscription([FromQuery] bool forceCancel = false)
+    {
+        var traderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(traderId)) return Unauthorized(new { error = "Invalid token claims." });
+        
+        var command = new CancelSubscriptionCommand { TraderId = traderId, ForceCancel = forceCancel };
+        var result = await _cancelSubscriptionHandler.HandleAsync(command);
+        
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.ErrorMessage });
+            
+        if (!result.Value!.WasCancelled)
+        {
+            return Ok(new
+            {
+                message = "Wait! Do you still want to cancel?",
+                discount = result.Value.RetentionOffer,
+                requiresForceCancel = true
+            });
+        }
+        
+        return Ok(new
+        {
+            message = "Subscription successfully cancelled.",
+            discount = result.Value.RetentionOffer
+        });
+    }
+
 
     [AllowAnonymous]
     [HttpGet("plans")]

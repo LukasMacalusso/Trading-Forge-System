@@ -25,6 +25,11 @@ public class ActiveSubscription
         EndDate = DateTime.UtcNow.AddDays(initialDaysValid);
     }
 
+    public bool IsWithinTrialPeriod(int trialDays = 7)
+    {
+        return (DateTime.UtcNow - StartDate).TotalDays <= trialDays;
+    }
+
     public void ChangePlan(Guid newPlanId)
     {
         SubscriptionPlanId = newPlanId;
@@ -35,5 +40,10 @@ public class ActiveSubscription
     public void Extend(int days)
     {
         EndDate = EndDate.AddDays(days);
+    }
+    
+    public void Cancel()
+    {
+        EndDate = DateTime.UtcNow;
     }
 }

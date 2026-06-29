@@ -23,6 +23,10 @@ public class SubscriptionControllerNoAuthTests
                 Mock.Of<ITraderRepository>(),
                 Mock.Of<ISubscriptionPlanRepository>(),
                 Mock.Of<ISubscriptionLimitGuard>()),
+            new CancelSubscriptionCommandHandler(
+                Mock.Of<ITraderRepository>(),
+                Mock.Of<IDiscountService>(),
+                Mock.Of<ISubscriptionPlanRepository>()),
             Mock.Of<IDiscountService>(),
             getAllPlansHandler,
             new GetTraderPlanQueryHandler(Mock.Of<ITraderRepository>()));
