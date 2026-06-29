@@ -1,3 +1,4 @@
+using MediatR;
 using Moq;
 using TraderForge.Application.DTOs;
 using TraderForge.Application.Handlers;
@@ -14,7 +15,7 @@ public class ResetSimulationCommandHandlerTests
     public ResetSimulationCommandHandlerTests()
     {
         _traderRepoMock = new Mock<ITraderRepository>();
-        _handler = new ResetSimulationCommandHandler(_traderRepoMock.Object);
+        _handler = new ResetSimulationCommandHandler(_traderRepoMock.Object, Mock.Of<IPublisher>());
     }
 
     [Fact]

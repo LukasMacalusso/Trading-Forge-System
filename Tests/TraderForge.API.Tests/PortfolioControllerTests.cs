@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -58,7 +59,7 @@ public class PortfolioControllerTests
             _positionRepo.Object, _traderRepo.Object, _commissionService.Object, _marketService.Object);
         var getTransactionsHandler = new GetTransactionsQueryHandler(_traderRepo.Object, _transactionRepo.Object);
         var getOrdersHandler = new GetOrdersQueryHandler(_traderRepo.Object, _orderRepo.Object);
-        var resetSimulationHandler = new ResetSimulationCommandHandler(_traderRepo.Object);
+        var resetSimulationHandler = new ResetSimulationCommandHandler(_traderRepo.Object, Mock.Of<IPublisher>());
 
         _controller = new PortfolioController(
             getPortfolioHandler,
@@ -184,7 +185,7 @@ public class PortfolioControllerTests
             new SellPositionCommandHandler(_positionRepo.Object, _traderRepo.Object, _commissionService.Object, _marketService.Object),
             new GetTransactionsQueryHandler(_traderRepo.Object, _transactionRepo.Object),
             new GetOrdersQueryHandler(_traderRepo.Object, _orderRepo.Object),
-            new ResetSimulationCommandHandler(_traderRepo.Object));
+            new ResetSimulationCommandHandler(_traderRepo.Object, Mock.Of<IPublisher>()));
         ctrl.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity()) }
