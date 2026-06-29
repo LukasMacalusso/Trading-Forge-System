@@ -2,9 +2,11 @@ import { useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Briefcase, CreditCard, Clock, LogIn, LogOut, Globe, User, Workflow } from 'lucide-react';
 import { AlertBanner } from '@components/Notifications/AlertBanner';
+import { NotificationCenter } from '@components/Notifications/NotificationCenter';
 import { OnboardingTour } from '@components/Onboarding/OnboardingTour';
 import { HelpButton } from '@components/Onboarding/HelpButton';
 import { useAuthStore } from '@store/authStore';
+import { useNotificationStore } from '@store/notificationStore';
 import { useOnboardingStore } from '@store/onboardingStore';
 import { OnboardingRepository } from '@utils/OnboardingRepository';
 
@@ -20,6 +22,7 @@ const NAV_ITEMS: { to: string; icon: typeof LayoutDashboard; label: string; tour
 
 export function AppLayout() {
   const { isAuthenticated, logout } = useAuthStore();
+  const pendingCount = useNotificationStore((s) => s.pendingOperations.length);
   const startOnboarding = useOnboardingStore((s) => s.start);
   const navigate = useNavigate();
 
@@ -39,10 +42,11 @@ export function AppLayout() {
     <div className="flex h-screen bg-neutral-950 overflow-hidden">
       {/* Sidebar */}
       <aside className="w-56 shrink-0 flex flex-col bg-neutral-900 border-r border-neutral-800">
-        <div className="px-4 py-5 border-b border-neutral-800">
+        <div className="px-4 py-5 border-b border-neutral-800 flex items-center justify-between">
           <h1 className="text-lg font-bold text-neutral-100 tracking-tight">
             Trading <span className="text-amber-400">Forge</span>
           </h1>
+          {isAuthenticated && <NotificationCenter />}
         </div>
 
         <nav data-tour="sidebar" className="flex-1 py-4 flex flex-col gap-1 px-2">
@@ -60,7 +64,12 @@ export function AppLayout() {
               }
             >
               <Icon size={16} />
-              {label}
+              <span className="flex-1">{label}</span>
+              {to === '/pending' && pendingCount > 0 && (
+                <span className="min-w-5 h-5 px-1.5 flex items-center justify-center rounded-full bg-red-500 text-[11px] font-bold text-white">
+                  {pendingCount > 9 ? '9+' : pendingCount}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>
