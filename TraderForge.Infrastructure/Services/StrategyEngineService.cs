@@ -303,9 +303,6 @@ public class BotGraphRunner : IDisposable
     private async Task ExecuteTradeAsync(string type, JsonElement config, Dictionary<string, object> flag, IServiceScopeFactory scopeFactory)
     {
         using var scope = scopeFactory.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var commissionService = scope.ServiceProvider.GetRequiredService<ICommissionService>();
-        var logger = scope.ServiceProvider.GetService<ILogger<BotGraphRunner>>();
 
         var symbol = (flag.GetValueOrDefault("symbol") as string) ?? "";
         var price = flag.TryGetValue("price", out var p) && decimal.TryParse(p?.ToString(), out var parsedPrice) ? parsedPrice : 0m;
@@ -313,10 +310,14 @@ public class BotGraphRunner : IDisposable
 
         if (string.IsNullOrEmpty(symbol) || price <= 0 || quantity <= 0)
         {
+            var logger = scope.ServiceProvider.GetService<ILogger<BotGraphRunner>>();
             logger?.LogWarning("Invalid {Type} params for strategy {Sid}: Symbol={Sym}, Price={Prc}, Qty={Qty}",
                 type, _strategy.Id, symbol, price, quantity);
             return;
         }
+
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var commissionService = scope.ServiceProvider.GetRequiredService<ICommissionService>();
 
         var portfolio = await db.Portfolios
             .Include(p => p.Positions)
@@ -326,6 +327,7 @@ public class BotGraphRunner : IDisposable
 
         if (portfolio == null)
         {
+            var logger = scope.ServiceProvider.GetService<ILogger<BotGraphRunner>>();
             logger?.LogWarning("Portfolio {Pid} not found for {Type} action (strategy {Sid})",
                 _strategy.PortfolioId, type, _strategy.Id);
             return;
@@ -337,7 +339,8 @@ public class BotGraphRunner : IDisposable
             portfolio.SellPosition(symbol, quantity, price, commissionService);
 
         await db.SaveChangesAsync();
-        logger?.LogInformation("Bot {Type} executed: {Symbol} x {Qty} @ {Price} for strategy {Sid}",
+        var logger2 = scope.ServiceProvider.GetService<ILogger<BotGraphRunner>>();
+        logger2?.LogInformation("Bot {Type} executed: {Symbol} x {Qty} @ {Price} for strategy {Sid}",
             type, symbol, quantity, price, _strategy.Id);
     }
 

@@ -695,6 +695,86 @@ public class BotGraphRunnerTests
         Assert.Equal(ExecutionStatus.Completed, execution.Status);
     }
 
+
+
+    [Fact]
+    public async Task Condition_LessThanFalse_FollowsFalseBranch()
+    {
+        var (s, trigger, _) = CreateBaseStrategy();
+        var cond = new BotNode(s.Id, BotNodeType.Condition, "Price < 40000",
+            """{"indicator":"price","operator":"less_than","value":40000}""", 200, 200);
+        var actionTrue = new BotNode(s.Id, BotNodeType.Action, "Buy", """{"type":"buy"}""", 200, 400);
+        var actionFalse = new BotNode(s.Id, BotNodeType.Action, "Sell", """{"type":"sell"}""", 400, 400);
+        s.BotNodes.Add(cond); s.BotNodes.Add(actionTrue); s.BotNodes.Add(actionFalse);
+        s.BotEdges.Clear();
+        s.BotEdges.Add(new BotEdge(s.Id, trigger.Id, NodePort.Out, cond.Id));
+        s.BotEdges.Add(new BotEdge(s.Id, cond.Id, NodePort.True, actionTrue.Id));
+        s.BotEdges.Add(new BotEdge(s.Id, cond.Id, NodePort.False, actionFalse.Id));
+        var runner = CreateRunner(s, out var executionRepo);
+
+        await runner.ExecuteAsync(MakePriceEvent("BTCUSDT", 50000), trigger.Id, CancellationToken.None);
+
+        var execution = Assert.Single(await executionRepo.GetAllExecutionsAsync());
+        Assert.Equal(ExecutionStatus.Completed, execution.Status);
+        Assert.Equal(actionFalse.Id, execution.CurrentNodeId);
+    }
+
+    [Fact]
+    public async Task Action_Buy_WithoutQuantity_ReturnsEarlyAtValidation()
+    {
+        var (s, trigger, _) = CreateBaseStrategy();
+        var actionBuy = new BotNode(s.Id, BotNodeType.Action, "Buy",
+            """{"type":"buy"}""", 100, 300);
+        s.BotNodes.Add(actionBuy);
+        s.BotEdges.Clear();
+        s.BotEdges.Add(new BotEdge(s.Id, trigger.Id, NodePort.Out, actionBuy.Id));
+        var runner = CreateRunner(s, out var executionRepo);
+
+        await runner.ExecuteAsync(MakePriceEvent("BTCUSDT", 50000), trigger.Id, CancellationToken.None);
+
+        var execution = Assert.Single(await executionRepo.GetAllExecutionsAsync());
+        Assert.Equal(ExecutionStatus.Completed, execution.Status);
+    }
+
+    [Fact]
+    public async Task Action_Sell_WithoutQuantity_ReturnsEarlyAtValidation()
+    {
+        var (s, trigger, _) = CreateBaseStrategy();
+        var actionSell = new BotNode(s.Id, BotNodeType.Action, "Sell",
+            """{"type":"sell"}""", 100, 300);
+        s.BotNodes.Add(actionSell);
+        s.BotEdges.Clear();
+        s.BotEdges.Add(new BotEdge(s.Id, trigger.Id, NodePort.Out, actionSell.Id));
+        var runner = CreateRunner(s, out var executionRepo);
+
+        await runner.ExecuteAsync(MakePriceEvent("BTCUSDT", 50000), trigger.Id, CancellationToken.None);
+
+        var execution = Assert.Single(await executionRepo.GetAllExecutionsAsync());
+        Assert.Equal(ExecutionStatus.Completed, execution.Status);
+    }
+
+    [Fact]
+    public async Task Condition_UnknownIndicator_DefaultsToZero()
+    {
+        var (s, trigger, _) = CreateBaseStrategy();
+        var cond = new BotNode(s.Id, BotNodeType.Condition, "Volume > 100",
+            """{"indicator":"volume","operator":"greater_than","value":100}""", 200, 200);
+        var actionTrue = new BotNode(s.Id, BotNodeType.Action, "Buy", """{"type":"buy"}""", 200, 400);
+        var actionFalse = new BotNode(s.Id, BotNodeType.Action, "Sell", """{"type":"sell"}""", 400, 400);
+        s.BotNodes.Add(cond); s.BotNodes.Add(actionTrue); s.BotNodes.Add(actionFalse);
+        s.BotEdges.Clear();
+        s.BotEdges.Add(new BotEdge(s.Id, trigger.Id, NodePort.Out, cond.Id));
+        s.BotEdges.Add(new BotEdge(s.Id, cond.Id, NodePort.True, actionTrue.Id));
+        s.BotEdges.Add(new BotEdge(s.Id, cond.Id, NodePort.False, actionFalse.Id));
+        var runner = CreateRunner(s, out var executionRepo);
+
+        await runner.ExecuteAsync(MakePriceEvent("BTCUSDT", 50000), trigger.Id, CancellationToken.None);
+
+        var execution = Assert.Single(await executionRepo.GetAllExecutionsAsync());
+        Assert.Equal(ExecutionStatus.Completed, execution.Status);
+        Assert.Equal(actionFalse.Id, execution.CurrentNodeId);
+    }
+
     // ---- Helpers ----
 
     private static (Strategy, BotNode, BotNode) CreateBaseStrategy()
