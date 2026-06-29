@@ -102,7 +102,10 @@ export function DashboardPage() {
 
           {/* Welcome state — sin activos en watchlist */}
           {!isLoading && !hasWatchedAssets && (
-            <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center">
+            <div
+              data-tour="empty-dashboard"
+              className="flex-1 flex flex-col items-center justify-center gap-3 text-center"
+            >
               <div className="w-16 h-16 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center">
                 <span className="text-2xl">📊</span>
               </div>
@@ -165,7 +168,10 @@ export function DashboardPage() {
 
               {/* Candlestick Chart */}
               {selectedAsset && (
-                <div className="flex-1 min-h-0 bg-[#0a0a0b] rounded-lg overflow-hidden relative">
+                <div
+                  data-tour="chart"
+                  className="flex-1 min-h-0 bg-[#0a0a0b] rounded-lg overflow-hidden relative"
+                >
                   <div className="absolute inset-0">
                     <CandlestickChart candles={candles} symbol={selectedAsset.symbol} />
                   </div>
@@ -179,7 +185,10 @@ export function DashboardPage() {
         <div className="w-72 shrink-0 flex flex-col gap-3 p-3 border-l border-neutral-800">
           {/* Balance summary */}
           {portfolio && (
-            <div className="bg-neutral-900 rounded-lg border border-neutral-800 p-3 text-xs flex flex-col gap-2 shrink-0">
+            <div
+              data-tour="balance"
+              className="bg-neutral-900 rounded-lg border border-neutral-800 p-3 text-xs flex flex-col gap-2 shrink-0"
+            >
               <div className="flex justify-between items-center">
                 <span className="text-neutral-500">Balance</span>
                 <span className="font-mono font-semibold text-neutral-100">
@@ -209,7 +218,9 @@ export function DashboardPage() {
               userEntryPrice={userEntryPrice}
             />
           </div>
-          <ExecutionPanel selectedAsset={selectedAsset} />
+          <div data-tour="execution">
+            <ExecutionPanel selectedAsset={selectedAsset} />
+          </div>
         </div>
       </div>
     </div>

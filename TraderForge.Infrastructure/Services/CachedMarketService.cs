@@ -10,10 +10,10 @@ public class CachedMarketService : IMarketService
     
     public CachedMarketService(IMemoryCache cache) => _cache = cache;
     
-    public async Task<Dictionary<string, decimal>> GetPricesAsync()
+    public async Task<MarketPriceCacheItem> GetPricesAsync()
     {
-        _cache.TryGetValue(CacheKeys.MarketPrices, out Dictionary<string, decimal>? prices);
-        return prices ?? new Dictionary<string, decimal>();
+        _cache.TryGetValue(CacheKeys.MarketPrices, out MarketPriceCacheItem? item);
+        return item ?? new MarketPriceCacheItem();
     }
     
     public bool IsMarketOpen(string symbol)

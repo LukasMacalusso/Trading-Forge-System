@@ -29,11 +29,15 @@ public class SubscriptionControllerTests
 
         var changeHandler = new ChangeSubscriptionCommandHandler(
             _traderRepoMock.Object, _planRepoMock.Object, _limitGuardMock.Object);
+        
+        var cancelHandler = new CancelSubscriptionCommandHandler(
+            _traderRepoMock.Object, _discountServiceMock.Object, _planRepoMock.Object);
+            
         var getAllPlansHandler = new GetAllPlansQueryHandler(_planRepoMock.Object);
         var getTraderPlanHandler = new GetTraderPlanQueryHandler(_traderRepoMock.Object);
 
         _controller = new SubscriptionController(
-            changeHandler, _discountServiceMock.Object, getAllPlansHandler, getTraderPlanHandler);
+            changeHandler, cancelHandler, _discountServiceMock.Object, getAllPlansHandler, getTraderPlanHandler);
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
         {
@@ -118,5 +122,43 @@ public class SubscriptionControllerTests
 
         var result = await _controller.GetTraderPlan();
         var okResult = Assert.IsType<OkObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task CancelSubscription_WhenForceCancelTrue_ReturnsOk()
+    {
+        var planId = Guid.NewGuid();
+        var trader = new Trader(TraderId, "test@test.com");
+        var plans = new List<SubscriptionPlan> { new(planId, "Pro", 29.99m, 50000, 10, 20, false) };
+        var offer = new DiscountOffer(10m, 19.99m);
+
+        _traderRepoMock.Setup(x => x.GetByIdIncludeAllAsync(TraderId)).ReturnsAsync(trader);
+        _planRepoMock.Setup(x => x.GetAllAsync()).ReturnsAsync(plans);
+        _discountServiceMock.Setup(x => x.GetEarlyCancellationOfferAsync(TraderId, planId)).ReturnsAsync(offer);
+
+        var result = await _controller.CancelSubscription(forceCancel: true);
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var value = okResult.Value as dynamic;
+        Assert.NotNull(value);
+    }
+
+    [Fact]
+    public async Task CancelSubscription_WhenOfferAvailableAndForceCancelFalse_ReturnsRetentionOffer()
+    {
+        var planId = Guid.NewGuid();
+        var trader = new Trader(TraderId, "test@test.com");
+        var plans = new List<SubscriptionPlan> { new(planId, "Pro", 29.99m, 50000, 10, 20, false) };
+        var offer = new DiscountOffer(10m, 19.99m);
+
+        _traderRepoMock.Setup(x => x.GetByIdIncludeAllAsync(TraderId)).ReturnsAsync(trader);
+        _planRepoMock.Setup(x => x.GetAllAsync()).ReturnsAsync(plans);
+        _discountServiceMock.Setup(x => x.GetEarlyCancellationOfferAsync(TraderId, planId)).ReturnsAsync(offer);
+
+        var result = await _controller.CancelSubscription(forceCancel: false);
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var value = okResult.Value as dynamic;
+        Assert.NotNull(value);
     }
 }

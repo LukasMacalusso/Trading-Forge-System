@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 using TraderForge.API.Controllers;
 using TraderForge.API.Requests;
+using TraderForge.Application.DTOs.Responses;
 using TraderForge.Application.Handlers;
+using TraderForge.Domain.Constants;
 using TraderForge.Domain.Services;
 namespace TraderForge.API.Tests;
 
@@ -30,40 +32,47 @@ public class PricesControllerTests
     [Fact]
     public async Task GetPrices_WhenSymbolsProvided_ReturnsOkWithPrices()
     {
-        var prices = new Dictionary<string, decimal>
+        var cacheItem = new MarketPriceCacheItem
         {
-            { "BTCUSDT", 6500 },
-            { "ETHUSDT", 3400 },
+            Prices = new Dictionary<string, decimal>
+            {
+                { "BTCUSDT", 6500 },
+                { "ETHUSDT", 3400 },
+            },
+            LastUpdated = DateTime.UtcNow
         };
 
         _marketServiceMock
             .Setup(x => x.GetPricesAsync())
-            .ReturnsAsync(prices);
+            .ReturnsAsync(cacheItem);
 
         var request = new GetMarketPricesRequest
         { Symbols = ["BTCUSDT", "ETHUSDT"] };
-
+        
         var result = await _controller.GetPrices(request);
-
-        var okResult       = Assert.IsType<OkObjectResult>(result);
-        var returnedPrices = Assert.IsType<Dictionary<string, decimal>>(okResult.Value);
-        Assert.Equal(2, returnedPrices.Count);
-        Assert.Equal(6500, returnedPrices["BTCUSDT"]);
-        Assert.Equal(3400, returnedPrices["ETHUSDT"]);
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var responseDto = Assert.IsType<MarketPricesResponse>(okResult.Value);
+        
+        Assert.Equal(2, responseDto.Prices.Count);
+        Assert.Equal(6500, responseDto.Prices["BTCUSDT"]);
+        Assert.Equal(3400, responseDto.Prices["ETHUSDT"]);
     }
 
     [Fact]
-    public async Task GetPrices_WhenHandlerReturnsFailure_ReturnsOkWithNull()
+    public async Task GetPrices_WhenCacheIsEmpty_ReturnsOkWithStaleResponse()
     {
         _marketServiceMock
             .Setup(x => x.GetPricesAsync())
-            .ReturnsAsync(new Dictionary<string, decimal>());
+            .ReturnsAsync(new MarketPriceCacheItem());
 
         var request = new GetMarketPricesRequest
         { Symbols = ["BTCUSDT"] };
 
         var result = await _controller.GetPrices(request);
         var okResult = Assert.IsType<OkObjectResult>(result);
-        Assert.Null(okResult.Value);
+        var response = Assert.IsType<MarketPricesResponse>(okResult.Value);
+        
+        Assert.True(response.IsStale);
+        Assert.Empty(response.Prices);
     }
 }

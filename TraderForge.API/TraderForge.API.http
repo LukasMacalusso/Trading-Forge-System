@@ -40,6 +40,14 @@ Authorization: bearer {{token}}
   "newPlanId": "22222222-2222-2222-2222-222222222222"
 }
 
+### Cancel Subscription (Checks for retention offer)
+POST {{hostAddress}}/api/subscription/cancel
+Authorization: bearer {{token}}
+
+### Force Cancel Subscription (Bypasses retention offer)
+POST {{hostAddress}}/api/subscription/cancel?forceCancel=true
+Authorization: bearer {{token}}
+
 ###
 
 ### Login as admin — copy returned token to @adminToken variable above
@@ -227,3 +235,19 @@ POST {{hostAddress}}/api/admin/traders/{id}/unsuspend
 Authorization: bearer {{adminToken}}
 
 ###
+
+### ============================================================
+### GROUP 6 — Market Prices 
+### ============================================================
+
+### Get current market prices (and check isStale)
+POST {{hostAddress}}/api/prices
+Content-Type: application/json
+
+{
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT"
+  ]
+}

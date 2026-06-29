@@ -6,7 +6,6 @@ public class Strategy
     public string Name { get; private set; } = null!;
     public bool IsActive { get; private set; }
     public DateTime CreatedAt { get; private set; }
-
     public Guid PortfolioId { get; private set; }
     public Portfolio Portfolio { get; private set; } = null!;
 

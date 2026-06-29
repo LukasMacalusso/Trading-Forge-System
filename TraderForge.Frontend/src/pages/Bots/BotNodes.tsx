@@ -2,23 +2,18 @@ import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { NodeProps, Node } from '@xyflow/react';
 import { Activity, Bell, Zap } from 'lucide-react';
+import type { BotNodeData } from '@models/BotFlow';
 
-export type BotNodeData = {
-  label: string;
-  config: Record<string, unknown>;
-};
+export type { BotNodeData };
 
-type BotNodeProps = NodeProps<Node<BotNodeData>>;
+type NodeOf<K extends BotNodeData['kind']> = Node<Extract<BotNodeData, { kind: K }>>;
 
 const handleCls =
   '!w-3 !h-3 !bg-neutral-800 !border-2 !border-neutral-600 hover:!border-emerald-500 !transition-colors';
 
-export const AnalysisBotNode = memo(({ data, selected }: BotNodeProps) => {
+export const AnalysisBotNode = memo(({ data, selected }: NodeProps<NodeOf<'analysisBot'>>) => {
   const { label, config } = data;
-  const summary =
-    config.symbol && config.indicatorType
-      ? `${config.indicatorType} ${config.symbol} ${config.operator ?? ''} ${config.targetValue ?? '—'}`
-      : 'Sin configurar';
+  const summary = `${config.indicatorType} ${config.symbol} ${config.operator} ${config.targetValue}`;
 
   return (
     <div
@@ -42,7 +37,7 @@ export const AnalysisBotNode = memo(({ data, selected }: BotNodeProps) => {
 });
 AnalysisBotNode.displayName = 'AnalysisBotNode';
 
-export const NotificationBotNode = memo(({ data, selected }: BotNodeProps) => {
+export const NotificationBotNode = memo(({ data, selected }: NodeProps<NodeOf<'notificationBot'>>) => {
   const { label, config } = data;
 
   return (
@@ -61,7 +56,7 @@ export const NotificationBotNode = memo(({ data, selected }: BotNodeProps) => {
       <div className="px-3 py-2.5">
         <p className="text-sm font-medium text-neutral-100 mb-1 truncate">{label}</p>
         <p className="text-xs text-neutral-500 truncate">
-          {(config.message as string) || 'Sin mensaje configurado'}
+          {config.message || 'Sin mensaje configurado'}
         </p>
       </div>
       <Handle type="source" position={Position.Bottom} className={handleCls} />
@@ -70,12 +65,9 @@ export const NotificationBotNode = memo(({ data, selected }: BotNodeProps) => {
 });
 NotificationBotNode.displayName = 'NotificationBotNode';
 
-export const ActionBotNode = memo(({ data, selected }: BotNodeProps) => {
+export const ActionBotNode = memo(({ data, selected }: NodeProps<NodeOf<'actionBot'>>) => {
   const { label, config } = data;
-  const summary =
-    config.action && config.symbol
-      ? `${config.action === 'Buy' ? 'Comprar' : 'Vender'} ${config.quantity ?? 0} ${config.symbol}`
-      : 'Sin configurar';
+  const summary = `${config.action === 'Buy' ? 'Comprar' : 'Vender'} ${config.quantity} ${config.symbol}`;
 
   return (
     <div
