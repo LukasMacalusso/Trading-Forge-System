@@ -241,7 +241,7 @@ public class BotGraphRunner : IDisposable
         }
     }
 
-    private static Task<bool> EvaluateConditionAsync(string configJson, Dictionary<string, object> flag)
+    private Task<bool> EvaluateConditionAsync(string configJson, Dictionary<string, object> flag)
     {
         try
         {
@@ -253,7 +253,7 @@ public class BotGraphRunner : IDisposable
 
             var currentValue = indicator switch
             {
-                "price" when flag.TryGetValue("price", out var p) => Convert.ToDecimal(p),
+                "price" when flag.TryGetValue("price", out var p) && decimal.TryParse(p?.ToString(), out var dp) => dp,
                 _ => 0m
             };
 
@@ -269,8 +269,11 @@ public class BotGraphRunner : IDisposable
                 _ => currentValue > comparisonValue
             });
         }
-        catch
+        catch (Exception ex)
         {
+            using var scope = _scopeFactory.CreateScope();
+            var logger = scope.ServiceProvider.GetService<ILogger<BotGraphRunner>>();
+            logger?.LogWarning(ex, "Condition evaluation failed. Config: {Config}", configJson);
             return Task.FromResult(true);
         }
     }
@@ -283,44 +286,35 @@ public class BotGraphRunner : IDisposable
             var root = doc.RootElement;
             var type = root.TryGetProperty("type", out var t) ? t.GetString() ?? "" : "";
 
-            switch (type)
+            if (type is "buy" or "sell")
             {
-                case "buy":
-                    await ExecuteBuyAsync(root, flag, scopeFactory);
-                    break;
-                case "sell":
-                    await ExecuteSellAsync(root, flag, scopeFactory);
-                    break;
+                await ExecuteTradeAsync(type, root, flag, scopeFactory);
             }
         }
         catch (Exception ex)
         {
-            try
-            {
-                using var logScope = scopeFactory.CreateScope();
-                var logger = logScope.ServiceProvider.GetRequiredService<ILogger<BotGraphRunner>>();
-                logger.LogWarning(ex, "Action execution failed for strategy {StrategyId}. Config: {Config}",
-                    _strategy.Id, configJson);
-            }
-            catch { }
+            using var logScope = scopeFactory.CreateScope();
+            var logger = logScope.ServiceProvider.GetService<ILogger<BotGraphRunner>>();
+            logger?.LogWarning(ex, "Action execution failed for strategy {StrategyId}. Config: {Config}",
+                _strategy.Id, configJson);
         }
     }
 
-    private async Task ExecuteBuyAsync(JsonElement config, Dictionary<string, object> flag, IServiceScopeFactory scopeFactory)
+    private async Task ExecuteTradeAsync(string type, JsonElement config, Dictionary<string, object> flag, IServiceScopeFactory scopeFactory)
     {
         using var scope = scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var commissionService = scope.ServiceProvider.GetRequiredService<ICommissionService>();
         var logger = scope.ServiceProvider.GetService<ILogger<BotGraphRunner>>();
 
-        var symbol = flag.GetValueOrDefault("symbol")?.ToString() ?? "";
-        var price = flag.TryGetValue("price", out var p) ? Convert.ToDecimal(p) : 0m;
+        var symbol = (flag.GetValueOrDefault("symbol") as string) ?? "";
+        var price = flag.TryGetValue("price", out var p) && decimal.TryParse(p?.ToString(), out var parsedPrice) ? parsedPrice : 0m;
         var quantity = config.TryGetProperty("quantity", out var q) ? q.GetDecimal() : 0m;
 
         if (string.IsNullOrEmpty(symbol) || price <= 0 || quantity <= 0)
         {
-            logger?.LogWarning("Invalid buy params for strategy {Sid}: Symbol={Sym}, Price={Prc}, Qty={Qty}",
-                _strategy.Id, symbol, price, quantity);
+            logger?.LogWarning("Invalid {Type} params for strategy {Sid}: Symbol={Sym}, Price={Prc}, Qty={Qty}",
+                type, _strategy.Id, symbol, price, quantity);
             return;
         }
 
@@ -332,52 +326,19 @@ public class BotGraphRunner : IDisposable
 
         if (portfolio == null)
         {
-            logger?.LogWarning("Portfolio {Pid} not found for buy action (strategy {Sid})",
-                _strategy.PortfolioId, _strategy.Id);
+            logger?.LogWarning("Portfolio {Pid} not found for {Type} action (strategy {Sid})",
+                _strategy.PortfolioId, type, _strategy.Id);
             return;
         }
 
-        portfolio.BuyPosition(symbol, quantity, price, commissionService);
+        if (type == "buy")
+            portfolio.BuyPosition(symbol, quantity, price, commissionService);
+        else
+            portfolio.SellPosition(symbol, quantity, price, commissionService);
+
         await db.SaveChangesAsync();
-        logger?.LogInformation("Bot Buy executed: {Symbol} x {Qty} @ {Price} for strategy {Sid}",
-            symbol, quantity, price, _strategy.Id);
-    }
-
-    private async Task ExecuteSellAsync(JsonElement config, Dictionary<string, object> flag, IServiceScopeFactory scopeFactory)
-    {
-        using var scope = scopeFactory.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var commissionService = scope.ServiceProvider.GetRequiredService<ICommissionService>();
-        var logger = scope.ServiceProvider.GetService<ILogger<BotGraphRunner>>();
-
-        var symbol = flag.GetValueOrDefault("symbol")?.ToString() ?? "";
-        var price = flag.TryGetValue("price", out var p) ? Convert.ToDecimal(p) : 0m;
-        var quantity = config.TryGetProperty("quantity", out var q) ? q.GetDecimal() : 0m;
-
-        if (string.IsNullOrEmpty(symbol) || price <= 0 || quantity <= 0)
-        {
-            logger?.LogWarning("Invalid sell params for strategy {Sid}: Symbol={Sym}, Price={Prc}, Qty={Qty}",
-                _strategy.Id, symbol, price, quantity);
-            return;
-        }
-
-        var portfolio = await db.Portfolios
-            .Include(p => p.Positions)
-            .Include(p => p.Orders)
-            .Include(p => p.Transactions)
-            .FirstOrDefaultAsync(p => p.Id == _strategy.PortfolioId);
-
-        if (portfolio == null)
-        {
-            logger?.LogWarning("Portfolio {Pid} not found for sell action (strategy {Sid})",
-                _strategy.PortfolioId, _strategy.Id);
-            return;
-        }
-
-        portfolio.SellPosition(symbol, quantity, price, commissionService);
-        await db.SaveChangesAsync();
-        logger?.LogInformation("Bot Sell executed: {Symbol} x {Qty} @ {Price} for strategy {Sid}",
-            symbol, quantity, price, _strategy.Id);
+        logger?.LogInformation("Bot {Type} executed: {Symbol} x {Qty} @ {Price} for strategy {Sid}",
+            type, symbol, quantity, price, _strategy.Id);
     }
 
     public void Dispose()
