@@ -25,8 +25,10 @@ export const TOUR_STEPS: TourStep[] = [
     id: 'add-asset',
     target: '[data-tour="add-asset"]',
     title: 'Añade un activo',
-    body: 'Pulsa "+ Añadir" para elegir entre todas las monedas y acciones disponibles, y empieza a ver su gráfico.',
-    placement: 'bottom',
+    body: 'Pulsa "+ Añadir" (arriba a la derecha) para elegir entre todas las monedas y acciones disponibles, y empieza a ver su gráfico.',
+    // Centered so the tooltip never covers the asset dropdown, which opens just
+    // below the button in the top-right corner.
+    placement: 'center',
     route: '/dashboard',
   },
   {
