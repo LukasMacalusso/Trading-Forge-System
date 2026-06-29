@@ -6,7 +6,7 @@ public interface IPositionRepository
 {
     Task<Position?> GetByIdAsync(Guid id);
     Task<Position?> GetByIdWithPortfolioAsync(Guid id);
-    Task<List<Position>> GetByTraderIdAsync(string traderId);
+    Task<List<Position>> GetByPortfolioIdAsync(Guid portfolioId);
     Task AddAsync(Position asset);
     Task RemoveAsync(Position asset);
     Task SaveChangesAsync();

@@ -7,10 +7,12 @@ namespace TraderForge.Application.Handlers;
 
 public class GetStrategiesQueryHandler
 {
+    private readonly ITraderRepository _traderRepository;
     private readonly IStrategyRepository _strategyRepository;
 
-    public GetStrategiesQueryHandler(IStrategyRepository strategyRepository)
+    public GetStrategiesQueryHandler(ITraderRepository traderRepository, IStrategyRepository strategyRepository)
     {
+        _traderRepository = traderRepository;
         _strategyRepository = strategyRepository;
     }
 
@@ -18,7 +20,18 @@ public class GetStrategiesQueryHandler
     {
         try
         {
-            var strategies = await _strategyRepository.GetByTraderIdAsync(query.TraderId);
+            var trader = await _traderRepository.GetByIdIncludePortfolioAsync(query.TraderId);
+            if (trader == null)
+                return ResultGeneric<List<Strategy>>.Failure("Trader not found.");
+
+            var portfolio = query.PortfolioId.HasValue 
+                ? trader.Portfolios.FirstOrDefault(p => p.Id == query.PortfolioId.Value)
+                : trader.Portfolios.FirstOrDefault(p => p.IsActive);
+
+            if (portfolio == null)
+                return ResultGeneric<List<Strategy>>.Failure("Portfolio not found.");
+
+            var strategies = await _strategyRepository.GetByPortfolioIdAsync(portfolio.Id);
             return ResultGeneric<List<Strategy>>.Success(strategies);
         }
         catch (Exception ex)

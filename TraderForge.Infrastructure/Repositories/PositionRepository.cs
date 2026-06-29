@@ -14,10 +14,10 @@ public class PositionRepository : IPositionRepository
         _dbContext = dbContext;
     }
 
-    public async Task<List<Position>> GetByTraderIdAsync(string traderId)
+    public async Task<List<Position>> GetByPortfolioIdAsync(Guid portfolioId)
     {
         return await _dbContext.Positions
-            .Where(a => a.Portfolio.TraderId == traderId)
+            .Where(a => a.PortfolioId == portfolioId)
             .ToListAsync();
     }
 

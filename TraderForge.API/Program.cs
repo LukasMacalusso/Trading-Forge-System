@@ -103,6 +103,7 @@ builder.Services.AddTransient<UpdateStrategyStateCommandHandler>();
 builder.Services.AddTransient<BuyPositionCommandHandler>();
 builder.Services.AddTransient<SellPositionCommandHandler>();
 builder.Services.AddTransient<GetActivePortfolioQueryHandler>();
+builder.Services.AddTransient<GetPortfolioHistoryQueryHandler>();
 builder.Services.AddTransient<GetStrategiesQueryHandler>();
 builder.Services.AddTransient<GetPositionsQueryHandler>();
 builder.Services.AddTransient<GetTransactionsQueryHandler>();

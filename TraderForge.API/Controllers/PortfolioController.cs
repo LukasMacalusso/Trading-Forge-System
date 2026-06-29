@@ -14,6 +14,7 @@ namespace TraderForge.API.Controllers;
 public class PortfolioController : ControllerBase
 {
     private readonly GetActivePortfolioQueryHandler _getPortfolioHandler;
+    private readonly GetPortfolioHistoryQueryHandler _getPortfolioHistoryHandler;
     private readonly GetStrategiesQueryHandler _getStrategiesHandler;
     private readonly GetPositionsQueryHandler _getPositionsHandler;
     private readonly CreateStrategyCommandHandler _createStrategyHandler;
@@ -26,6 +27,7 @@ public class PortfolioController : ControllerBase
 
     public PortfolioController(
         GetActivePortfolioQueryHandler getPortfolioHandler,
+        GetPortfolioHistoryQueryHandler getPortfolioHistoryHandler,
         GetStrategiesQueryHandler getStrategiesHandler,
         GetPositionsQueryHandler getPositionsHandler,
         CreateStrategyCommandHandler createStrategyHandler,
@@ -37,6 +39,7 @@ public class PortfolioController : ControllerBase
         ResetSimulationCommandHandler resetSimulationHandler)
     {
         _getPortfolioHandler = getPortfolioHandler;
+        _getPortfolioHistoryHandler = getPortfolioHistoryHandler;
         _getStrategiesHandler = getStrategiesHandler;
         _getPositionsHandler = getPositionsHandler;
         _createStrategyHandler = createStrategyHandler;
@@ -63,13 +66,13 @@ public class PortfolioController : ControllerBase
     }
 
     [HttpGet("strategies")]
-    public async Task<IActionResult> GetStrategies()
+    public async Task<IActionResult> GetStrategies([FromQuery] Guid? portfolioId)
     {
         var traderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(traderId))
             return Unauthorized(new { error = "Invalid token claims." });
 
-        var result = await _getStrategiesHandler.HandleAsync(new GetStrategiesQuery { TraderId = traderId });
+        var result = await _getStrategiesHandler.HandleAsync(new GetStrategiesQuery { TraderId = traderId, PortfolioId = portfolioId });
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });
 
@@ -106,13 +109,13 @@ public class PortfolioController : ControllerBase
     }
 
     [HttpGet("positions")]
-    public async Task<IActionResult> GetPositions()
+    public async Task<IActionResult> GetPositions([FromQuery] Guid? portfolioId)
     {
         var traderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(traderId))
             return Unauthorized(new { error = "Invalid token claims." });
 
-        var result = await _getPositionsHandler.HandleAsync(new GetPositionsQuery { TraderId = traderId });
+        var result = await _getPositionsHandler.HandleAsync(new GetPositionsQuery { TraderId = traderId, PortfolioId = portfolioId });
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });
 
@@ -148,13 +151,13 @@ public class PortfolioController : ControllerBase
     }
 
     [HttpGet("transactions")]
-    public async Task<IActionResult> GetTransactions()
+    public async Task<IActionResult> GetTransactions([FromQuery] Guid? portfolioId)
     {
         var traderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(traderId))
             return Unauthorized(new { error = "Invalid token claims." });
 
-        var result = await _getTransactionsHandler.HandleAsync(new GetTransactionsQuery { TraderId = traderId });
+        var result = await _getTransactionsHandler.HandleAsync(new GetTransactionsQuery { TraderId = traderId, PortfolioId = portfolioId });
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });
 
@@ -162,13 +165,27 @@ public class PortfolioController : ControllerBase
     }
 
     [HttpGet("orders")]
-    public async Task<IActionResult> GetOrders()
+    public async Task<IActionResult> GetOrders([FromQuery] Guid? portfolioId)
     {
         var traderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(traderId))
             return Unauthorized(new { error = "Invalid token claims." });
 
-        var result = await _getOrdersHandler.HandleAsync(new GetOrdersQuery { TraderId = traderId });
+        var result = await _getOrdersHandler.HandleAsync(new GetOrdersQuery { TraderId = traderId, PortfolioId = portfolioId });
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.ErrorMessage });
+
+        return Ok(result.Value);
+    }
+
+    [HttpGet("history")]
+    public async Task<IActionResult> GetPortfolioHistory()
+    {
+        var traderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(traderId))
+            return Unauthorized(new { error = "Invalid token claims." });
+
+        var result = await _getPortfolioHistoryHandler.HandleAsync(new GetPortfolioHistoryQuery { TraderId = traderId });
         if (!result.IsSuccess)
             return BadRequest(new { error = result.ErrorMessage });
 

@@ -26,11 +26,14 @@ public class GetOrdersQueryHandler
             if (trader == null)
                 return ResultGeneric<List<OrderResponse>>.Failure("Trader not found.");
 
-            var activePortfolio = trader.Portfolios.FirstOrDefault(p => p.IsActive);
-            if (activePortfolio == null)
-                return ResultGeneric<List<OrderResponse>>.Failure("No active portfolio found.");
+            var portfolio = query.PortfolioId.HasValue 
+                ? trader.Portfolios.FirstOrDefault(p => p.Id == query.PortfolioId.Value)
+                : trader.Portfolios.FirstOrDefault(p => p.IsActive);
 
-            var orders = await _orderRepository.GetByPortfolioIdAsync(activePortfolio.Id);
+            if (portfolio == null)
+                return ResultGeneric<List<OrderResponse>>.Failure("Portfolio not found.");
+
+            var orders = await _orderRepository.GetByPortfolioIdAsync(portfolio.Id);
             var response = orders.Select(OrderResponse.FromEntity).ToList();
             
             return ResultGeneric<List<OrderResponse>>.Success(response);
