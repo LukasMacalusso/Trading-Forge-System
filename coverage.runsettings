@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>opencover</Format>
+          <Exclude>[*]TraderForge.Application.DTOs.*,[*]TraderForge.API.Requests.*,[*]TraderForge.API.Responses.*,[*]TraderForge.API.Mappers.*,[*]TraderForge.Infrastructure.Migrations.*,[*]Program,[*]DependencyInjection</Exclude>
+          <ExcludeByFile>**/Migrations/**/*.cs,**/DTOs/**/*.cs,**/Requests/**/*.cs,**/Responses/**/*.cs,**/Mappers/**/*.cs,**/Program.cs,**/DependencyInjection.cs</ExcludeByFile>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
