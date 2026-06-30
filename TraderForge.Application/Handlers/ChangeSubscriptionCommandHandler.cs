@@ -34,16 +34,16 @@ public class ChangeSubscriptionCommandHandler
         }
     }
 
-    private async Task<Result> ExecuteSubscriptionChange(ChangeSubscriptionCommand command) 
+    private async Task<Result> ExecuteSubscriptionChange(ChangeSubscriptionCommand command)
     {
         var trader = await _traderRepository.GetByIdIncludeAllAsync(command.TraderId);
-        if (trader == null) 
+        if (trader == null)
         {
             return Result.Failure("Trader not found.");
         }
 
         var newSubscriptionPlan = await _subscriptionPlanRepository.GetByIdAsync(command.NewPlanId);
-        if (newSubscriptionPlan == null) 
+        if (newSubscriptionPlan == null)
         {
             return Result.Failure("Subscription Plan not found.");
         }
@@ -55,9 +55,9 @@ public class ChangeSubscriptionCommandHandler
         }
 
         trader.ProcessPayment(newSubscriptionPlan);
-        
+
         await _traderRepository.SaveChangesAsync();
-        
+
         return Result.Success();
     }
 }

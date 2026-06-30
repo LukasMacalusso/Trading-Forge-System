@@ -46,8 +46,31 @@ push:
 build:
 	dotnet build TradingForgeSystem.sln
 
+format:
+	dotnet format whitespace TradingForgeSystem.sln --verify-no-changes
+
+lint:
+	dotnet format style TradingForgeSystem.sln --verify-no-changes
+	dotnet format analyzers TradingForgeSystem.sln --verify-no-changes
+
 test:
 	dotnet test TradingForgeSystem.sln
+
+test-unit:
+	dotnet test Tests/TraderForge.Domain.Tests
+	dotnet test Tests/TraderForge.Application.Tests
+
+test-api:
+	dotnet test Tests/TraderForge.API.Tests
+
+test-infra:
+	dotnet test Tests/TraderForge.Infrastructure.Tests
+
+test-integration:
+	dotnet test Tests/TraderForge.Integration.Tests
+
+test-e2e:
+	dotnet test Tests/TraderForge.API.E2ETests
 
 # --- Run Apps ---
 run-api:

@@ -1,4 +1,4 @@
-﻿namespace TraderForge.Application.DTOs.Queries;
+namespace TraderForge.Application.DTOs.Queries;
 
 public class GetAllTradersQuery
 {

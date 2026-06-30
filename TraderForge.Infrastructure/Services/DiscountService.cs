@@ -28,8 +28,8 @@ public class DiscountService : IDiscountService
         if (trader is null || plan is null)
             return null;
 
-        bool isOnTrial = trader.Subscription != null && 
-                         trader.Subscription.IsActive && 
+        bool isOnTrial = trader.Subscription != null &&
+                         trader.Subscription.IsActive &&
                          trader.Subscription.Plan.Name.ToLower() == "basic" &&
                          trader.Subscription.IsWithinTrialPeriod(7);
 

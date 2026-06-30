@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.SignalR;
 using TraderForge.API.Hubs;
 using TraderForge.Domain.Services;
 namespace TraderForge.API.Services;
+
 public class SignalRMarketDataBroadcaster : IMarketDataBroadcaster
 {
     private readonly IHubContext<MarketDataHub> _hubContext;

@@ -1,4 +1,4 @@
-﻿namespace TraderForge.Application.DTOs.Responses;
+namespace TraderForge.Application.DTOs.Responses;
 
 public class TraderSummaryResponse
 {
@@ -6,5 +6,5 @@ public class TraderSummaryResponse
     public string Email { get; set; } = string.Empty;
     public bool IsSuspended { get; set; }
     public string? SuspensionReason { get; set; }
-    public string? ActivePlanId { get; set; }   
+    public string? ActivePlanId { get; set; }
 }

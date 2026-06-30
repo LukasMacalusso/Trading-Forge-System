@@ -41,7 +41,7 @@ public class ActiveSubscription
     {
         EndDate = EndDate.AddDays(days);
     }
-    
+
     public void Cancel()
     {
         EndDate = DateTime.UtcNow;

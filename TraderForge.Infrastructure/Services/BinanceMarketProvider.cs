@@ -12,7 +12,7 @@ public class BinanceMarketProvider : IMarketDataProvider
     private readonly HttpClient _client;
     private readonly IMemoryCache _cache;
     private readonly string _baseUrl = "https://api.binance.com/api/v3/ticker/price";
-    
+
     public BinanceMarketProvider(HttpClient client, IMemoryCache cache)
     {
         _client = client;
@@ -23,9 +23,9 @@ public class BinanceMarketProvider : IMarketDataProvider
     {
         var allPrices = await _client.GetFromJsonAsync<List<BinancePrice>>(_baseUrl);
         if (allPrices == null) return new Dictionary<string, decimal>();
-        
+
         return allPrices.ToDictionary(
-            priceSymbol => priceSymbol.symbol, 
+            priceSymbol => priceSymbol.symbol,
             priceValue => decimal.Parse(priceValue.price, CultureInfo.InvariantCulture)
         );
     }
@@ -36,7 +36,7 @@ public class BinanceMarketProvider : IMarketDataProvider
             return cachedCandles!;
 
         var candles = await FetchAndParseCandlesAsync(symbol, interval, limit);
-        
+
         _cache.Set(cacheKey, candles, TimeSpan.FromMinutes(5));
         return candles;
     }
@@ -45,7 +45,7 @@ public class BinanceMarketProvider : IMarketDataProvider
     {
         var url = $"https://api.binance.com/api/v3/klines?symbol={symbol}&interval={interval}&limit={limit}";
         var response = await _client.GetFromJsonAsync<JsonElement[][]>(url);
-        
+
         if (response == null) return new List<Candlestick>();
 
         return response.Select(ParseCandlestick).ToList();

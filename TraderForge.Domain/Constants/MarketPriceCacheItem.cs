@@ -1,4 +1,4 @@
-﻿namespace TraderForge.Domain.Constants;
+namespace TraderForge.Domain.Constants;
 
 public class MarketPriceCacheItem
 {

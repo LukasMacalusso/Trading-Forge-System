@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using TraderForge.Application.Events;
 using TraderForge.Application.Interfaces.Email;
 
@@ -8,7 +8,7 @@ public class SendWelcomeEmailHandler : INotificationHandler<TraderRegisteredEven
 {
     private readonly IEmailTemplateService _templateService;
     private readonly IEmailService _emailService;
-    
+
     public SendWelcomeEmailHandler(IEmailTemplateService templateService, IEmailService emailService)
     {
         _templateService = templateService;

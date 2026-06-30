@@ -1,4 +1,4 @@
-﻿using TraderForge.Application.Models.Email;
+using TraderForge.Application.Models.Email;
 
 namespace TraderForge.Application.Interfaces.Email;
 

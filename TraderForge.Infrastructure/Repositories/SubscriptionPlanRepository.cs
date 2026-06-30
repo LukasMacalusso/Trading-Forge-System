@@ -13,12 +13,12 @@ public class SubscriptionPlanRepository : ISubscriptionPlanRepository
     {
         _dbContext = dbContext;
     }
-    
+
     public async Task<SubscriptionPlan?> GetByIdAsync(Guid id)
     {
         return await _dbContext.SubscriptionPlans.FirstOrDefaultAsync(s => s.Id == id);
     }
-    
+
     public async Task<IEnumerable<SubscriptionPlan>> GetAllAsync()
     {
         return await _dbContext.SubscriptionPlans.ToListAsync();
@@ -41,7 +41,7 @@ public class SubscriptionPlanRepository : ISubscriptionPlanRepository
         if (deletingPlan != null) _dbContext.Remove(deletingPlan);
         await SaveChangesAsync();
     }
-    
+
     public async Task SaveChangesAsync()
     {
         await _dbContext.SaveChangesAsync();

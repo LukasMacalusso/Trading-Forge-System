@@ -10,11 +10,11 @@ public class PortfolioConfiguration : IEntityTypeConfiguration<Portfolio>
     {
         builder.ToTable("Portfolios");
         builder.HasKey(p => p.Id);
-        
+
         builder.Property(p => p.Id).ValueGeneratedNever();
 
         builder.Property(p => p.VirtualBalance).HasColumnType("decimal(18,2)");
-        
+
         // -- Explicitly define the One-to-Many relationship (Trader -> Portfolios) -- //
         builder.HasOne(p => p.Trader)
             .WithMany(t => t.Portfolios)

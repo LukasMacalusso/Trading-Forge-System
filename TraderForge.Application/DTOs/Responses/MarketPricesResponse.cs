@@ -1,4 +1,4 @@
-﻿namespace TraderForge.Application.DTOs.Responses;
+namespace TraderForge.Application.DTOs.Responses;
 
 public class MarketPricesResponse
 {

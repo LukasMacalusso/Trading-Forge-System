@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using TraderForge.Application.Interfaces.Email;
 using TraderForge.Application.Models.Email;
@@ -8,13 +8,13 @@ namespace TraderForge.Infrastructure.Services.Email;
 public class EmailTemplateService : IEmailTemplateService
 {
     private readonly string _basePath = AppDomain.CurrentDomain.BaseDirectory;
-    
+
     private string LoadTemplate(string fileName)
     {
         string path = Path.Combine(_basePath, "Templates", fileName);
         return File.ReadAllText(path);
     }
-    
+
     private EmailMessage BuildFromLayout(string destination, string subject,
         string title, string headerBgColor, string highlightColor,
         string contentHtml, string highlightExtraStyle = "")
@@ -50,7 +50,7 @@ public class EmailTemplateService : IEmailTemplateService
         return BuildFromLayout(destination, "We hope to see you back soon",
             "Lamentamos verte partir", "#2c3e50", "#e74c3c", content);
     }
-    
+
     public EmailMessage CreateRestartSimulationMail(string destination, string username, decimal balanceRestored)
     {
         var content = LoadTemplate("SimulationResetEmail.html")

@@ -15,7 +15,7 @@ public class SubscriptionPlanConfiguration : IEntityTypeConfiguration<Subscripti
         builder.Property(p => p.Name).IsRequired().HasMaxLength(50);
         builder.Property(p => p.MonthlyPrice).HasColumnType("decimal(18,2)");
         builder.Property(p => p.InitialVirtualBalance).HasColumnType("decimal(18,2)");
-        
+
         // -- TIER DEFINITION -- //
         builder.HasData(
             new SubscriptionPlan(
@@ -45,6 +45,6 @@ public class SubscriptionPlanConfiguration : IEntityTypeConfiguration<Subscripti
                 maxActiveAssets: null,     // Unlimited (BR-5)
                 canModifyVirtualBalance: true // (BR-5)
             )
-        );       
+        );
     }
 }

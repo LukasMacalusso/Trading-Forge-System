@@ -91,7 +91,7 @@ public class BackgroundMarketPollingService : BackgroundService
         try
         {
             using var document = JsonDocument.Parse(json);
-            if (document.RootElement.ValueKind != JsonValueKind.Array) 
+            if (document.RootElement.ValueKind != JsonValueKind.Array)
                 return;
 
             var currentPrices = GetOrCreatePriceCache();
@@ -112,11 +112,11 @@ public class BackgroundMarketPollingService : BackgroundService
     {
         return _cache.GetOrCreate(CacheKeys.MarketPrices, entry =>
         {
-            entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(2)); 
+            entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(2));
             return new MarketPriceCacheItem { LastUpdated = DateTime.UtcNow };
         }) ?? new MarketPriceCacheItem();
     }
-    
+
     private bool TryUpdatePrices(JsonElement rootArray, Dictionary<string, decimal> currentPrices)
     {
         bool anyUpdated = false;
@@ -147,7 +147,7 @@ public class BackgroundMarketPollingService : BackgroundService
 
     private async Task SaveAndBroadcastPricesAsync(MarketPriceCacheItem currentPrices, CancellationToken stoppingToken)
     {
-        currentPrices.LastUpdated = DateTime.UtcNow; 
+        currentPrices.LastUpdated = DateTime.UtcNow;
         _cache.Set(CacheKeys.MarketPrices, currentPrices, TimeSpan.FromMinutes(2));
         await _broadcaster.BroadCastPricesAsync(currentPrices.Prices, stoppingToken);
 

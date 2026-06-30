@@ -1,4 +1,4 @@
-﻿namespace TraderForge.API.Requests;
+namespace TraderForge.API.Requests;
 
 public class SuspendTraderRequest
 {

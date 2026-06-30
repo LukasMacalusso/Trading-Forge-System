@@ -31,7 +31,7 @@ public class TraderRepository : ITraderRepository
     {
         return await _dbContext.Traders.Include(t => t.Subscription!).ThenInclude(s => s.Plan).FirstOrDefaultAsync(t => t.Id == id);
     }
-    
+
     public async Task<Trader?> GetByIdIncludePortfolioAsync(string id)
     {
         return await _dbContext.Traders.Include(t => t.Portfolios).FirstOrDefaultAsync(t => t.Id == id);
@@ -44,7 +44,7 @@ public class TraderRepository : ITraderRepository
             .Include(t => t.Portfolios)
             .FirstOrDefaultAsync(t => t.Id == id);
     }
-    
+
     public async Task<Trader?> GetByIdIncludePlanAndStrategyAsync(string id)
     {
         return await _dbContext.Traders
@@ -62,7 +62,7 @@ public class TraderRepository : ITraderRepository
             .ThenInclude(p => p.Positions)
             .FirstOrDefaultAsync(t => t.Id == id);
     }
-    
+
     public async Task<IEnumerable<Trader>> GetAllIncludeSubPlanAsync()
     {
         return await _dbContext.Traders

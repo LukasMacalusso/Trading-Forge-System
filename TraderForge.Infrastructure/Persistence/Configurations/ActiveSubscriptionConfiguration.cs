@@ -9,7 +9,7 @@ public class ActiveSubscriptionConfiguration : IEntityTypeConfiguration<ActiveSu
     public void Configure(EntityTypeBuilder<ActiveSubscription> builder)
     {
         builder.HasKey(s => s.Id);
-        
+
         builder.HasOne(s => s.Trader)
                .WithOne(t => t.Subscription)
                .HasForeignKey<ActiveSubscription>(s => s.TraderId)

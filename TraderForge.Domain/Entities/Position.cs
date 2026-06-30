@@ -12,7 +12,7 @@ public class Position
     public Portfolio Portfolio { get; private set; } = null!;
 
     private Position() { }
-    
+
 
     public Position(Guid id, string symbol, decimal quantity, decimal entryPrice, Guid portfolioId)
     {
@@ -35,7 +35,7 @@ public class Position
     {
         if (sellQuantity > Quantity)
             throw new InvalidOperationException("Cannot reduce below zero.");
-            
+
         Quantity -= sellQuantity;
     }
 }

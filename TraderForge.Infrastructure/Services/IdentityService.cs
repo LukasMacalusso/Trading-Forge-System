@@ -39,7 +39,7 @@ public class IdentityService : IIdentityService
             var errorMessage = result.Errors.FirstOrDefault()?.Description ?? "Unknown registration error";
             return Result.Failure(errorMessage);
         }
-        
+
         await _userManager.AddClaimAsync(newApplicationUser, new Claim(ClaimTypes.Role, "Trader"));
         return Result.Success();
     }
@@ -78,7 +78,7 @@ public class IdentityService : IIdentityService
         {
             return ResultGeneric<string>.Failure("Invalid Credentials");
         }
-        
+
         string token = await GenerateJwtTokenForUserAsync(user);
         return ResultGeneric<string>.Success(token);
     }
@@ -94,7 +94,7 @@ public class IdentityService : IIdentityService
             return null;
         }
     }
-    
+
     private async Task<bool> IsUserValidatedAsync(Account user, string password)
     {
         return await _userManager.CheckPasswordAsync(user, password);
@@ -113,14 +113,14 @@ public class IdentityService : IIdentityService
         string issuer = _jwtConfiguration["JwtSettings:Issuer"] ?? throw new Exception("JWT Issuer is missing!");
         string audience = _jwtConfiguration["JwtSettings:Audience"] ?? throw new Exception("JWT Audience is missing!");
 
-        List<Claim> claims = await GetUserClaimsAsync(user);    
-        
+        List<Claim> claims = await GetUserClaimsAsync(user);
+
         return new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(claims), 
-            Expires = DateTime.UtcNow.AddHours(2), 
-            Issuer = issuer,                      
-            Audience = audience,                 
+            Subject = new ClaimsIdentity(claims),
+            Expires = DateTime.UtcNow.AddHours(2),
+            Issuer = issuer,
+            Audience = audience,
             SigningCredentials = RetrieveSigningCredentials()
         };
     }
@@ -145,10 +145,10 @@ public class IdentityService : IIdentityService
         byte[] keyBytes = Encoding.UTF8.GetBytes(secret);
         var securityKey = new SymmetricSecurityKey(keyBytes);
         return new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-        
+
     }
 
-    
+
 
 
 }

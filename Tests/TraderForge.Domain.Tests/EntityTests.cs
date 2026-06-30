@@ -16,7 +16,7 @@ public class EntityTests
         Assert.Equal(1, order.Quantity);
         Assert.Equal(50000m, order.Price);
     }
-    
+
     [Fact]
     public void Order_MarkAsFilled()
     {
@@ -24,7 +24,7 @@ public class EntityTests
         order.MarkAsFilled();
         Assert.Equal(OrderStatus.Filled, order.Status);
     }
-    
+
     [Fact]
     public void Order_Cancel()
     {

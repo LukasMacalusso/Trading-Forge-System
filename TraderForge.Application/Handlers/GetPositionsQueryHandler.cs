@@ -24,7 +24,7 @@ public class GetPositionsQueryHandler
             if (trader == null)
                 return ResultGeneric<List<Position>>.Failure("Trader not found.");
 
-            var portfolio = query.PortfolioId.HasValue 
+            var portfolio = query.PortfolioId.HasValue
                 ? trader.Portfolios.FirstOrDefault(p => p.Id == query.PortfolioId.Value)
                 : trader.Portfolios.FirstOrDefault(p => p.IsActive);
 

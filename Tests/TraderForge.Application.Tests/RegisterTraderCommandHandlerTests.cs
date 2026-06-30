@@ -27,10 +27,10 @@ public class RegisterTraderCommandHandlerTests
         _planRepositoryMock.Setup(x => x.GetByNameAsync("basic"))
             .ReturnsAsync(new SubscriptionPlan(
                 Guid.NewGuid(), "Basic", 9.99m, 10000m, 2, 5, false));
-                
+
         _identityServiceMock.Setup(x => x.RegisterNewAccountAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(Result.Success());
-        
+
         _handler = new RegisterTraderCommandHandler(
             _identityServiceMock.Object,
             _traderRepositoryMock.Object,
@@ -43,7 +43,8 @@ public class RegisterTraderCommandHandlerTests
     {
         var command = new RegisterTraderCommand
         {
-            Email = "usertest@gmail.com", Password = "fatdog12345"
+            Email = "usertest@gmail.com",
+            Password = "fatdog12345"
         };
 
         Result result = await _handler.HandleAsync(command);
@@ -54,7 +55,7 @@ public class RegisterTraderCommandHandlerTests
             x => x.RegisterNewAccountAsync(It.IsAny<string>(), command.Email, command.Password), Times.Once);
 
 
-        
+
         _traderRepositoryMock.Verify(
             x => x.AddAsync(It.Is<Trader>(
                 t =>

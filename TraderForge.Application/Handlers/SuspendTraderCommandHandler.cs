@@ -1,4 +1,4 @@
-﻿using TraderForge.Application.DTOs;
+using TraderForge.Application.DTOs;
 using TraderForge.Domain.Common;
 using TraderForge.Domain.Repositories;
 
@@ -16,7 +16,7 @@ public class SuspendTraderCommandHandler
     public async Task<Result> HandleAsync(SuspendTraderCommand command)
     {
         var trader = await _traderRepository.GetByIdAsync(command.TraderId);
-        
+
         if (trader == null)
             return Result.Failure("Trader not found.");
 

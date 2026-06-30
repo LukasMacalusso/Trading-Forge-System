@@ -51,7 +51,7 @@ public class TraderTests
     {
         var trader = new Trader(_traderId, Email);
         var plan = new SubscriptionPlan(Guid.NewGuid(), "Basic", 9.99m, 10000m, 2, 5, false);
-        
+
         trader.InitializeWithTrial(plan);
         var originalEndDate = trader.Subscription!.EndDate;
 
@@ -98,7 +98,7 @@ public class TraderTests
     {
         var trader = new Trader(_traderId, Email);
         trader.Suspend("Violation");
-        
+
         trader.Unsuspend();
 
         Assert.False(trader.IsSuspended);

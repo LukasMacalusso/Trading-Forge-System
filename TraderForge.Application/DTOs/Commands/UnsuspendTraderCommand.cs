@@ -1,4 +1,4 @@
-﻿namespace TraderForge.Application.DTOs.Commands;
+namespace TraderForge.Application.DTOs.Commands;
 
 public class UnsuspendTraderCommand
 {

@@ -9,8 +9,8 @@ public static class IdentityMappers
     {
         return new RegisterTraderCommand()
         {
-           Email = request.Email,
-           Password = request.Password
+            Email = request.Email,
+            Password = request.Password
         };
     }
 

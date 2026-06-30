@@ -28,6 +28,12 @@ jobs:
       - name: Install SonarScanner
         run: dotnet tool install --global dotnet-sonarscanner
 
+      - name: Format Check (indentation, spacing)
+        run: make format
+
+      - name: Lint Check (style, best practices)
+        run: make lint
+
       - name: Build, Test and Analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -39,11 +45,10 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
           dotnet sonarscanner begin \
-            /k:"lukas-trillat-macalusso_Trading-Forge-System" \
-            /o:"tradingforge-sonarqube-key" \
+            /k:"TradingForge" \
             /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.host.url="$SONAR_HOST_URL" \
-            /d:sonar.exclusions="TraderForge.Frontend/**,**/Migrations/**" \
+            /d:sonar.exclusions="TraderForge.Frontend/**,**/Migrations/**,Makefile" \
             /d:sonar.coverage.exclusions="**/DTOs/**,**/Requests/**,**/Responses/**,**/Program.cs,**/DependencyInjection.cs,**/*.Designer.cs" \
             /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml"
           
@@ -55,3 +60,9 @@ jobs:
             -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
           
           dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
+
+      - name: Integration Tests
+        run: make test-integration
+
+      - name: E2E API Tests
+        run: make test-e2e

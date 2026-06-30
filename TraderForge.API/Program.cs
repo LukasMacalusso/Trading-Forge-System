@@ -27,8 +27,16 @@ builder.Services.AddMemoryCache();
 builder.Services.AddSignalR();
 
 // -- Database Context -- //
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+if (builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseInMemoryDatabase("TestDb"));
+}
+else
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+}
 
 // -- ASP.NET Core Identity -- //
 builder.Services.AddIdentityCore<Account>(options =>
@@ -134,7 +142,7 @@ builder.Services.AddHostedService<BackgroundMarketPollingService>();
 builder.Services.AddSingleton<IMarketDataBroadcaster, SignalRMarketDataBroadcaster>();
 
 // -- CQRS Events (MediatR) -- //
-builder.Services.AddMediatR(cfg => 
+builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblyContaining<TraderForge.Application.Handlers.RegisterTraderCommandHandler>()
 );
 
@@ -163,29 +171,32 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // --- Identity Seeder Execution --- //
-using (var scope = app.Services.CreateScope())
+if (!app.Environment.IsEnvironment("Testing"))
 {
-    var services = scope.ServiceProvider;
-    var configuration = services.GetRequiredService<IConfiguration>();
-    var logger = services.GetRequiredService<ILogger<Program>>();
-
-    try
+    using (var scope = app.Services.CreateScope())
     {
-        var context = services.GetRequiredService<ApplicationDbContext>();
+        var services = scope.ServiceProvider;
+        var configuration = services.GetRequiredService<IConfiguration>();
+        var logger = services.GetRequiredService<ILogger<Program>>();
 
-        logger.LogInformation("Applying pending database migrations...");
+        try
+        {
+            var context = services.GetRequiredService<ApplicationDbContext>();
 
-        await context.Database.MigrateAsync();
+            logger.LogInformation("Applying pending database migrations...");
 
-        logger.LogInformation("Database migrations applied successfully.");
+            await context.Database.MigrateAsync();
 
-        logger.LogInformation("Attempting to seed default Identity administrators...");
-        await TraderForge.Infrastructure.Persistence.Seeders.IdentitySeeder.SeedDefaultAdminsAsync(services, configuration);
-        logger.LogInformation("Identity seeding completed.");
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "A fatal error occurred during database migration or seeding.");
+            logger.LogInformation("Database migrations applied successfully.");
+
+            logger.LogInformation("Attempting to seed default Identity administrators...");
+            await TraderForge.Infrastructure.Persistence.Seeders.IdentitySeeder.SeedDefaultAdminsAsync(services, configuration);
+            logger.LogInformation("Identity seeding completed.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "A fatal error occurred during database migration or seeding.");
+        }
     }
 }
 
@@ -205,3 +216,5 @@ app.MapControllers();
 app.MapHub<MarketDataHub>("/hubs/market");
 
 app.Run();
+
+public partial class Program { }
