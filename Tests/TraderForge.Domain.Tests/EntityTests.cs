@@ -9,7 +9,7 @@ public class EntityTests
     [Fact]
     public void Order_ShouldInitialize()
     {
-        var order = new Order(Guid.NewGuid(), "BTC", OrderSide.Buy, OrderType.Market, 1, 50000m, 50m, 50050m, OrderStatus.Pending);
+        var order = new Order(Guid.NewGuid(), "BTC", OrderSide.Buy, OrderType.Market, 2, 50000m, 50m, 50050m, OrderStatus.Pending);
         Assert.Equal("BTC", order.Symbol);
         Assert.Equal(OrderSide.Buy, order.Side);
         Assert.Equal(OrderType.Market, order.Type);
