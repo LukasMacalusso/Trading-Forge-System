@@ -149,4 +149,8 @@ export class MarketService {
   getCachedAssets(): Asset[] {
     return cachedAssets ?? [];
   }
+
+  async refreshPrices(): Promise<void> {
+    await this.getAssets();
+  }
 }
