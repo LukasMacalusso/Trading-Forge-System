@@ -10,7 +10,7 @@ export class SignalRService {
     if (this.connection) return;
 
     this.connection = new signalR.HubConnectionBuilder()
-      .withUrl('/hubs/marketdata')
+      .withUrl('/hubs/market')
       .withAutomaticReconnect()
       .build();
 
