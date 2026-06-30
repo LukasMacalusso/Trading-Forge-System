@@ -23,6 +23,9 @@ public class PortfolioController : ControllerBase
     private readonly GetTransactionsQueryHandler _getTransactionsHandler;
     private readonly GetOrdersQueryHandler _getOrdersHandler;
     private readonly ResetSimulationCommandHandler _resetSimulationHandler;
+    private readonly GetPendingOperationsQueryHandler _getPendingHandler;
+    private readonly ApprovePendingOperationCommandHandler _approvePendingHandler;
+    private readonly RejectPendingOperationCommandHandler _rejectPendingHandler;
 
     public PortfolioController(
         GetActivePortfolioQueryHandler getPortfolioHandler,
@@ -34,7 +37,10 @@ public class PortfolioController : ControllerBase
         SellPositionCommandHandler sellPositionHandler,
         GetTransactionsQueryHandler getTransactionsHandler,
         GetOrdersQueryHandler getOrdersHandler,
-        ResetSimulationCommandHandler resetSimulationHandler)
+        ResetSimulationCommandHandler resetSimulationHandler,
+        GetPendingOperationsQueryHandler getPendingHandler,
+        ApprovePendingOperationCommandHandler approvePendingHandler,
+        RejectPendingOperationCommandHandler rejectPendingHandler)
     {
         _getPortfolioHandler = getPortfolioHandler;
         _getPortfolioHistoryHandler = getPortfolioHistoryHandler;
@@ -46,6 +52,9 @@ public class PortfolioController : ControllerBase
         _getTransactionsHandler = getTransactionsHandler;
         _getOrdersHandler = getOrdersHandler;
         _resetSimulationHandler = resetSimulationHandler;
+        _getPendingHandler = getPendingHandler;
+        _approvePendingHandler = approvePendingHandler;
+        _rejectPendingHandler = rejectPendingHandler;
     }
 
     [HttpGet]
@@ -190,5 +199,47 @@ public class PortfolioController : ControllerBase
             return BadRequest(new { error = result.ErrorMessage });
 
         return Ok(new { message = "Simulation reset successfully." });
+    }
+
+    [HttpGet("pending-operations")]
+    public async Task<IActionResult> GetPendingOperations()
+    {
+        var traderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(traderId))
+            return Unauthorized(new { error = "Invalid token claims." });
+
+        var result = await _getPendingHandler.HandleAsync(new GetPendingOperationsQuery { TraderId = traderId });
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.ErrorMessage });
+
+        return Ok(result.Value);
+    }
+
+    [HttpPost("pending-operations/{id:guid}/approve")]
+    public async Task<IActionResult> ApprovePendingOperation(Guid id)
+    {
+        var traderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(traderId))
+            return Unauthorized(new { error = "Invalid token claims." });
+
+        var result = await _approvePendingHandler.HandleAsync(new ApprovePendingOperationCommand { TraderId = traderId, OperationId = id });
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.ErrorMessage });
+
+        return Ok();
+    }
+
+    [HttpPost("pending-operations/{id:guid}/reject")]
+    public async Task<IActionResult> RejectPendingOperation(Guid id)
+    {
+        var traderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(traderId))
+            return Unauthorized(new { error = "Invalid token claims." });
+
+        var result = await _rejectPendingHandler.HandleAsync(new RejectPendingOperationCommand { TraderId = traderId, OperationId = id });
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.ErrorMessage });
+
+        return Ok();
     }
 }

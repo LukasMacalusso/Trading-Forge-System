@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using TraderForge.API.Controllers;
+using TraderForge.Domain.Repositories;
 using TraderForge.API.Mappers;
 using TraderForge.API.Requests;
 using TraderForge.Application.DTOs;
@@ -26,6 +27,7 @@ public class PortfolioControllerTests
     private readonly Mock<ISubscriptionLimitGuard> _limitGuard;
     private readonly Mock<ICommissionService> _commissionService;
     private readonly Mock<IMarketService> _marketService;
+    private readonly Mock<IPendingOperationRepository> _pendingRepo;
     private readonly PortfolioController _controller;
     private readonly string _traderId = "test-trader-id";
 
@@ -39,6 +41,7 @@ public class PortfolioControllerTests
         _limitGuard = new Mock<ISubscriptionLimitGuard>();
         _commissionService = new Mock<ICommissionService>();
         _marketService = new Mock<IMarketService>();
+        _pendingRepo = new Mock<IPendingOperationRepository>();
 
         _marketService.Setup(m => m.IsMarketOpen(It.IsAny<string>())).Returns(true);
         _marketService.Setup(m => m.GetPricesAsync()).ReturnsAsync(new MarketPriceCacheItem
@@ -61,6 +64,9 @@ public class PortfolioControllerTests
         var getOrdersHandler = new GetOrdersQueryHandler(_traderRepo.Object, _orderRepo.Object);
         var resetSimulationHandler = new ResetSimulationCommandHandler(_traderRepo.Object, Mock.Of<IPublisher>());
         var getPortfolioHistoryHandler = new GetPortfolioHistoryQueryHandler(_traderRepo.Object);
+        var getPendingHandler = new GetPendingOperationsQueryHandler(_pendingRepo.Object);
+        var approvePendingHandler = new ApprovePendingOperationCommandHandler(_pendingRepo.Object, _commissionService.Object);
+        var rejectPendingHandler = new RejectPendingOperationCommandHandler(_pendingRepo.Object);
 
         _controller = new PortfolioController(
             getPortfolioHandler,
@@ -72,7 +78,10 @@ public class PortfolioControllerTests
             sellPositionHandler,
             getTransactionsHandler,
             getOrdersHandler,
-            resetSimulationHandler);
+            resetSimulationHandler,
+            getPendingHandler,
+            approvePendingHandler,
+            rejectPendingHandler);
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
         {
@@ -142,7 +151,10 @@ public class PortfolioControllerTests
             new SellPositionCommandHandler(_positionRepo.Object, _traderRepo.Object, _commissionService.Object, _marketService.Object),
             new GetTransactionsQueryHandler(_traderRepo.Object, _transactionRepo.Object),
             new GetOrdersQueryHandler(_traderRepo.Object, _orderRepo.Object),
-            new ResetSimulationCommandHandler(_traderRepo.Object, Mock.Of<IPublisher>()));
+            new ResetSimulationCommandHandler(_traderRepo.Object, Mock.Of<IPublisher>()),
+            new GetPendingOperationsQueryHandler(_pendingRepo.Object),
+            new ApprovePendingOperationCommandHandler(_pendingRepo.Object, _commissionService.Object),
+            new RejectPendingOperationCommandHandler(_pendingRepo.Object));
         ctrl.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity()) }

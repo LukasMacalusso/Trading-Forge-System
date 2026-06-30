@@ -84,6 +84,7 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IBotNodeRepository, BotNodeRepository>();
 builder.Services.AddScoped<IBotEdgeRepository, BotEdgeRepository>();
 builder.Services.AddScoped<IStrategyExecutionRepository, StrategyExecutionRepository>();
+builder.Services.AddScoped<IPendingOperationRepository, PendingOperationRepository>();
 
 builder.Services.AddSingleton<IMarketDataEventBus, MarketDataEventBus>();
 builder.Services.AddSingleton<IStrategyEngine>(sp => sp.GetRequiredService<StrategyEngineService>());
@@ -91,6 +92,9 @@ builder.Services.AddHostedService<StrategyEngineService>();
 
 builder.Services.AddTransient<AddBotNodeCommandHandler>();
 builder.Services.AddTransient<UpdateBotNodeCommandHandler>();
+builder.Services.AddTransient<GetPendingOperationsQueryHandler>();
+builder.Services.AddTransient<ApprovePendingOperationCommandHandler>();
+builder.Services.AddTransient<RejectPendingOperationCommandHandler>();
 builder.Services.AddTransient<RemoveBotNodeCommandHandler>();
 builder.Services.AddTransient<AddBotEdgeCommandHandler>();
 builder.Services.AddTransient<RemoveBotEdgeCommandHandler>();
