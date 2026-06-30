@@ -142,7 +142,7 @@ public class BackgroundMarketPollingService : BackgroundService
             return false;
 
         symbol = symbolProp.GetString() ?? string.Empty;
-        return decimal.TryParse(priceProp.GetString(), out price);
+        return decimal.TryParse(priceProp.GetString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out price);
     }
 
     private async Task SaveAndBroadcastPricesAsync(MarketPriceCacheItem currentPrices, CancellationToken stoppingToken)
