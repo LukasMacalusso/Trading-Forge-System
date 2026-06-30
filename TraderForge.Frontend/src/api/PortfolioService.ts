@@ -1,4 +1,4 @@
-import type { Portfolio, Position } from '@models/Portfolio';
+import type { Portfolio, Position, SimulationSnapshot } from '@models/Portfolio';
 import { Result } from '@utils/Result';
 import { httpClient } from './httpClient';
 
@@ -6,6 +6,14 @@ interface BackendPortfolio {
   id: string;
   virtualBalance: number;
   isActive: boolean;
+}
+
+/** A closed (frozen) portfolio returned by the history endpoint. */
+interface BackendClosedPortfolio {
+  id: string;
+  virtualBalance: number;
+  createdAt: string;
+  closedAt: string | null;
 }
 
 interface BackendAsset {
@@ -85,8 +93,34 @@ export class PortfolioService {
     }
   }
 
-  async getSimulationHistory(): Promise<Result<[]>> {
-    return Result.ok([]);
+  /**
+   * Past (frozen) simulations, newest first. The backend returns the closed
+   * portfolios; P&L is computed against `initialBalance` (the trader's plan
+   * starting capital), the same baseline used for the live portfolio.
+   */
+  async getSimulationHistory(initialBalance = 10_000): Promise<Result<SimulationSnapshot[]>> {
+    try {
+      const { data } = await httpClient.get<BackendClosedPortfolio[]>('/api/portfolio/history');
+
+      const snapshots: SimulationSnapshot[] = data.map((p) => {
+        const finalValue = +p.virtualBalance.toFixed(2);
+        const totalPnL = +(finalValue - initialBalance).toFixed(2);
+        const totalPnLPercent = initialBalance > 0 ? +((totalPnL / initialBalance) * 100).toFixed(2) : 0;
+        return {
+          id: p.id,
+          createdAt: p.closedAt ?? p.createdAt,
+          finalBalance: finalValue,
+          finalPortfolioValue: finalValue,
+          totalPnL,
+          totalPnLPercent,
+          positionCount: 0,
+        };
+      });
+
+      return Result.ok(snapshots);
+    } catch (error) {
+      return Result.fail(extractErrorMessage(error, 'Failed to load simulation history.'));
+    }
   }
 
   /** Wipes the trader's positions and restores the initial virtual balance. */

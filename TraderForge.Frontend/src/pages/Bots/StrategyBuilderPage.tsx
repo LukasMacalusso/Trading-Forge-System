@@ -28,6 +28,7 @@ import {
   SlidersHorizontal,
   ArrowLeft,
   X,
+  Loader2,
 } from 'lucide-react';
 import { NODE_TYPES } from './BotNodes';
 import type {
@@ -37,9 +38,11 @@ import type {
   NotificationBotConfig,
   ActionBotConfig,
 } from '@models/BotFlow';
-import { StrategyRepository } from '@utils/StrategyRepository';
-import type { StrategyNode, StrategyStatus } from '@models/Strategy';
+import { StrategyService } from '@api/StrategyService';
+import type { Strategy, StrategyNode, StrategyStatus } from '@models/Strategy';
 import { useNotificationStore } from '@store/notificationStore';
+
+const strategyService = new StrategyService();
 
 const PALETTE_ITEMS: {
   kind: BotNodeKind;
@@ -116,32 +119,44 @@ export function StrategyBuilderPage() {
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance<StrategyNode> | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const createdAtRef = useRef(new Date().toISOString());
+  // The graph as last loaded/saved, used to diff against on save.
+  const baselineRef = useRef<{ nodes: StrategyNode[]; edges: Edge[] }>({ nodes: [], edges: [] });
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const addNotification = useNotificationStore((s) => s.addNotification);
   const selectedNode = nodes.find((n) => n.id === selectedNodeId) ?? null;
 
+  // Adopts a strategy's graph into the canvas and resets the save baseline.
+  const adoptGraph = useCallback(
+    (strategy: Strategy) => {
+      setNodes(strategy.nodes);
+      setEdges(strategy.edges);
+      setStrategyName(strategy.name);
+      setStatus(strategy.status);
+      baselineRef.current = { nodes: strategy.nodes, edges: strategy.edges };
+    },
+    [setNodes, setEdges],
+  );
+
   // Load the strategy for this route. If it doesn't exist, return to the list.
   useEffect(() => {
     if (!id) return;
-    const strategy = StrategyRepository.get(id);
-    if (!strategy) {
-      navigate('/strategy', { replace: true });
-      return;
-    }
-    setNodes(strategy.nodes);
-    setEdges(strategy.edges);
-    setStrategyName(strategy.name);
-    setStatus(strategy.status);
-    createdAtRef.current = strategy.createdAt;
-    nodeIdCounter = strategy.nodes.reduce((max, n) => {
-      const num = Number(n.id.replace('node-', ''));
-      return Number.isFinite(num) && num > max ? num : max;
-    }, nodeIdCounter);
-  }, [id, navigate, setNodes, setEdges]);
+    let active = true;
+    strategyService.get(id).then((result) => {
+      if (!active) return;
+      if (!result.isSuccess) {
+        navigate('/strategy', { replace: true });
+        return;
+      }
+      adoptGraph(result.value!);
+    });
+    return () => {
+      active = false;
+    };
+  }, [id, navigate, adoptGraph]);
 
   const onConnect = useCallback(
     (params: Connection) =>
@@ -216,32 +231,45 @@ export function StrategyBuilderPage() {
     setConfigOpen(false);
   }
 
-  function persist(nextStatus: StrategyStatus) {
-    if (!id) return;
-    StrategyRepository.upsert({
-      id,
-      name: strategyName.trim() || 'Estrategia sin nombre',
-      status: nextStatus,
-      nodes,
-      edges,
-      createdAt: createdAtRef.current,
-      updatedAt: new Date().toISOString(),
-    });
-    setStatus(nextStatus);
+  /** Diffs the canvas against the backend and persists the changes. */
+  async function persist(): Promise<boolean> {
+    if (!id) return false;
+    const base = baselineRef.current;
+    const result = await strategyService.saveGraph(id, nodes, edges, base.nodes, base.edges);
+    if (!result.isSuccess) {
+      addNotification('error', result.errorMessage ?? 'No se pudo guardar la estrategia.');
+      return false;
+    }
+    adoptGraph(result.value!);
+    return true;
   }
 
-  function handleSave() {
-    persist(status);
-    addNotification('success', 'Estrategia guardada');
+  async function handleSave() {
+    setSaving(true);
+    const ok = await persist();
+    setSaving(false);
+    if (ok) addNotification('success', 'Estrategia guardada');
   }
 
-  function handleActivate() {
+  async function handleActivate() {
     if (nodes.length === 0) {
       addNotification('warning', 'Agrega al menos un nodo antes de activar la estrategia');
       return;
     }
-    persist('active');
-    addNotification('success', `Estrategia "${strategyName.trim() || 'sin nombre'}" activada`);
+    setSaving(true);
+    const saved = await persist();
+    if (!saved) {
+      setSaving(false);
+      return;
+    }
+    const started = await strategyService.startEngine(id!);
+    setSaving(false);
+    if (started.isSuccess) {
+      setStatus('active');
+      addNotification('success', `Estrategia "${strategyName.trim() || 'sin nombre'}" activada`);
+    } else {
+      addNotification('error', started.errorMessage ?? 'No se pudo activar la estrategia.');
+    }
   }
 
   return (
@@ -295,14 +323,15 @@ export function StrategyBuilderPage() {
           )}
           <button
             onClick={handleSave}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-neutral-400 border border-neutral-700 rounded-lg hover:border-neutral-600 hover:text-neutral-200 transition-colors"
+            disabled={saving}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-neutral-400 border border-neutral-700 rounded-lg hover:border-neutral-600 hover:text-neutral-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <Save size={14} />
+            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
             <span className="hidden sm:inline">Guardar</span>
           </button>
           <button
             onClick={handleActivate}
-            disabled={nodes.length === 0}
+            disabled={nodes.length === 0 || saving}
             className="flex items-center gap-1.5 px-3.5 py-1.5 text-sm bg-emerald-500 text-neutral-950 rounded-lg font-semibold hover:bg-emerald-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Play size={14} />
