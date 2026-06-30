@@ -34,7 +34,7 @@ export function useAuth() {
     const result = await identityService.login(query);
 
     if (result.isSuccess && result.value) {
-      setToken(result.value);
+      setToken(result.value.accessToken, result.value.refreshToken);
       setIsLoading(false);
       return true;
     }

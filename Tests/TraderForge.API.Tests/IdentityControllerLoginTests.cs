@@ -28,20 +28,21 @@ public class IdentityControllerLoginTests
         var identityServiceMock = new Mock<IIdentityService>();
         identityServiceMock
             .Setup(x => x.GetValidatedTokenAsync("test@test.com", "password"))
-            .ReturnsAsync(ResultGeneric<string>.Success("jwt.token.here"));
+            .ReturnsAsync(ResultGeneric<TokenResponse>.Success(new TokenResponse { AccessToken = "jwt.token.here", RefreshToken = "refresh.token" }));
 
         var loginHandler = new LoginTraderQueryHandler(
             identityServiceMock.Object, Mock.Of<ITraderRepository>());
 
-        var controller = new IdentityController(CreateRegisterHandler(), loginHandler);
+        var refreshHandler = new RefreshTraderTokenQueryHandler(identityServiceMock.Object);
+
+        var controller = new IdentityController(CreateRegisterHandler(), loginHandler, refreshHandler);
 
         var request = new LoginTraderRequest { Email = "test@test.com", Password = "password" };
         var result = await controller.Login(request);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var value = okResult.Value;
-        var tokenProp = value!.GetType().GetProperty("token")?.GetValue(value);
-        Assert.Equal("jwt.token.here", tokenProp);
+        var tokenResponse = Assert.IsType<TokenResponse>(okResult.Value);
+        Assert.Equal("jwt.token.here", tokenResponse.AccessToken);
     }
 
     [Fact]
@@ -50,12 +51,14 @@ public class IdentityControllerLoginTests
         var identityServiceMock = new Mock<IIdentityService>();
         identityServiceMock
             .Setup(x => x.GetValidatedTokenAsync(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(ResultGeneric<string>.Failure("Invalid Credentials"));
+            .ReturnsAsync(ResultGeneric<TokenResponse>.Failure("Invalid Credentials"));
 
         var loginHandler = new LoginTraderQueryHandler(
             identityServiceMock.Object, Mock.Of<ITraderRepository>());
 
-        var controller = new IdentityController(CreateRegisterHandler(), loginHandler);
+        var refreshHandler = new RefreshTraderTokenQueryHandler(identityServiceMock.Object);
+
+        var controller = new IdentityController(CreateRegisterHandler(), loginHandler, refreshHandler);
 
         var request = new LoginTraderRequest { Email = "wrong@test.com", Password = "wrong" };
         var result = await controller.Login(request);
@@ -83,7 +86,8 @@ public class IdentityControllerLoginTests
 
         var controller = new IdentityController(
             registerHandler,
-            new LoginTraderQueryHandler(Mock.Of<IIdentityService>(), Mock.Of<ITraderRepository>()));
+            new LoginTraderQueryHandler(Mock.Of<IIdentityService>(), Mock.Of<ITraderRepository>()),
+            new RefreshTraderTokenQueryHandler(Mock.Of<IIdentityService>()));
 
         var request = new RegisterTraderRequest { Email = "test@test.com", Password = "short" };
         var result = await controller.Register(request);

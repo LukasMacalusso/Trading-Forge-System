@@ -8,7 +8,7 @@ interface AuthState {
   trader: Trader | null;
   isAuthenticated: boolean;
   role: UserRole | null;
-  setToken: (token: string) => void;
+  setToken: (token: string, refreshToken?: string) => void;
   setTrader: (trader: Trader) => void;
   logout: () => void;
 }
@@ -21,8 +21,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: !!initialToken,
   role: getRoleFromToken(initialToken),
 
-  setToken: (token) => {
-    TokenRepository.save(token);
+  setToken: (token, refreshToken) => {
+    TokenRepository.save(token, refreshToken);
     set({ token, isAuthenticated: true, role: getRoleFromToken(token) });
   },
 

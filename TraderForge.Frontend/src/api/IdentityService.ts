@@ -14,12 +14,24 @@ export class IdentityService {
     }
   }
 
-  async login(query: LoginTraderQuery): Promise<Result<string>> {
+  async login(query: LoginTraderQuery): Promise<Result<{ accessToken: string; refreshToken: string }>> {
     try {
-      const { data } = await httpClient.post<{ token: string }>('/api/identity/login', query);
-      return Result.ok(data.token);
+      const { data } = await httpClient.post<{ accessToken: string; refreshToken: string }>('/api/identity/login', query);
+      return Result.ok(data);
     } catch (error: unknown) {
       return Result.fail(extractErrorMessage(error, 'Invalid credentials.'));
+    }
+  }
+
+  async refresh(accessToken: string, refreshToken: string): Promise<Result<{ accessToken: string; refreshToken: string }>> {
+    try {
+      const { data } = await httpClient.post<{ accessToken: string; refreshToken: string }>('/api/identity/refresh', {
+        accessToken,
+        refreshToken,
+      });
+      return Result.ok(data);
+    } catch (error: unknown) {
+      return Result.fail(extractErrorMessage(error, 'Failed to refresh token.'));
     }
   }
 

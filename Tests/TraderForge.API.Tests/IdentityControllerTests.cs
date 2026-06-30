@@ -42,7 +42,8 @@ public class IdentityControllerTests
         );
 
         var loginHandler = new LoginTraderQueryHandler(_identityServiceMock.Object, _traderRepositoryMock.Object);
-        _controller = new IdentityController(registerHandler, loginHandler);
+        var refreshHandler = new RefreshTraderTokenQueryHandler(_identityServiceMock.Object);
+        _controller = new IdentityController(registerHandler, loginHandler, refreshHandler);
     }
 
     [Fact]
