@@ -87,8 +87,9 @@ builder.Services.AddScoped<IStrategyExecutionRepository, StrategyExecutionReposi
 builder.Services.AddScoped<IPendingOperationRepository, PendingOperationRepository>();
 
 builder.Services.AddSingleton<IMarketDataEventBus, MarketDataEventBus>();
+builder.Services.AddSingleton<StrategyEngineService>();
 builder.Services.AddSingleton<IStrategyEngine>(sp => sp.GetRequiredService<StrategyEngineService>());
-builder.Services.AddHostedService<StrategyEngineService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<StrategyEngineService>());
 
 builder.Services.AddTransient<AddBotNodeCommandHandler>();
 builder.Services.AddTransient<UpdateBotNodeCommandHandler>();
