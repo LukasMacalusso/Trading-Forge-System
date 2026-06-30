@@ -75,7 +75,7 @@ public class SubscriptionLimitGuardEdgeTests
         Assert.False(result);
     }
 
-    private Trader CreateTraderWithPlan(int? maxStrats = null, int? maxAssets = null, bool canModifyBalance = false, int positionsCount = 0, int activeStrategiesCount = 0)
+    private static Trader CreateTraderWithPlan(int? maxStrats = null, int? maxAssets = null, bool canModifyBalance = false, int positionsCount = 0, int activeStrategiesCount = 0)
     {
         var trader = new Trader("user-1", "test@test.com");
         var planId = Guid.NewGuid();
