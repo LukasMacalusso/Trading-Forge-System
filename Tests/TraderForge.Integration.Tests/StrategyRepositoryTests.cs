@@ -19,9 +19,12 @@ public class StrategyRepositoryTests
     public async Task AddAsync_Then_GetByIdAsync_ReturnsStrategy()
     {
         using var ctx = CreateDbContext();
+        var portfolio = new Portfolio("trader1", 1000m);
+        ctx.Portfolios.Add(portfolio);
+        await ctx.SaveChangesAsync();
+
         var repo = new StrategyRepository(ctx);
-        var portfolioId = Guid.NewGuid();
-        var strategy = new Strategy(Guid.NewGuid(), "Test Strategy", portfolioId);
+        var strategy = new Strategy(Guid.NewGuid(), "Test Strategy", portfolio.Id);
 
         await repo.AddAsync(strategy);
 
@@ -34,9 +37,12 @@ public class StrategyRepositoryTests
     public async Task Remove_Strategy_NoLongerQueryable()
     {
         using var ctx = CreateDbContext();
+        var portfolio = new Portfolio("trader1", 1000m);
+        ctx.Portfolios.Add(portfolio);
+        await ctx.SaveChangesAsync();
+
         var repo = new StrategyRepository(ctx);
-        var portfolioId = Guid.NewGuid();
-        var strategy = new Strategy(Guid.NewGuid(), "To Delete", portfolioId);
+        var strategy = new Strategy(Guid.NewGuid(), "To Delete", portfolio.Id);
         await repo.AddAsync(strategy);
 
         repo.Remove(strategy);
@@ -50,14 +56,18 @@ public class StrategyRepositoryTests
     public async Task GetByPortfolioIdAsync_ReturnsOnlyMatching()
     {
         using var ctx = CreateDbContext();
-        var repo = new StrategyRepository(ctx);
-        var p1 = Guid.NewGuid();
-        var p2 = Guid.NewGuid();
-        await repo.AddAsync(new Strategy(Guid.NewGuid(), "S1", p1));
-        await repo.AddAsync(new Strategy(Guid.NewGuid(), "S2", p1));
-        await repo.AddAsync(new Strategy(Guid.NewGuid(), "S3", p2));
+        var p1 = new Portfolio("trader1", 1000m);
+        var p2 = new Portfolio("trader2", 1000m);
+        ctx.Portfolios.Add(p1);
+        ctx.Portfolios.Add(p2);
+        await ctx.SaveChangesAsync();
 
-        var fromP1 = await repo.GetByPortfolioIdAsync(p1);
+        var repo = new StrategyRepository(ctx);
+        await repo.AddAsync(new Strategy(Guid.NewGuid(), "S1", p1.Id));
+        await repo.AddAsync(new Strategy(Guid.NewGuid(), "S2", p1.Id));
+        await repo.AddAsync(new Strategy(Guid.NewGuid(), "S3", p2.Id));
+
+        var fromP1 = await repo.GetByPortfolioIdAsync(p1.Id);
         Assert.Equal(2, fromP1.Count);
     }
 }
