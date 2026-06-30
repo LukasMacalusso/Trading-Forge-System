@@ -27,7 +27,7 @@ public class StrategyEngineService : BackgroundService, IStrategyEngine
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await LoadActiveStrategiesAsync(stoppingToken);
+        await LoadActiveStrategiesAsync();
 
         await foreach (var priceEvent in _eventBus.ReadAllAsync(stoppingToken))
         {
@@ -35,7 +35,7 @@ public class StrategyEngineService : BackgroundService, IStrategyEngine
         }
     }
 
-    private async Task LoadActiveStrategiesAsync(CancellationToken ct)
+    private async Task LoadActiveStrategiesAsync()
     {
         using var scope = _scopeFactory.CreateScope();
         var strategyRepo = scope.ServiceProvider.GetRequiredService<IStrategyRepository>();

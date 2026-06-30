@@ -66,7 +66,7 @@ public class BackgroundMarketPollingService : BackgroundService
         }
     }
 
-    private async Task<string?> ReceiveFullMessageAsync(ClientWebSocket webSocket, byte[] buffer, CancellationToken stoppingToken)
+    private static async Task<string?> ReceiveFullMessageAsync(ClientWebSocket webSocket, byte[] buffer, CancellationToken stoppingToken)
     {
         using var memoryStream = new MemoryStream();
         WebSocketReceiveResult result;
@@ -117,7 +117,7 @@ public class BackgroundMarketPollingService : BackgroundService
         }) ?? new MarketPriceCacheItem();
     }
 
-    private bool TryUpdatePrices(JsonElement rootArray, Dictionary<string, decimal> currentPrices)
+    private static bool TryUpdatePrices(JsonElement rootArray, Dictionary<string, decimal> currentPrices)
     {
         bool anyUpdated = false;
 
