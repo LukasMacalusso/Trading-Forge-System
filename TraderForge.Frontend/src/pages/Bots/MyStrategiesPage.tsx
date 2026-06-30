@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Plus,
@@ -10,11 +10,14 @@ import {
   Activity,
   Bell,
   Zap,
+  Loader2,
 } from 'lucide-react';
-import { StrategyRepository } from '@utils/StrategyRepository';
+import { StrategyService } from '@api/StrategyService';
 import type { Strategy, StrategyStatus } from '@models/Strategy';
 import type { BotNodeKind } from '@models/BotFlow';
 import { useNotificationStore } from '@store/notificationStore';
+
+const strategyService = new StrategyService();
 
 const STATUS_META: Record<StrategyStatus, { label: string; cls: string }> = {
   active: { label: 'Activa', cls: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' },
@@ -49,39 +52,66 @@ function relativeTime(iso: string): string {
 export function MyStrategiesPage() {
   const navigate = useNavigate();
   const addNotification = useNotificationStore((s) => s.addNotification);
-  const [strategies, setStrategies] = useState<Strategy[]>(() => StrategyRepository.list());
+  const [strategies, setStrategies] = useState<Strategy[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const refresh = () => setStrategies(StrategyRepository.list());
+  const refresh = useCallback(async () => {
+    const result = await strategyService.list();
+    if (result.isSuccess) setStrategies(result.value!);
+    else if (result.errorMessage !== 'UNAUTHORIZED') {
+      addNotification('error', result.errorMessage ?? 'No se pudieron cargar las estrategias.');
+    }
+    setLoading(false);
+  }, [addNotification]);
 
-  function handleCreate() {
-    const strategy = StrategyRepository.create('Nueva estrategia');
-    navigate(`/strategy/${strategy.id}`);
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  async function handleCreate() {
+    const result = await strategyService.create('Nueva estrategia');
+    if (result.isSuccess) navigate(`/strategy/${result.value!.id}`);
+    else addNotification('error', result.errorMessage ?? 'No se pudo crear la estrategia.');
   }
 
-  function toggleStatus(strategy: Strategy) {
+  async function toggleStatus(strategy: Strategy) {
     if (strategy.status !== 'active' && strategy.nodes.length === 0) {
       addNotification('warning', 'Agrega bots a la estrategia antes de activarla');
       return;
     }
-    const next: StrategyStatus = strategy.status === 'active' ? 'paused' : 'active';
-    StrategyRepository.setStatus(strategy.id, next);
-    addNotification('success', next === 'active' ? 'Estrategia activada' : 'Estrategia pausada');
-    refresh();
+    const isActivating = strategy.status !== 'active';
+    const result = isActivating
+      ? await strategyService.startEngine(strategy.id)
+      : await strategyService.stopEngine(strategy.id);
+    if (result.isSuccess) {
+      addNotification('success', isActivating ? 'Estrategia activada' : 'Estrategia pausada');
+      refresh();
+    } else {
+      addNotification('error', result.errorMessage ?? 'No se pudo cambiar el estado.');
+    }
   }
 
-  function handleDuplicate(strategy: Strategy) {
-    StrategyRepository.duplicate(strategy.id);
-    addNotification('success', 'Estrategia duplicada');
-    refresh();
+  async function handleDuplicate(strategy: Strategy) {
+    const result = await strategyService.duplicate(strategy.id, `${strategy.name} (copia)`);
+    if (result.isSuccess) {
+      addNotification('success', 'Estrategia duplicada');
+      refresh();
+    } else {
+      addNotification('error', result.errorMessage ?? 'No se pudo duplicar la estrategia.');
+    }
   }
 
-  function handleDelete(strategy: Strategy) {
+  async function handleDelete(strategy: Strategy) {
     if (!window.confirm(`¿Eliminar la estrategia "${strategy.name}"? Esta acción no se puede deshacer.`)) {
       return;
     }
-    StrategyRepository.remove(strategy.id);
-    addNotification('success', 'Estrategia eliminada');
-    refresh();
+    const result = await strategyService.remove(strategy.id);
+    if (result.isSuccess) {
+      addNotification('success', 'Estrategia eliminada');
+      refresh();
+    } else {
+      addNotification('error', result.errorMessage ?? 'No se pudo eliminar la estrategia.');
+    }
   }
 
   return (
@@ -106,7 +136,12 @@ export function MyStrategiesPage() {
           </button>
         </div>
 
-        {strategies.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center gap-2 py-20 text-neutral-600 text-sm">
+            <Loader2 size={16} className="animate-spin" />
+            Cargando estrategias...
+          </div>
+        ) : strategies.length === 0 ? (
           <EmptyState onCreate={handleCreate} />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
