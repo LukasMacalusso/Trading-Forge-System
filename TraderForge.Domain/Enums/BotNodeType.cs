@@ -4,5 +4,6 @@ public enum BotNodeType
 {
     Trigger,
     Condition,
-    Action
+    Action,
+    Notification
 }

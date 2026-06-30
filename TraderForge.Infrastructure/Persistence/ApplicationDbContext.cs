@@ -21,6 +21,7 @@ public class ApplicationDbContext : IdentityDbContext<Account>
     public DbSet<BotNode> BotNodes { get; set; }
     public DbSet<BotEdge> BotEdges { get; set; }
     public DbSet<StrategyExecution> StrategyExecutions { get; set; }
+    public DbSet<PendingOperation> PendingOperations { get; set; }
     
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     

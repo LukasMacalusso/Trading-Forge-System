@@ -220,6 +220,10 @@ public class BotGraphRunner : IDisposable
             case BotNodeType.Action:
                 await ExecuteActionAsync(currentNode.Config, flag, _scopeFactory);
                 break;
+
+            case BotNodeType.Notification:
+                await HandleNotificationAsync(currentNodeId, flag, _scopeFactory, ct);
+                break;
         }
     }
 
@@ -238,6 +242,56 @@ public class BotGraphRunner : IDisposable
             {
                 await WalkGraphAsync(edge.TargetNodeId, flag, execution, executionRepo, ct);
             }
+        }
+    }
+
+    private async Task HandleNotificationAsync(
+        Guid currentNodeId,
+        Dictionary<string, object> flag,
+        IServiceScopeFactory scopeFactory,
+        CancellationToken ct)
+    {
+        if (!_outgoingEdges.TryGetValue(currentNodeId, out var edges)) return;
+        
+        var nextEdge = edges.FirstOrDefault(e => e.SourcePort == NodePort.Out);
+        if (nextEdge == null) return;
+
+        var nextNode = _nodes.GetValueOrDefault(nextEdge.TargetNodeId);
+        if (nextNode == null || nextNode.Type != BotNodeType.Action) return;
+
+        using var scope = scopeFactory.CreateScope();
+        var pendingRepo = scope.ServiceProvider.GetRequiredService<IPendingOperationRepository>();
+
+        try
+        {
+            using var doc = JsonDocument.Parse(nextNode.Config);
+            var root = doc.RootElement;
+            var actionType = root.TryGetProperty("type", out var t) ? t.GetString() ?? "" : "";
+            var symbol = (flag.GetValueOrDefault("symbol") as string) ?? "";
+            var price = flag.TryGetValue("price", out var p) && decimal.TryParse(p?.ToString(), out var dp) ? dp : 0m;
+            var quantity = root.TryGetProperty("quantity", out var q) ? q.GetDecimal() : 0m;
+
+            if (string.IsNullOrEmpty(symbol) || price <= 0 || quantity <= 0) return;
+
+            var expiresAt = DateTime.UtcNow.AddMinutes(15);
+            var pendingOp = new PendingOperation(
+                Guid.NewGuid(),
+                _strategy.PortfolioId,
+                _strategy.Id,
+                _strategy.Name,
+                symbol,
+                actionType,
+                quantity,
+                price,
+                expiresAt);
+
+            await pendingRepo.AddAsync(pendingOp);
+            await pendingRepo.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            var logger = scope.ServiceProvider.GetService<ILogger<BotGraphRunner>>();
+            logger?.LogWarning(ex, "Failed to create PendingOperation for strategy {StrategyId}", _strategy.Id);
         }
     }
 
