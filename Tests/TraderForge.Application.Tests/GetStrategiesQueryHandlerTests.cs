@@ -3,6 +3,10 @@ using TraderForge.Application.DTOs;
 using TraderForge.Application.Handlers;
 using TraderForge.Domain.Entities;
 using TraderForge.Domain.Repositories;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace TraderForge.Application.Tests;
 
@@ -67,7 +71,7 @@ public class GetStrategiesQueryHandlerTests
         _traderRepoMock.Setup(x => x.GetByIdIncludePortfolioAsync(It.IsAny<string>()))
             .ThrowsAsync(new Exception("Database error"));
 
-        var query = new GetStrategiesQuery { TraderId = "id" };
+        var query = new GetStrategiesQuery { TraderId = "some-id" };
         var result = await _handler.HandleAsync(query);
 
         Assert.False(result.IsSuccess);

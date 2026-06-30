@@ -11,8 +11,7 @@ public partial class SyncModels : Migration
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
     {
-        migrationBuilder.DropTable(
-            name: "MarketAssets");
+        migrationBuilder.Sql("DROP TABLE IF EXISTS \"MarketAssets\" CASCADE;");
     }
 
     /// <inheritdoc />
@@ -34,4 +33,3 @@ public partial class SyncModels : Migration
             });
     }
 }
-
