@@ -46,6 +46,7 @@ jobs:
         run: |
           dotnet sonarscanner begin \
             /k:"Trading-Forge-System" \
+            /o:"tradingforge-sonarqube-key" \
             /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.exclusions="TraderForge.Frontend/**,**/Migrations/**,Makefile" \
