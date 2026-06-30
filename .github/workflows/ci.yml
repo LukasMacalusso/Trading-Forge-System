@@ -46,8 +46,8 @@ jobs:
         run: |
           dotnet sonarscanner begin \
             /k:"TradingForge" \
-            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" \
+            /d:sonar.token="$SONAR_TOKEN" \
+            /d:sonar.host.url="$SONAR_HOST_URL" \
             /d:sonar.exclusions="TraderForge.Frontend/**,**/Migrations/**,Makefile" \
             /d:sonar.coverage.exclusions="**/DTOs/**,**/Requests/**,**/Responses/**,**/Program.cs,**/DependencyInjection.cs,**/*.Designer.cs" \
             /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml"
