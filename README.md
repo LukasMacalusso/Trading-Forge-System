@@ -2,10 +2,8 @@
 
 ## Getting Started for Developers
 
-Welcome to the backend of the Trading Forge System! This project uses a Decoupled Architecture with a C# ASP.NET Core Web API and a PostgreSQL database running in Docker.
-
+Welcome to the backend of the Trading Forge System! This project uses a Decoupled Architecture with a C# ASP.NET Core Web API and a PostgreSQL database running in Docker
 ### Prerequisites
-
 Before you start, ensure you have the following installed:
 1.  [.NET 8 or 9 SDK](https://dotnet.microsoft.com/download)
 2.  [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine + Docker Compose)
