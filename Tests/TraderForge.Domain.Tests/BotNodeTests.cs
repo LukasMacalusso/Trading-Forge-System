@@ -49,7 +49,7 @@ public class BotNodeTests
     public void ActivateDeactivate_TogglesIsActive()
     {
         var node = new BotNode(Guid.NewGuid(), BotNodeType.Action, "Test", "{}", 0, 0);
-        
+
         node.Deactivate();
         node.IsActive.Should().BeFalse();
 

@@ -18,7 +18,7 @@ public class OrderTests
         var price = 150m;
         var commission = 1m;
         var total = 1501m;
-        
+
         var order = new Order(portfolioId, symbol, side, type, quantity, price, commission, total, OrderStatus.Pending);
 
         order.Id.Should().NotBeEmpty();
@@ -46,9 +46,9 @@ public class OrderTests
     public void MarkAsFilled_UpdatesStatusAndFilledAt()
     {
         var order = new Order(Guid.NewGuid(), "AAPL", OrderSide.Buy, OrderType.Market, 10, 150, 1, 1501, OrderStatus.Pending);
-        
+
         order.MarkAsFilled();
-        
+
         order.Status.Should().Be(OrderStatus.Filled);
         order.FilledAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
     }
@@ -57,9 +57,9 @@ public class OrderTests
     public void Cancel_UpdatesStatusToCancelled()
     {
         var order = new Order(Guid.NewGuid(), "AAPL", OrderSide.Buy, OrderType.Market, 10, 150, 1, 1501, OrderStatus.Pending);
-        
+
         order.Cancel();
-        
+
         order.Status.Should().Be(OrderStatus.Cancelled);
     }
 }

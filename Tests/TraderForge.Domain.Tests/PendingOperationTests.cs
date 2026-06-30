@@ -33,7 +33,7 @@ public class PendingOperationTests
     public void Resolve_SetsIsResolvedToTrue()
     {
         var op = new PendingOperation(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Strat", "BTC", "BUY", 1.5m, 60000m, DateTime.UtcNow);
-        
+
         op.Resolve();
         op.IsResolved.Should().BeTrue();
     }

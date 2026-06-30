@@ -46,7 +46,7 @@ public class StrategyExecutionTests
         exec.Pause();
         exec.Status.Should().Be(ExecutionStatus.Paused);
     }
-    
+
     [Fact]
     public void Expire_SetsStatusToExpired()
     {
