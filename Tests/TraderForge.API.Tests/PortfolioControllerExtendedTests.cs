@@ -322,4 +322,180 @@ public class PortfolioControllerExtendedTests
 
         Assert.IsType<OkResult>(result);
     }
+
+    [Fact]
+    public async Task SellPosition_Success_ReturnsOk()
+    {
+        var trader = CreateTraderWithPortfolio(_traderId);
+        var portfolio = trader.Portfolios.First();
+        var position = new Position(Guid.NewGuid(), "BTCUSDT", 1m, 50000m, portfolio.Id);
+        typeof(Position).GetProperty("Portfolio")?.SetValue(position, portfolio);
+        portfolio.Positions.Add(position);
+        _positionRepo.Setup(r => r.GetByIdWithPortfolioAsync(position.Id)).ReturnsAsync(position);
+        _traderRepo.Setup(r => r.GetByIdIncludePlanAndPositionsAsync(_traderId)).ReturnsAsync(trader);
+
+        var result = await _controller.SellPosition(position.Id, new SellPositionRequest { Quantity = 0.5m });
+
+        var ok = Assert.IsType<OkObjectResult>(result);
+        var okValue = ok.Value;
+        Assert.NotNull(okValue);
+        var msgProp = okValue.GetType().GetProperty("message");
+        var msg = msgProp?.GetValue(okValue);
+        Assert.Equal("Position sold successfully.", msg);
+    }
+
+    [Fact]
+    public async Task SellPosition_Fails_ReturnsBadRequest()
+    {
+        _positionRepo.Setup(r => r.GetByIdWithPortfolioAsync(It.IsAny<Guid>())).ReturnsAsync((Position?)null);
+
+        var result = await _controller.SellPosition(Guid.NewGuid(), new SellPositionRequest { Quantity = 0.5m });
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task GetStrategies_HandlerFails_ReturnsBadRequest()
+    {
+        _traderRepo.Setup(r => r.GetByIdIncludePortfolioAsync(_traderId)).ReturnsAsync((Trader?)null);
+
+        var result = await _controller.GetStrategies(null);
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task GetPositions_HandlerFails_ReturnsBadRequest()
+    {
+        _traderRepo.Setup(r => r.GetByIdIncludePortfolioAsync(_traderId)).ReturnsAsync((Trader?)null);
+
+        var result = await _controller.GetPositions(null);
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task GetTransactions_HandlerFails_ReturnsBadRequest()
+    {
+        _traderRepo.Setup(r => r.GetByIdIncludePortfolioAsync(_traderId)).ReturnsAsync((Trader?)null);
+
+        var result = await _controller.GetTransactions(null);
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task GetOrders_HandlerFails_ReturnsBadRequest()
+    {
+        _traderRepo.Setup(r => r.GetByIdIncludePortfolioAsync(_traderId)).ReturnsAsync((Trader?)null);
+
+        var result = await _controller.GetOrders(null);
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task GetPortfolioHistory_HandlerFails_ReturnsBadRequest()
+    {
+        _traderRepo.Setup(r => r.GetByIdIncludePortfolioAsync(_traderId)).ReturnsAsync((Trader?)null);
+
+        var result = await _controller.GetPortfolioHistory();
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task ResetSimulation_HandlerFails_ReturnsBadRequest()
+    {
+        _traderRepo.Setup(r => r.GetByIdIncludePlanAndPositionsAsync(_traderId)).ReturnsAsync((Trader?)null);
+
+        var result = await _controller.ResetSimulation();
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task GetTransactions_NoClaim_ReturnsUnauthorized()
+    {
+        var ctrl = CreateControllerWithoutClaim();
+        var result = await ctrl.GetTransactions(null);
+        Assert.IsType<UnauthorizedObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task GetOrders_NoClaim_ReturnsUnauthorized()
+    {
+        var ctrl = CreateControllerWithoutClaim();
+        var result = await ctrl.GetOrders(null);
+        Assert.IsType<UnauthorizedObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task GetPortfolioHistory_NoClaim_ReturnsUnauthorized()
+    {
+        var ctrl = CreateControllerWithoutClaim();
+        var result = await ctrl.GetPortfolioHistory();
+        Assert.IsType<UnauthorizedObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task ResetSimulation_NoClaim_ReturnsUnauthorized()
+    {
+        var ctrl = CreateControllerWithoutClaim();
+        var result = await ctrl.ResetSimulation();
+        Assert.IsType<UnauthorizedObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task GetPendingOperations_NoClaim_ReturnsUnauthorized()
+    {
+        var ctrl = CreateControllerWithoutClaim();
+        var result = await ctrl.GetPendingOperations();
+        Assert.IsType<UnauthorizedObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task ApprovePendingOperation_NoClaim_ReturnsUnauthorized()
+    {
+        var ctrl = CreateControllerWithoutClaim();
+        var result = await ctrl.ApprovePendingOperation(Guid.NewGuid());
+        Assert.IsType<UnauthorizedObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task RejectPendingOperation_NoClaim_ReturnsUnauthorized()
+    {
+        var ctrl = CreateControllerWithoutClaim();
+        var result = await ctrl.RejectPendingOperation(Guid.NewGuid());
+        Assert.IsType<UnauthorizedObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task GetPendingOperations_HandlerThrows_PropagatesException()
+    {
+        _pendingRepo.Setup(r => r.GetPendingByTraderIdAsync(_traderId)).ThrowsAsync(new Exception("fail"));
+
+        var ex = await Assert.ThrowsAsync<Exception>(() => _controller.GetPendingOperations());
+        Assert.Equal("fail", ex.Message);
+    }
+
+    [Fact]
+    public async Task ApprovePendingOperation_HandlerFails_ReturnsBadRequest()
+    {
+        _pendingRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((PendingOperation?)null);
+
+        var result = await _controller.ApprovePendingOperation(Guid.NewGuid());
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task RejectPendingOperation_HandlerFails_ReturnsBadRequest()
+    {
+        _pendingRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((PendingOperation?)null);
+
+        var result = await _controller.RejectPendingOperation(Guid.NewGuid());
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
 }
