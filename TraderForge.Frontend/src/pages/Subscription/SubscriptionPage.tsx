@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Zap, Infinity as InfinityIcon } from 'lucide-react';
+import { Check, Zap, Infinity as InfinityIcon, Ban, Sparkles } from 'lucide-react';
 import { SubscriptionService } from '@api/SubscriptionService';
-import type { PlanInfo } from '@api/SubscriptionService';
+import type { PlanInfo, RetentionOffer } from '@api/SubscriptionService';
 import { useNotificationStore } from '@store/notificationStore';
 import { Badge } from '@components/UI/Badge';
 import { Button } from '@components/UI/Button';
@@ -48,6 +48,10 @@ export function SubscriptionPage() {
   const [target, setTarget] = useState<PlanInfo | null>(null);
   const [changing, setChanging] = useState(false);
 
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [retentionOffer, setRetentionOffer] = useState<RetentionOffer | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+
   useEffect(() => {
     Promise.all([subscriptionService.getPlans(), subscriptionService.getMyPlan()]).then(
       ([plansResult, planResult]) => {
@@ -77,6 +81,30 @@ export function SubscriptionPage() {
     setCurrentPlan(target);
     setTarget(null);
     setPromo('');
+  }
+
+  async function handleCancel(force: boolean) {
+    setCancelling(true);
+    const result = await subscriptionService.cancel(force);
+    setCancelling(false);
+
+    if (!result.isSuccess) {
+      addNotification('error', result.errorMessage ?? 'No se pudo cancelar la suscripción.');
+      return;
+    }
+
+    // The backend held off cancelling to present a retention offer.
+    if (result.value!.requiresForceCancel && result.value!.discount) {
+      setCancelOpen(false);
+      setRetentionOffer(result.value!.discount);
+      return;
+    }
+
+    setCancelOpen(false);
+    setRetentionOffer(null);
+    addNotification('success', 'Suscripción cancelada.');
+    const refreshed = await subscriptionService.getMyPlan();
+    if (refreshed.isSuccess) setCurrentPlan(refreshed.value!);
   }
 
   return (
@@ -183,6 +211,22 @@ export function SubscriptionPage() {
         </div>
       )}
 
+      {/* Cancel subscription */}
+      {!loading && currentPlan && (
+        <div className="mt-2 rounded-xl border border-red-500/20 bg-red-500/5 p-4 flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <p className="text-sm font-medium text-neutral-200">Cancelar suscripción</p>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              Tu plan dejará de renovarse y volverás al acceso básico.
+            </p>
+          </div>
+          <Button variant="danger" size="sm" onClick={() => setCancelOpen(true)}>
+            <Ban size={14} />
+            Cancelar suscripción
+          </Button>
+        </div>
+      )}
+
       <ConfirmDialog
         isOpen={target != null}
         icon={<Zap size={20} />}
@@ -198,6 +242,38 @@ export function SubscriptionPage() {
         isLoading={changing}
         onConfirm={handleConfirmChange}
         onClose={() => setTarget(null)}
+      />
+
+      {/* Cancel — initial confirmation */}
+      <ConfirmDialog
+        isOpen={cancelOpen}
+        variant="danger"
+        icon={<Ban size={20} />}
+        title="¿Cancelar tu suscripción?"
+        description="Tu plan dejará de renovarse y perderás sus beneficios."
+        confirmLabel="Sí, cancelar"
+        cancelLabel="Volver"
+        isLoading={cancelling}
+        onConfirm={() => handleCancel(false)}
+        onClose={() => setCancelOpen(false)}
+      />
+
+      {/* Cancel — retention offer */}
+      <ConfirmDialog
+        isOpen={retentionOffer != null}
+        variant="danger"
+        icon={<Sparkles size={20} />}
+        title="¡Espera! Tenemos una oferta para ti"
+        description={
+          retentionOffer
+            ? `Quédate con un ${retentionOffer.percentage}% de descuento: pagarías solo $${retentionOffer.discountedPrice.toFixed(2)}/mes. ¿Aún quieres cancelar?`
+            : ''
+        }
+        confirmLabel="Cancelar de todas formas"
+        cancelLabel="Mantener mi plan"
+        isLoading={cancelling}
+        onConfirm={() => handleCancel(true)}
+        onClose={() => setRetentionOffer(null)}
       />
     </div>
   );
