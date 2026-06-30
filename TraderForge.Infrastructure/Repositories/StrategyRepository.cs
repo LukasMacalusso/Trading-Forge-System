@@ -23,7 +23,7 @@ public class StrategyRepository : IStrategyRepository
 
     public async Task<Strategy?> GetByIdAsync(Guid id)
     {
-        return await _dbContext.Strategies.FirstOrDefaultAsync(s => s.Id == id);
+        return await _dbContext.Strategies.Include(s => s.Portfolio).FirstOrDefaultAsync(s => s.Id == id);
     }
 
     public async Task<Strategy?> GetByIdWithGraphAsync(Guid id)
@@ -31,6 +31,7 @@ public class StrategyRepository : IStrategyRepository
         return await _dbContext.Strategies
             .Include(s => s.BotNodes.OrderBy(n => n.CreatedAt))
             .Include(s => s.BotEdges)
+            .Include(s => s.Portfolio)
             .FirstOrDefaultAsync(s => s.Id == id);
     }
 
