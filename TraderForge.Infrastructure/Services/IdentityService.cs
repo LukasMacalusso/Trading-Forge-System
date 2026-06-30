@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using TraderForge.Domain.Services;
+using TraderForge.Domain.Repositories;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
@@ -17,11 +18,13 @@ public class IdentityService : IIdentityService
 {
     private readonly UserManager<Account> _userManager;
     private readonly IConfiguration _jwtConfiguration;
+    private readonly ITraderRepository _traderRepository;
 
-    public IdentityService(UserManager<Account> userManager, IConfiguration jwtConfiguration)
+    public IdentityService(UserManager<Account> userManager, IConfiguration jwtConfiguration, ITraderRepository traderRepository)
     {
         _userManager = userManager;
         _jwtConfiguration = jwtConfiguration;
+        _traderRepository = traderRepository;
     }
 
     public async Task<Result> RegisterNewAccountAsync(string newUserId, string email, string password)
@@ -77,6 +80,12 @@ public class IdentityService : IIdentityService
         if (user == null || !await IsUserValidatedAsync(user, password))
         {
             return ResultGeneric<string>.Failure("Invalid Credentials");
+        }
+
+        var trader = await _traderRepository.GetByIdAsync(user.Id);
+        if (trader != null && trader.IsSuspended)
+        {
+            return ResultGeneric<string>.Failure($"Account is suspended. Reason: {trader.SuspensionReason}");
         }
 
         string token = await GenerateJwtTokenForUserAsync(user);
