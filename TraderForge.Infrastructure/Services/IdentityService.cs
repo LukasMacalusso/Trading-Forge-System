@@ -130,7 +130,7 @@ public class IdentityService : IIdentityService
         });
     }
 
-    private string GenerateRefreshToken()
+    private static string GenerateRefreshToken()
     {
         var randomNumber = new byte[64];
         using var rng = RandomNumberGenerator.Create();
