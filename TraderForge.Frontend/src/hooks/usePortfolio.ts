@@ -16,9 +16,8 @@ export function usePortfolio() {
   const load = useCallback(async () => {
     setLoading(true);
 
-    const [planResult, historyResult, ordersResult] = await Promise.all([
+    const [planResult, ordersResult] = await Promise.all([
       subscriptionService.getMyPlan(),
-      portfolioService.getSimulationHistory(),
       tradingService.getOrderHistory(),
     ]);
 
@@ -27,7 +26,12 @@ export function usePortfolio() {
       : 10_000;
     setInitialBalance(initialBalance);
 
-    const portfolioResult = await portfolioService.getPortfolio(initialBalance);
+    // Portfolio and past simulations share the same starting-capital baseline.
+    const [portfolioResult, historyResult] = await Promise.all([
+      portfolioService.getPortfolio(initialBalance),
+      portfolioService.getSimulationHistory(initialBalance),
+    ]);
+
     if (portfolioResult.isSuccess) {
       setPortfolio(portfolioResult.value!);
     } else if (
