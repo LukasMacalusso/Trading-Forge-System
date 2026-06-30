@@ -20,7 +20,11 @@ export function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const success = await login({ email, password });
-    if (success) navigate('/dashboard');
+    if (success) {
+      // Send admins to their dashboard, everyone else to the trading view.
+      const role = useAuthStore.getState().role;
+      navigate(role === 'SystemAdmin' ? '/admin' : '/dashboard');
+    }
   }
 
   return (
