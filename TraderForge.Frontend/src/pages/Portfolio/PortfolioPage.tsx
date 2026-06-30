@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, RotateCcw, History } from 'lucide-react';
+import { TrendingUp, TrendingDown, RotateCcw, History, Receipt } from 'lucide-react';
 import { usePortfolio } from '@hooks/usePortfolio';
 import { Badge } from '@components/UI/Badge';
 import { Button } from '@components/UI/Button';
 
 export function PortfolioPage() {
-  const { portfolio, orderHistory, simulationHistory, isLoading, resetSimulation } = usePortfolio();
+  const { portfolio, orderHistory, simulationHistory, transactions, isLoading, resetSimulation } = usePortfolio();
 
   if (isLoading) {
     return (
@@ -167,6 +167,48 @@ export function PortfolioPage() {
                 </Badge>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Balance ledger */}
+      {transactions.length > 0 && (
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-neutral-800 flex items-center gap-2">
+            <Receipt size={14} className="text-neutral-400" />
+            <h3 className="text-sm font-semibold text-neutral-200">Movimientos de saldo</h3>
+          </div>
+          <div className="overflow-x-auto scrollbar-thin">
+            <table className="w-full text-sm min-w-[640px]">
+              <thead>
+                <tr className="text-xs text-neutral-500 uppercase border-b border-neutral-800">
+                  {['Tipo', 'Activo', 'Cantidad', 'Total', 'Comisión', 'Saldo', 'Fecha'].map((h) => (
+                    <th key={h} className="text-left px-4 py-2 font-medium">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {transactions.map((tx) => (
+                  <tr key={tx.id} className="border-b border-neutral-800/50 hover:bg-neutral-800/30">
+                    <td className="px-4 py-2">
+                      <Badge variant={tx.type === 'Buy' ? 'down' : tx.type === 'Sell' ? 'up' : 'neutral'}>
+                        {tx.type}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-2 font-semibold text-neutral-100">{tx.symbol ?? '—'}</td>
+                    <td className="px-4 py-2 font-mono text-neutral-300">
+                      {tx.quantity != null ? tx.quantity : '—'}
+                    </td>
+                    <td className="px-4 py-2 font-mono text-neutral-200">${tx.total.toFixed(2)}</td>
+                    <td className="px-4 py-2 font-mono text-neutral-500">${tx.commission.toFixed(2)}</td>
+                    <td className="px-4 py-2 font-mono text-neutral-300">${tx.balanceAfter.toFixed(2)}</td>
+                    <td className="px-4 py-2 text-xs text-neutral-600">
+                      {new Date(tx.createdAt).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

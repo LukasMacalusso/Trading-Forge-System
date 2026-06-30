@@ -1,16 +1,18 @@
 import { create } from 'zustand';
-import type { Portfolio, SimulationSnapshot } from '@models/Portfolio';
+import type { Portfolio, SimulationSnapshot, Transaction } from '@models/Portfolio';
 import type { Order } from '@models/Order';
 
 interface PortfolioState {
   portfolio: Portfolio | null;
   orderHistory: Order[];
   simulationHistory: SimulationSnapshot[];
+  transactions: Transaction[];
   isLoading: boolean;
   initialBalance: number;
   setPortfolio: (portfolio: Portfolio) => void;
   setOrderHistory: (orders: Order[]) => void;
   setSimulationHistory: (snapshots: SimulationSnapshot[]) => void;
+  setTransactions: (transactions: Transaction[]) => void;
   setLoading: (loading: boolean) => void;
   setInitialBalance: (balance: number) => void;
   updatePositionPrice: (symbol: string, newPrice: number) => void;
@@ -20,12 +22,14 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
   portfolio: null,
   orderHistory: [],
   simulationHistory: [],
+  transactions: [],
   isLoading: false,
   initialBalance: 10_000,
 
   setPortfolio: (portfolio) => set({ portfolio }),
   setOrderHistory: (orderHistory) => set({ orderHistory }),
   setSimulationHistory: (simulationHistory) => set({ simulationHistory }),
+  setTransactions: (transactions) => set({ transactions }),
   setLoading: (isLoading) => set({ isLoading }),
   setInitialBalance: (initialBalance) => set({ initialBalance }),
 

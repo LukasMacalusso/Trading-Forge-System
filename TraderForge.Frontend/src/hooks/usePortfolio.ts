@@ -10,15 +10,16 @@ const subscriptionService = new SubscriptionService();
 const tradingService = new TradingService();
 
 export function usePortfolio() {
-  const { portfolio, orderHistory, simulationHistory, isLoading, setPortfolio, setOrderHistory, setSimulationHistory, setLoading, setInitialBalance } = usePortfolioStore();
+  const { portfolio, orderHistory, simulationHistory, transactions, isLoading, setPortfolio, setOrderHistory, setSimulationHistory, setTransactions, setLoading, setInitialBalance } = usePortfolioStore();
   const { addNotification } = useNotificationStore();
 
   const load = useCallback(async () => {
     setLoading(true);
 
-    const [planResult, ordersResult] = await Promise.all([
+    const [planResult, ordersResult, transactionsResult] = await Promise.all([
       subscriptionService.getMyPlan(),
       tradingService.getOrderHistory(),
+      portfolioService.getTransactions(),
     ]);
 
     const initialBalance = planResult.isSuccess
@@ -42,8 +43,9 @@ export function usePortfolio() {
     }
     if (historyResult.isSuccess) setSimulationHistory(historyResult.value!);
     if (ordersResult.isSuccess) setOrderHistory(ordersResult.value!);
+    if (transactionsResult.isSuccess) setTransactions(transactionsResult.value!);
     setLoading(false);
-  }, [setLoading, setInitialBalance, setPortfolio, setSimulationHistory, setOrderHistory, addNotification]);
+  }, [setLoading, setInitialBalance, setPortfolio, setSimulationHistory, setOrderHistory, setTransactions, addNotification]);
 
   useEffect(() => {
     load();
@@ -68,6 +70,7 @@ export function usePortfolio() {
     portfolio,
     orderHistory,
     simulationHistory,
+    transactions,
     isLoading,
     resetSimulation,
   };

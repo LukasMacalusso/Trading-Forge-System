@@ -1,4 +1,4 @@
-import type { Portfolio, Position, SimulationSnapshot } from '@models/Portfolio';
+import type { Portfolio, Position, SimulationSnapshot, Transaction } from '@models/Portfolio';
 import { Result } from '@utils/Result';
 import { httpClient } from './httpClient';
 
@@ -120,6 +120,16 @@ export class PortfolioService {
       return Result.ok(snapshots);
     } catch (error) {
       return Result.fail(extractErrorMessage(error, 'Failed to load simulation history.'));
+    }
+  }
+
+  /** The portfolio's balance-movement ledger (deposits, buys, sells). */
+  async getTransactions(): Promise<Result<Transaction[]>> {
+    try {
+      const { data } = await httpClient.get<Transaction[]>('/api/portfolio/transactions');
+      return Result.ok(data);
+    } catch (error) {
+      return Result.fail(extractErrorMessage(error, 'Failed to load transactions.'));
     }
   }
 
