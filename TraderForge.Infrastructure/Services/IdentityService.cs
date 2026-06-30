@@ -47,15 +47,6 @@ public class IdentityService : IIdentityService
         return Result.Success();
     }
 
-    private void EnsureSuccessOrThrow(IdentityResult result)
-    {
-        if (!result.Succeeded)
-        {
-            var errorMessage = result.Errors.FirstOrDefault()?.Description ?? "Unknown registration error";
-            throw new Exception($"User registration failed: {errorMessage}");
-        }
-    }
-
     public async Task<Result> DeleteAccountAsync(string userId)
     {
         var user = await _userManager.FindByIdAsync(userId);
