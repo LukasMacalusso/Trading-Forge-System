@@ -290,12 +290,16 @@ public class BotGraphRunner : IDisposable
 
         await db.SaveChangesAsync();
         var logger2 = scope.ServiceProvider.GetService<ILogger<BotGraphRunner>>();
-        logger2?.LogInformation("Bot {Type} executed: {Symbol} x {Qty} @ {Price} for strategy {Sid}",
-            type, symbol, quantity, price, _strategy.Id);
+        if (logger2 != null && logger2.IsEnabled(LogLevel.Information))
+        {
+            logger2.LogInformation("Bot {Type} executed: {Symbol} x {Qty} @ {Price} for strategy {Sid}",
+                type, symbol, quantity, price, _strategy.Id);
+        }
     }
 
     public void Dispose()
     {
         _disposed = true;
+        GC.SuppressFinalize(this);
     }
 }
