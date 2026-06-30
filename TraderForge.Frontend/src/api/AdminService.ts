@@ -1,4 +1,4 @@
-import type { AdminUser, RefundRequest } from '@models/Admin';
+import type { AdminUser, RefundRequest, AdminPlan, PlanFormData } from '@models/Admin';
 import type { SubscriptionPlan } from '@models/Trader';
 import { Result } from '@utils/Result';
 import { httpClient } from './httpClient';
@@ -59,6 +59,43 @@ export class AdminService {
       return Result.ok(undefined);
     } catch (error) {
       return Result.fail(extractErrorMessage(error, 'No se pudo actualizar el estado de la cuenta.'));
+    }
+  }
+
+  async getPlans(): Promise<Result<AdminPlan[]>> {
+    try {
+      const { data } = await httpClient.get<AdminPlan[]>('/api/admin/plans');
+      return Result.ok(data);
+    } catch (error) {
+      if (isMissingBackend(error)) return Result.ok([]);
+      return Result.fail(extractErrorMessage(error, 'No se pudieron cargar los planes.'));
+    }
+  }
+
+  async createPlan(data: PlanFormData): Promise<Result<void>> {
+    try {
+      await httpClient.post('/api/admin/plans', data);
+      return Result.ok(undefined);
+    } catch (error) {
+      return Result.fail(extractErrorMessage(error, 'No se pudo crear el plan.'));
+    }
+  }
+
+  async updatePlan(id: string, data: PlanFormData): Promise<Result<void>> {
+    try {
+      await httpClient.put(`/api/admin/plans/${id}`, data);
+      return Result.ok(undefined);
+    } catch (error) {
+      return Result.fail(extractErrorMessage(error, 'No se pudo actualizar el plan.'));
+    }
+  }
+
+  async deletePlan(id: string): Promise<Result<void>> {
+    try {
+      await httpClient.delete(`/api/admin/plans/${id}`);
+      return Result.ok(undefined);
+    } catch (error) {
+      return Result.fail(extractErrorMessage(error, 'No se pudo eliminar el plan.'));
     }
   }
 

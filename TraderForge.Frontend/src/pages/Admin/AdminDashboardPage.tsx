@@ -1,16 +1,26 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Receipt, ShieldCheck, Users } from 'lucide-react';
+import { Layers, LogOut, Receipt, ShieldCheck, Users } from 'lucide-react';
 import { useAdmin } from '@hooks/useAdmin';
+import { useAdminPlans } from '@hooks/useAdminPlans';
 import { useAuthStore } from '@store/authStore';
 import { decodeJwt } from '@utils/jwt';
 import { UsersPanel } from './UsersPanel';
 import { RefundsPanel } from './RefundsPanel';
+import { PlansPanel } from './PlansPanel';
 
-type Tab = 'users' | 'refunds';
+type Tab = 'users' | 'plans' | 'refunds';
 
 export function AdminDashboardPage() {
   const { users, refunds, isLoading, busyId, toggleUserStatus, resolveRefund } = useAdmin();
+  const {
+    plans,
+    isLoading: plansLoading,
+    busyId: plansBusyId,
+    createPlan,
+    updatePlan,
+    deletePlan,
+  } = useAdminPlans();
   const token = useAuthStore((s) => s.token);
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
@@ -26,6 +36,7 @@ export function AdminDashboardPage() {
 
   const tabs: { id: Tab; label: string; icon: typeof Users; badge?: number }[] = [
     { id: 'users', label: 'Usuarios', icon: Users, badge: users.length || undefined },
+    { id: 'plans', label: 'Planes', icon: Layers, badge: plans.length || undefined },
     { id: 'refunds', label: 'Reembolsos', icon: Receipt, badge: pendingRefunds || undefined },
   ];
 
@@ -85,7 +96,21 @@ export function AdminDashboardPage() {
 
       {/* Content */}
       <main className="flex-1 overflow-y-auto scrollbar-thin p-6">
-        {isLoading ? (
+        {tab === 'plans' ? (
+          plansLoading ? (
+            <div className="flex items-center justify-center h-full text-neutral-600 text-sm animate-pulse">
+              Cargando...
+            </div>
+          ) : (
+            <PlansPanel
+              plans={plans}
+              busyId={plansBusyId}
+              onCreate={createPlan}
+              onUpdate={updatePlan}
+              onDelete={deletePlan}
+            />
+          )
+        ) : isLoading ? (
           <div className="flex items-center justify-center h-full text-neutral-600 text-sm animate-pulse">
             Cargando...
           </div>
