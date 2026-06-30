@@ -99,7 +99,7 @@ public class IdentityService : IIdentityService
             return ResultGeneric<TokenResponse>.Failure("Invalid access token or refresh token");
         }
 
-        var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
         if (string.IsNullOrEmpty(userId))
         {
             return ResultGeneric<TokenResponse>.Failure("Invalid access token");
