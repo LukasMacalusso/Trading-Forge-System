@@ -3,6 +3,10 @@ using TraderForge.Application.DTOs;
 using TraderForge.Application.Handlers;
 using TraderForge.Domain.Entities;
 using TraderForge.Domain.Repositories;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace TraderForge.Application.Tests;
 

@@ -48,7 +48,7 @@ public class PortfolioControllerTests
         });
 
         var getPortfolioHandler = new GetActivePortfolioQueryHandler(_traderRepo.Object);
-        var getPortfolioHistoryHandler = new GetPortfolioHistoryQueryHandler(_traderRepo.Object);
+
         var getStrategiesHandler = new GetStrategiesQueryHandler(_traderRepo.Object, _strategyRepo.Object);
         var getPositionsHandler = new GetPositionsQueryHandler(_traderRepo.Object, _positionRepo.Object);
         var createStrategyHandler = new CreateStrategyCommandHandler(
@@ -60,6 +60,7 @@ public class PortfolioControllerTests
         var getTransactionsHandler = new GetTransactionsQueryHandler(_traderRepo.Object, _transactionRepo.Object);
         var getOrdersHandler = new GetOrdersQueryHandler(_traderRepo.Object, _orderRepo.Object);
         var resetSimulationHandler = new ResetSimulationCommandHandler(_traderRepo.Object, Mock.Of<IPublisher>());
+        var getPortfolioHistoryHandler = new GetPortfolioHistoryQueryHandler(_traderRepo.Object);
 
         _controller = new PortfolioController(
             getPortfolioHandler,
