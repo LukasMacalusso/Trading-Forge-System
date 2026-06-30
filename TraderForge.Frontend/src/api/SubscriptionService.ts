@@ -20,6 +20,19 @@ export interface ChangePlanResult {
   discount?: unknown;
 }
 
+/** Retention offer the backend may return when a user tries to cancel. */
+export interface RetentionOffer {
+  percentage: number;
+  discountedPrice: number;
+}
+
+export interface CancelResult {
+  message: string;
+  discount: RetentionOffer | null;
+  /** True when the backend held off cancelling to present the retention offer. */
+  requiresForceCancel?: boolean;
+}
+
 export class SubscriptionService {
   async getMyPlan(): Promise<Result<PlanInfo>> {
     try {
@@ -48,6 +61,22 @@ export class SubscriptionService {
       return Result.ok(data);
     } catch (error) {
       return Result.fail(toError(error, 'Failed to change plan.'));
+    }
+  }
+
+  /**
+   * Cancels the subscription. With `forceCancel = false` the backend may return
+   * a retention offer (`requiresForceCancel`) instead of cancelling; call again
+   * with `forceCancel = true` to confirm.
+   */
+  async cancel(forceCancel = false): Promise<Result<CancelResult>> {
+    try {
+      const { data } = await httpClient.post<CancelResult>(
+        `/api/subscription/cancel?forceCancel=${forceCancel}`,
+      );
+      return Result.ok(data);
+    } catch (error) {
+      return Result.fail(toError(error, 'Failed to cancel subscription.'));
     }
   }
 }
