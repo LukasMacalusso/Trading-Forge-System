@@ -3,37 +3,36 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace TraderForge.Infrastructure.Migrations
+namespace TraderForge.Infrastructure.Migrations;
+
+/// <inheritdoc />
+public partial class AddRefreshTokenToAccount : Migration
 {
     /// <inheritdoc />
-    public partial class AddRefreshTokenToAccount : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<string>(
-                name: "RefreshToken",
-                table: "AspNetUsers",
-                type: "text",
-                nullable: true);
+        migrationBuilder.AddColumn<string>(
+            name: "RefreshToken",
+            table: "AspNetUsers",
+            type: "text",
+            nullable: true);
 
-            migrationBuilder.AddColumn<DateTime>(
-                name: "RefreshTokenExpiryTime",
-                table: "AspNetUsers",
-                type: "timestamp with time zone",
-                nullable: true);
-        }
+        migrationBuilder.AddColumn<DateTime>(
+            name: "RefreshTokenExpiryTime",
+            table: "AspNetUsers",
+            type: "timestamp with time zone",
+            nullable: true);
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
-                name: "RefreshToken",
-                table: "AspNetUsers");
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropColumn(
+            name: "RefreshToken",
+            table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "RefreshTokenExpiryTime",
-                table: "AspNetUsers");
-        }
+        migrationBuilder.DropColumn(
+            name: "RefreshTokenExpiryTime",
+            table: "AspNetUsers");
     }
 }
