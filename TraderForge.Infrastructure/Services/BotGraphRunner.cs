@@ -11,8 +11,12 @@ using TraderForge.Infrastructure.Persistence;
 
 namespace TraderForge.Infrastructure.Services;
 
-public class BotGraphRunner : IDisposable
+public sealed class BotGraphRunner : IDisposable
 {
+    private const string SymbolKey = "symbol";
+    private const string PriceKey = "price";
+    private const string QuantityKey = "quantity";
+
     private readonly Strategy _strategy;
     private readonly Dictionary<Guid, BotNode> _nodes;
     private readonly Dictionary<Guid, List<BotEdge>> _outgoingEdges;
@@ -34,7 +38,7 @@ public class BotGraphRunner : IDisposable
             .Select(n =>
             {
                 using var doc = JsonDocument.Parse(n.Config);
-                var symbol = doc.RootElement.TryGetProperty("symbol", out var s)
+                var symbol = doc.RootElement.TryGetProperty(SymbolKey, out var s)
                     ? s.GetString()
                     : null;
                 return (Symbol: symbol, NodeId: n.Id);
@@ -66,8 +70,8 @@ public class BotGraphRunner : IDisposable
 
             var flag = new Dictionary<string, object>
             {
-                ["symbol"] = priceEvent.Symbol,
-                ["price"] = priceEvent.Price,
+                [SymbolKey] = priceEvent.Symbol,
+                [PriceKey] = priceEvent.Price,
                 ["timestamp"] = priceEvent.Timestamp
             };
 
@@ -118,7 +122,7 @@ public class BotGraphRunner : IDisposable
                 break;
 
             case BotNodeType.Notification:
-                await HandleNotificationAsync(currentNodeId, flag, _scopeFactory, ct);
+                await HandleNotificationAsync(currentNodeId, flag, _scopeFactory);
                 break;
         }
     }
@@ -144,8 +148,7 @@ public class BotGraphRunner : IDisposable
     private async Task HandleNotificationAsync(
         Guid currentNodeId,
         Dictionary<string, object> flag,
-        IServiceScopeFactory scopeFactory,
-        CancellationToken ct)
+        IServiceScopeFactory scopeFactory)
     {
         if (!_outgoingEdges.TryGetValue(currentNodeId, out var edges)) return;
 
@@ -163,9 +166,9 @@ public class BotGraphRunner : IDisposable
             using var doc = JsonDocument.Parse(nextNode.Config);
             var root = doc.RootElement;
             var actionType = root.TryGetProperty("type", out var t) ? t.GetString() ?? "" : "";
-            var symbol = (flag.GetValueOrDefault("symbol") as string) ?? "";
-            var price = flag.TryGetValue("price", out var p) && decimal.TryParse(p?.ToString(), out var dp) ? dp : 0m;
-            var quantity = root.TryGetProperty("quantity", out var q) ? q.GetDecimal() : 0m;
+            var symbol = (flag.GetValueOrDefault(SymbolKey) as string) ?? "";
+            var price = flag.TryGetValue(PriceKey, out var p) && decimal.TryParse(p?.ToString(), out var dp) ? dp : 0m;
+            var quantity = root.TryGetProperty(QuantityKey, out var q) ? q.GetDecimal() : 0m;
 
             if (string.IsNullOrEmpty(symbol) || price <= 0 || quantity <= 0) return;
 
@@ -197,13 +200,13 @@ public class BotGraphRunner : IDisposable
         {
             using var doc = JsonDocument.Parse(configJson);
             var root = doc.RootElement;
-            var indicator = root.TryGetProperty("indicator", out var i) ? i.GetString() ?? "price" : "price";
+            var indicator = root.TryGetProperty("indicator", out var i) ? i.GetString() ?? PriceKey : PriceKey;
             var operatorStr = root.TryGetProperty("operator", out var o) ? o.GetString() ?? "greater_than" : "greater_than";
             var comparisonValue = root.TryGetProperty("value", out var v) ? v.GetDecimal() : 0m;
 
             var currentValue = indicator switch
             {
-                "price" when flag.TryGetValue("price", out var p) && decimal.TryParse(p?.ToString(), out var dp) => dp,
+                PriceKey when flag.TryGetValue(PriceKey, out var p) && decimal.TryParse(p?.ToString(), out var dp) => dp,
                 _ => 0m
             };
 
@@ -254,9 +257,9 @@ public class BotGraphRunner : IDisposable
     {
         using var scope = scopeFactory.CreateScope();
 
-        var symbol = (flag.GetValueOrDefault("symbol") as string) ?? "";
-        var price = flag.TryGetValue("price", out var p) && decimal.TryParse(p?.ToString(), out var parsedPrice) ? parsedPrice : 0m;
-        var quantity = config.TryGetProperty("quantity", out var q) ? q.GetDecimal() : 0m;
+        var symbol = (flag.GetValueOrDefault(SymbolKey) as string) ?? "";
+        var price = flag.TryGetValue(PriceKey, out var p) && decimal.TryParse(p?.ToString(), out var parsedPrice) ? parsedPrice : 0m;
+        var quantity = config.TryGetProperty(QuantityKey, out var q) ? q.GetDecimal() : 0m;
 
         if (string.IsNullOrEmpty(symbol) || price <= 0 || quantity <= 0)
         {

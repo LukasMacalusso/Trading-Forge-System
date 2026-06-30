@@ -23,8 +23,10 @@ public class PendingOperation
 
     private PendingOperation() { }
 
+#pragma warning disable S107 // Methods should not have too many parameters
     public PendingOperation(Guid id, Guid portfolioId, Guid strategyId, string strategyName,
         string symbol, string action, decimal quantity, decimal currentPrice, DateTime expiresAt)
+#pragma warning restore S107
     {
         Id = id;
         PortfolioId = portfolioId;
