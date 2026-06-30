@@ -6,6 +6,7 @@ import { useAuthStore } from '@store/authStore';
 import { useNotificationStore } from '@store/notificationStore';
 import { SubscriptionService } from '@api/SubscriptionService';
 import { IdentityService } from '@api/IdentityService';
+import { StrategyService } from '@api/StrategyService';
 import type { PlanInfo } from '@api/SubscriptionService';
 import { decodeJwt } from '@utils/jwt';
 import { Badge } from '@components/UI/Badge';
@@ -14,6 +15,7 @@ import { ConfirmDialog } from '@components/UI/ConfirmDialog';
 
 const subscriptionService = new SubscriptionService();
 const identityService = new IdentityService();
+const strategyService = new StrategyService();
 
 function UsageBar({ used, max, label }: { used: number; max: number | null; label: string }) {
   const percent = max != null ? Math.min((used / max) * 100, 100) : 0;
@@ -54,6 +56,7 @@ export function AccountPage() {
 
   const [plan, setPlan] = useState<PlanInfo | null>(null);
   const [planLoading, setPlanLoading] = useState(true);
+  const [activeStrategies, setActiveStrategies] = useState(0);
 
   const [resetOpen, setResetOpen] = useState(false);
   const [resetting, setResetting] = useState(false);
@@ -65,12 +68,16 @@ export function AccountPage() {
       if (result.isSuccess) setPlan(result.value!);
       setPlanLoading(false);
     });
+    strategyService.list().then((result) => {
+      if (result.isSuccess) {
+        setActiveStrategies(result.value!.filter((s) => s.status === 'active').length);
+      }
+    });
   }, []);
 
   const email = decodeJwt(token)?.email ?? '—';
   const avatarLetter = email.charAt(0).toUpperCase();
   const activeAssets = portfolio?.positions.length ?? 0;
-  const activeStrategies = 0;
 
   async function handleReset() {
     setResetting(true);
