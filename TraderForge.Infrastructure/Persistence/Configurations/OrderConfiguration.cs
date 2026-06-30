@@ -11,6 +11,7 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.ToTable("Orders");
 
         builder.HasKey(o => o.Id);
+        builder.Property(o => o.Id).ValueGeneratedNever();
 
         builder.Property(o => o.Symbol)
             .IsRequired()
