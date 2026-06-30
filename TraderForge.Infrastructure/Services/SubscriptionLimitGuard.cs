@@ -24,6 +24,7 @@ public class SubscriptionLimitGuard : ISubscriptionLimitGuard
             return true;
 
         var activeStrategies = trader!.Portfolios
+            .Where(p => p.IsActive)
             .SelectMany(p => p.Strategies)
             .Count(s => s.IsActive);
 
@@ -41,6 +42,7 @@ public class SubscriptionLimitGuard : ISubscriptionLimitGuard
             return true;
 
         var activeAssets = trader!.Portfolios
+            .Where(p => p.IsActive)
             .SelectMany(p => p.Positions)
             .Count();
 
@@ -62,6 +64,7 @@ public class SubscriptionLimitGuard : ISubscriptionLimitGuard
         if (!newPlan.HasUnlimitedStrategies())
         {
             var activeStrategies = trader.Portfolios
+                .Where(p => p.IsActive)
                 .SelectMany(p => p.Strategies)
                 .Count(s => s.IsActive);
 
@@ -75,6 +78,7 @@ public class SubscriptionLimitGuard : ISubscriptionLimitGuard
             if (traderWithAssets != null)
             {
                 var activeAssets = traderWithAssets.Portfolios
+                    .Where(p => p.IsActive)
                     .SelectMany(p => p.Positions)
                     .Count();
 

@@ -38,7 +38,7 @@ public class StrategyRepository : IStrategyRepository
     public async Task<List<Strategy>> GetActiveWithEngineRunningAsync()
     {
         return await _dbContext.Strategies
-            .Where(s => s.IsActive && s.IsEngineActive)
+            .Where(s => s.IsActive && s.IsEngineActive && s.Portfolio.IsActive)
             .Include(s => s.BotNodes.OrderBy(n => n.CreatedAt))
             .Include(s => s.BotEdges)
             .ToListAsync();
