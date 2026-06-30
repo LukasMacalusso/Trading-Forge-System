@@ -16,7 +16,7 @@ public class IdentityController : ControllerBase
     private readonly RefreshTraderTokenQueryHandler _refreshTraderTokenQueryHandler;
 
     public IdentityController(
-        RegisterTraderCommandHandler registerTraderCommandHandler, 
+        RegisterTraderCommandHandler registerTraderCommandHandler,
         LoginTraderQueryHandler loginTraderQueryHandler,
         RefreshTraderTokenQueryHandler refreshTraderTokenQueryHandler)
     {

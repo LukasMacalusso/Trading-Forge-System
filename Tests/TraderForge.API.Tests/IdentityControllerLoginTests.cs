@@ -32,7 +32,7 @@ public class IdentityControllerLoginTests
 
         var loginHandler = new LoginTraderQueryHandler(
             identityServiceMock.Object, Mock.Of<ITraderRepository>());
-            
+
         var refreshHandler = new RefreshTraderTokenQueryHandler(identityServiceMock.Object);
 
         var controller = new IdentityController(CreateRegisterHandler(), loginHandler, refreshHandler);
