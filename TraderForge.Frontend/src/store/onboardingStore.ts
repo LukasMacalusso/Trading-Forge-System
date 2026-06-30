@@ -7,7 +7,8 @@ interface OnboardingState {
   /** Starts the tour from the first step. */
   start: () => void;
   setStepIndex: (index: number) => void;
-  /** Ends the tour; pass `true` when the user finished it to stop auto-launch. */
+  /** Ends the tour. `completed` is kept for callers but the tour never
+   * auto-launches again once the user has seen it (finished or skipped). */
   stop: (completed: boolean) => void;
 }
 
@@ -19,8 +20,10 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
 
   setStepIndex: (stepIndex) => set({ stepIndex }),
 
-  stop: (completed) => {
-    if (completed) OnboardingRepository.markCompleted();
+  stop: () => {
+    // Once seen, don't auto-launch again on refresh — whether the user
+    // finished the tour or skipped it. They can replay it from the Help button.
+    OnboardingRepository.markCompleted();
     set({ isActive: false, stepIndex: 0 });
   },
 }));
