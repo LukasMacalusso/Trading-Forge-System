@@ -45,11 +45,10 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
           dotnet sonarscanner begin \
-            /k:"lukas-trillat-macalusso_Trading-Forge-System" \
-            /o:"tradingforge-sonarqube-key" \
+            /k:"TradingForge" \
             /d:sonar.token="$SONAR_TOKEN" \
             /d:sonar.host.url="$SONAR_HOST_URL" \
-            /d:sonar.exclusions="TraderForge.Frontend/**,**/Migrations/**" \
+            /d:sonar.exclusions="TraderForge.Frontend/**,**/Migrations/**,Makefile" \
             /d:sonar.coverage.exclusions="**/DTOs/**,**/Requests/**,**/Responses/**,**/Program.cs,**/DependencyInjection.cs,**/*.Designer.cs" \
             /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml"
           
