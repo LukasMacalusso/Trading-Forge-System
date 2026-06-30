@@ -21,7 +21,18 @@ export function SimulationDetailModal({
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70" onClick={onClose} />
+      <div 
+        className="absolute inset-0 bg-black/70" 
+        onClick={onClose} 
+        onKeyDown={(e) => {
+          if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+            onClose();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label="Close modal"
+      />
       <div className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto scrollbar-thin bg-neutral-900 border border-neutral-700 rounded-2xl shadow-2xl p-5 flex flex-col gap-4">
         <div className="flex items-start justify-between">
           <div>
