@@ -252,7 +252,7 @@ public class BotGraphRunner : IDisposable
         CancellationToken ct)
     {
         if (!_outgoingEdges.TryGetValue(currentNodeId, out var edges)) return;
-        
+
         var nextEdge = edges.FirstOrDefault(e => e.SourcePort == NodePort.Out);
         if (nextEdge == null) return;
 
