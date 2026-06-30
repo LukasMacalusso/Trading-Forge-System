@@ -1,11 +1,33 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, RotateCcw, History, Receipt } from 'lucide-react';
+import { TrendingUp, TrendingDown, RotateCcw, History, Receipt, ChevronRight } from 'lucide-react';
 import { usePortfolio } from '@hooks/usePortfolio';
+import { PortfolioService } from '@api/PortfolioService';
+import type { SimulationSnapshot, Position, Transaction } from '@models/Portfolio';
 import { Badge } from '@components/UI/Badge';
 import { Button } from '@components/UI/Button';
+import { useNotificationStore } from '@store/notificationStore';
+import { SimulationDetailModal } from './SimulationDetailModal';
+
+const portfolioService = new PortfolioService();
 
 export function PortfolioPage() {
   const { portfolio, orderHistory, simulationHistory, transactions, isLoading, resetSimulation } = usePortfolio();
+  const addNotification = useNotificationStore((s) => s.addNotification);
+
+  const [detailSnap, setDetailSnap] = useState<SimulationSnapshot | null>(null);
+  const [detail, setDetail] = useState<{ positions: Position[]; transactions: Transaction[] } | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+
+  async function openDetail(snap: SimulationSnapshot) {
+    setDetailSnap(snap);
+    setDetail(null);
+    setDetailLoading(true);
+    const result = await portfolioService.getSimulationDetail(snap.id);
+    setDetailLoading(false);
+    if (result.isSuccess) setDetail(result.value!);
+    else addNotification('error', result.errorMessage ?? 'No se pudo cargar el detalle.');
+  }
 
   if (isLoading) {
     return (
@@ -157,18 +179,35 @@ export function PortfolioPage() {
           </div>
           <div className="divide-y divide-neutral-800">
             {simulationHistory.map((snap) => (
-              <div key={snap.id} className="px-4 py-3 flex items-center justify-between hover:bg-neutral-800/30">
+              <button
+                key={snap.id}
+                onClick={() => openDetail(snap)}
+                className="w-full px-4 py-3 flex items-center justify-between gap-3 text-left hover:bg-neutral-800/30 transition-colors"
+              >
                 <div>
                   <p className="text-sm text-neutral-200 font-mono">${snap.finalPortfolioValue.toLocaleString()}</p>
                   <p className="text-xs text-neutral-500">{new Date(snap.createdAt).toLocaleDateString()}</p>
                 </div>
-                <Badge variant={snap.totalPnL >= 0 ? 'up' : 'down'}>
-                  {snap.totalPnL >= 0 ? '+' : ''}{snap.totalPnLPercent.toFixed(2)}%
-                </Badge>
-              </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant={snap.totalPnL >= 0 ? 'up' : 'down'}>
+                    {snap.totalPnL >= 0 ? '+' : ''}{snap.totalPnLPercent.toFixed(2)}%
+                  </Badge>
+                  <ChevronRight size={16} className="text-neutral-600" />
+                </div>
+              </button>
             ))}
           </div>
         </div>
+      )}
+
+      {detailSnap && (
+        <SimulationDetailModal
+          snapshot={detailSnap}
+          positions={detail?.positions ?? []}
+          transactions={detail?.transactions ?? []}
+          loading={detailLoading}
+          onClose={() => setDetailSnap(null)}
+        />
       )}
 
       {/* Balance ledger */}

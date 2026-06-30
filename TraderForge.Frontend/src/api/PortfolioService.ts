@@ -31,6 +31,20 @@ const ASSET_NAMES: Record<string, string> = {
   XRPUSDT: 'XRP',
 };
 
+function mapAsset(a: BackendAsset): Position {
+  return {
+    id: a.id,
+    symbol: a.symbol,
+    assetName: ASSET_NAMES[a.symbol] ?? a.symbol,
+    quantity: a.quantity,
+    averageBuyPrice: a.entryPrice,
+    currentPrice: a.entryPrice,
+    unrealizedPnL: 0,
+    unrealizedPnLPercent: 0,
+    totalValue: +(a.quantity * a.entryPrice).toFixed(2),
+  };
+}
+
 export class PortfolioService {
   async getPortfolio(initialBalance = 10_000): Promise<Result<Portfolio>> {
     try {
@@ -40,22 +54,7 @@ export class PortfolioService {
       ]);
 
       const { id, virtualBalance } = portfolioRes.data;
-      const backendAssets = assetsRes.data;
-
-      const positions: Position[] = backendAssets.map((a) => {
-        const totalValue = +(a.quantity * a.entryPrice).toFixed(2);
-        return {
-          id: a.id,
-          symbol: a.symbol,
-          assetName: ASSET_NAMES[a.symbol] ?? a.symbol,
-          quantity: a.quantity,
-          averageBuyPrice: a.entryPrice,
-          currentPrice: a.entryPrice,
-          unrealizedPnL: 0,
-          unrealizedPnLPercent: 0,
-          totalValue,
-        };
-      });
+      const positions: Position[] = assetsRes.data.map(mapAsset);
 
       const positionValue = positions.reduce((sum, p) => sum + p.totalValue, 0);
       const totalPortfolioValue = +(virtualBalance + positionValue).toFixed(2);
@@ -130,6 +129,24 @@ export class PortfolioService {
       return Result.ok(data);
     } catch (error) {
       return Result.fail(extractErrorMessage(error, 'Failed to load transactions.'));
+    }
+  }
+
+  /** Positions and ledger of a specific (usually past/frozen) portfolio. */
+  async getSimulationDetail(
+    portfolioId: string,
+  ): Promise<Result<{ positions: Position[]; transactions: Transaction[] }>> {
+    try {
+      const [positionsRes, transactionsRes] = await Promise.all([
+        httpClient.get<BackendAsset[]>(`/api/portfolio/positions?portfolioId=${portfolioId}`),
+        httpClient.get<Transaction[]>(`/api/portfolio/transactions?portfolioId=${portfolioId}`),
+      ]);
+      return Result.ok({
+        positions: positionsRes.data.map(mapAsset),
+        transactions: transactionsRes.data,
+      });
+    } catch (error) {
+      return Result.fail(extractErrorMessage(error, 'Failed to load simulation detail.'));
     }
   }
 
