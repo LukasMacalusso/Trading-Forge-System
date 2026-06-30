@@ -98,7 +98,7 @@ public class ApprovePendingOperationCommandHandlerTests
         Assert.True(op.IsResolved);
     }
 
-    private PendingOperation CreatePendingOperation(string traderId, string action, bool expired)
+    private static PendingOperation CreatePendingOperation(string traderId, string action, bool expired)
     {
         var portfolio = new Portfolio(traderId, 100000m);
         var expiresAt = expired ? DateTime.UtcNow.AddMinutes(-1) : DateTime.UtcNow.AddMinutes(5);

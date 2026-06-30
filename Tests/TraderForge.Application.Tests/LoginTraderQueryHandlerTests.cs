@@ -48,4 +48,18 @@ public class LoginTraderQueryHandlerTests
         Assert.False(result.IsSuccess);
         Assert.Contains("Invalid Credentials", result.ErrorMessage);
     }
+
+    [Fact]
+    public async Task HandleAsync_WhenExceptionThrown_ReturnsFailure()
+    {
+        _identityServiceMock
+            .Setup(x => x.GetValidatedTokenAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ThrowsAsync(new Exception("Service unavailable"));
+
+        var query = new LoginTraderQuery { Email = "test@test.com", Password = "pass" };
+        var result = await _handler.HandleAsync(query);
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains("Service unavailable", result.ErrorMessage);
+    }
 }

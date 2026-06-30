@@ -9,7 +9,7 @@ public class AccountTests
     public void Account_InheritsIdentityUser()
     {
         var account = new Account();
-        Assert.IsAssignableFrom<Microsoft.AspNetCore.Identity.IdentityUser>(account);
+        Assert.IsType<Microsoft.AspNetCore.Identity.IdentityUser>(account, exactMatch: false);
     }
 
     [Fact]

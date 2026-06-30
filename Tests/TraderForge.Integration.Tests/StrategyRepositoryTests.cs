@@ -70,4 +70,53 @@ public class StrategyRepositoryTests
         var fromP1 = await repo.GetByPortfolioIdAsync(p1.Id);
         Assert.Equal(2, fromP1.Count);
     }
+
+    [Fact]
+    public async Task GetByIdWithGraphAsync_IncludesBotNodesAndEdges()
+    {
+        using var ctx = CreateDbContext();
+        var portfolio = new Portfolio("trader1", 1000m);
+        ctx.Portfolios.Add(portfolio);
+        await ctx.SaveChangesAsync();
+
+        var repo = new StrategyRepository(ctx);
+        var strategy = new Strategy(Guid.NewGuid(), "Graph Strategy", portfolio.Id);
+        var node = new BotNode(strategy.Id, Domain.Enums.BotNodeType.Trigger, "T1", "{}", 0, 0);
+        strategy.BotNodes.Add(node);
+        await repo.AddAsync(strategy);
+
+        var fetched = await repo.GetByIdWithGraphAsync(strategy.Id);
+        Assert.NotNull(fetched);
+        Assert.Single(fetched.BotNodes);
+    }
+
+    [Fact]
+    public async Task GetByIdWithGraphAsync_NotFound_ReturnsNull()
+    {
+        using var ctx = CreateDbContext();
+        var repo = new StrategyRepository(ctx);
+        var result = await repo.GetByIdWithGraphAsync(Guid.NewGuid());
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetActiveWithEngineRunningAsync_ReturnsOnlyActiveEngines()
+    {
+        using var ctx = CreateDbContext();
+        var portfolio = new Portfolio("trader1", 1000m);
+        ctx.Portfolios.Add(portfolio);
+        await ctx.SaveChangesAsync();
+
+        var repo = new StrategyRepository(ctx);
+        var activeStrategy = new Strategy(Guid.NewGuid(), "Active", portfolio.Id);
+        activeStrategy.StartEngine();
+        await repo.AddAsync(activeStrategy);
+
+        var inactiveStrategy = new Strategy(Guid.NewGuid(), "Inactive", portfolio.Id);
+        await repo.AddAsync(inactiveStrategy);
+
+        var result = await repo.GetActiveWithEngineRunningAsync();
+        Assert.Single(result);
+        Assert.Equal("Active", result[0].Name);
+    }
 }

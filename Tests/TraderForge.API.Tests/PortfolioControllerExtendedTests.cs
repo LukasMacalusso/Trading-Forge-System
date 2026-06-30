@@ -208,7 +208,10 @@ public class PortfolioControllerExtendedTests
         var result = await _controller.BuyPosition(new BuyPositionRequest { Symbol = "BTCUSDT", Quantity = 0.01m });
 
         var ok = Assert.IsType<OkObjectResult>(result);
-        var msg = ok.Value.GetType().GetProperty("message")!.GetValue(ok.Value);
+        var okValue = ok.Value;
+        Assert.NotNull(okValue);
+        var msgProp = okValue.GetType().GetProperty("message");
+        var msg = msgProp?.GetValue(okValue);
         Assert.Equal("Position purchased successfully.", msg);
     }
 
@@ -276,7 +279,10 @@ public class PortfolioControllerExtendedTests
         var result = await _controller.ResetSimulation();
 
         var ok = Assert.IsType<OkObjectResult>(result);
-        var msg = ok.Value.GetType().GetProperty("message")!.GetValue(ok.Value);
+        var okValue = ok.Value;
+        Assert.NotNull(okValue);
+        var msgProp = okValue.GetType().GetProperty("message");
+        var msg = msgProp?.GetValue(okValue);
         Assert.Equal("Simulation reset successfully.", msg);
     }
 

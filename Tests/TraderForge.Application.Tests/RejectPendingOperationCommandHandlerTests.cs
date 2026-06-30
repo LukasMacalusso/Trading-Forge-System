@@ -66,7 +66,7 @@ public class RejectPendingOperationCommandHandlerTests
         Assert.True(op.IsResolved);
     }
 
-    private PendingOperation CreatePendingOperation(string traderId)
+    private static PendingOperation CreatePendingOperation(string traderId)
     {
         var portfolio = new Portfolio(traderId, 100000m);
         var op = new PendingOperation(Guid.NewGuid(), portfolio.Id, Guid.NewGuid(), "Strat", "BTC", "buy", 1m, 50000m, DateTime.UtcNow.AddMinutes(5));

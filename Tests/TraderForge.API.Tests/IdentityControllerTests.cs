@@ -55,4 +55,57 @@ public class IdentityControllerTests
         var result = await _controller.Register(request);
         Assert.IsType<OkObjectResult>(result);
     }
+
+    [Fact]
+    public async Task Login_WhenValidCredentials_ReturnsOkWithToken()
+    {
+        var tokenResponse = new TokenResponse { AccessToken = "jwt", RefreshToken = "rt" };
+        _identityServiceMock
+            .Setup(x => x.GetValidatedTokenAsync("test@test.com", "pass"))
+            .ReturnsAsync(ResultGeneric<TokenResponse>.Success(tokenResponse));
+
+        var result = await _controller.Login(new LoginTraderRequest { Email = "test@test.com", Password = "pass" });
+
+        var ok = Assert.IsType<OkObjectResult>(result);
+        Assert.Same(tokenResponse, ok.Value);
+    }
+
+    [Fact]
+    public async Task Login_WhenInvalidCredentials_ReturnsUnauthorized()
+    {
+        _identityServiceMock
+            .Setup(x => x.GetValidatedTokenAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(ResultGeneric<TokenResponse>.Failure("Invalid Credentials"));
+
+        var result = await _controller.Login(new LoginTraderRequest { Email = "bad", Password = "bad" });
+
+        var unauthorized = Assert.IsType<UnauthorizedObjectResult>(result);
+        Assert.NotNull(unauthorized.Value);
+    }
+
+    [Fact]
+    public async Task Refresh_WhenValidTokens_ReturnsOk()
+    {
+        var tokenResponse = new TokenResponse { AccessToken = "new-jwt", RefreshToken = "new-rt" };
+        _identityServiceMock
+            .Setup(x => x.RefreshTokenAsync("access", "refresh"))
+            .ReturnsAsync(ResultGeneric<TokenResponse>.Success(tokenResponse));
+
+        var result = await _controller.Refresh(new RefreshTokenRequest { AccessToken = "access", RefreshToken = "refresh" });
+
+        var ok = Assert.IsType<OkObjectResult>(result);
+        Assert.Same(tokenResponse, ok.Value);
+    }
+
+    [Fact]
+    public async Task Refresh_WhenInvalidTokens_ReturnsUnauthorized()
+    {
+        _identityServiceMock
+            .Setup(x => x.RefreshTokenAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(ResultGeneric<TokenResponse>.Failure("Invalid tokens"));
+
+        var result = await _controller.Refresh(new RefreshTokenRequest { AccessToken = "bad", RefreshToken = "bad" });
+
+        Assert.IsType<UnauthorizedObjectResult>(result);
+    }
 }
