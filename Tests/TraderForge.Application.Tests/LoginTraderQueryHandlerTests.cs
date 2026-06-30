@@ -23,16 +23,16 @@ public class LoginTraderQueryHandlerTests
     [Fact]
     public async Task HandleAsync_WhenValidCredentials_ReturnsToken()
     {
-        const string expectedToken = "jwt.token.here";
+        var expectedToken = new TokenResponse { AccessToken = "jwt.token.here", RefreshToken = "refresh.token" };
         _identityServiceMock
             .Setup(x => x.GetValidatedTokenAsync("test@test.com", "password123"))
-            .ReturnsAsync(ResultGeneric<string>.Success(expectedToken));
+            .ReturnsAsync(ResultGeneric<TokenResponse>.Success(expectedToken));
 
         var query = new LoginTraderQuery { Email = "test@test.com", Password = "password123" };
         var result = await _handler.HandleAsync(query);
 
         Assert.True(result.IsSuccess);
-        Assert.Equal(expectedToken, result.Value);
+        Assert.Equal(expectedToken.AccessToken, result.Value!.AccessToken);
     }
 
     [Fact]
@@ -40,7 +40,7 @@ public class LoginTraderQueryHandlerTests
     {
         _identityServiceMock
             .Setup(x => x.GetValidatedTokenAsync(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(ResultGeneric<string>.Failure("Invalid Credentials"));
+            .ReturnsAsync(ResultGeneric<TokenResponse>.Failure("Invalid Credentials"));
 
         var query = new LoginTraderQuery { Email = "wrong@test.com", Password = "wrong" };
         var result = await _handler.HandleAsync(query);

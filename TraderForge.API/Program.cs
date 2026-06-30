@@ -104,6 +104,7 @@ builder.Services.AddTransient<StopEngineCommandHandler>();
 
 builder.Services.AddTransient<RegisterTraderCommandHandler>();
 builder.Services.AddTransient<LoginTraderQueryHandler>();
+builder.Services.AddTransient<RefreshTraderTokenQueryHandler>();
 builder.Services.AddTransient<ChangeSubscriptionCommandHandler>();
 builder.Services.AddTransient<CancelSubscriptionCommandHandler>();
 builder.Services.AddTransient<GetAllPlansQueryHandler>();
