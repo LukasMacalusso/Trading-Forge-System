@@ -57,16 +57,24 @@ export function UsersPanel({ users, busyId, onToggleStatus }: UsersPanelProps) {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <Badge variant="warning">{user.plan}</Badge>
+                    {user.plan ? (
+                      <Badge variant="warning">{user.plan}</Badge>
+                    ) : (
+                      <span className="text-neutral-600">—</span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={isActive ? 'up' : 'down'}>
                       {isActive ? 'Activo' : 'Suspendido'}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-neutral-400">{formatDate(user.registeredAt)}</td>
+                  <td className="px-4 py-3 text-neutral-400">
+                    {user.registeredAt ? formatDate(user.registeredAt) : '—'}
+                  </td>
                   <td className="px-4 py-3 text-right font-mono text-neutral-300">
-                    ${user.portfolioValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    {user.portfolioValue != null
+                      ? `$${user.portfolioValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}`
+                      : '—'}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex justify-end">
