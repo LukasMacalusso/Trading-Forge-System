@@ -1,26 +1,26 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.Domain", "TraderForge.Domain\TraderForge.Domain.csproj", "{86071D8D-14B9-472B-8F1C-D16D2E812284}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.Domain", "src\TraderForge.Domain\TraderForge.Domain.csproj", "{86071D8D-14B9-472B-8F1C-D16D2E812284}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.Application", "TraderForge.Application\TraderForge.Application.csproj", "{946A8F00-4A6D-4B9E-A288-5AEF2DBEE2E9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.Application", "src\TraderForge.Application\TraderForge.Application.csproj", "{946A8F00-4A6D-4B9E-A288-5AEF2DBEE2E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.Infrastructure", "TraderForge.Infrastructure\TraderForge.Infrastructure.csproj", "{8CF5D75B-009E-45D0-9121-69C92126942D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.Infrastructure", "src\TraderForge.Infrastructure\TraderForge.Infrastructure.csproj", "{8CF5D75B-009E-45D0-9121-69C92126942D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.API", "TraderForge.API\TraderForge.API.csproj", "{A5A9F109-E301-450C-925D-5D4917CEEF26}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.API", "src\TraderForge.API\TraderForge.API.csproj", "{A5A9F109-E301-450C-925D-5D4917CEEF26}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.Domain.Tests", "Tests\TraderForge.Domain.Tests\TraderForge.Domain.Tests.csproj", "{9D7F40C4-B418-41F1-BDFE-15866BCA694C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.Domain.Tests", "tests\TraderForge.Domain.Tests\TraderForge.Domain.Tests.csproj", "{9D7F40C4-B418-41F1-BDFE-15866BCA694C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.Application.Tests", "Tests\TraderForge.Application.Tests\TraderForge.Application.Tests.csproj", "{6EEE62B0-AB9A-4E4E-9306-16BE3E65D37F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.Application.Tests", "tests\TraderForge.Application.Tests\TraderForge.Application.Tests.csproj", "{6EEE62B0-AB9A-4E4E-9306-16BE3E65D37F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.API.Tests", "Tests\TraderForge.API.Tests\TraderForge.API.Tests.csproj", "{E060D670-2E6B-4175-8ED9-1B171C46E4D9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.API.Tests", "tests\TraderForge.API.Tests\TraderForge.API.Tests.csproj", "{E060D670-2E6B-4175-8ED9-1B171C46E4D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.Infrastructure.Tests", "Tests\TraderForge.Infrastructure.Tests\TraderForge.Infrastructure.Tests.csproj", "{F353E334-FF0D-41E4-AAA6-24DDD7516198}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.Infrastructure.Tests", "tests\TraderForge.Infrastructure.Tests\TraderForge.Infrastructure.Tests.csproj", "{F353E334-FF0D-41E4-AAA6-24DDD7516198}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.Integration.Tests", "Tests\TraderForge.Integration.Tests\TraderForge.Integration.Tests.csproj", "{387A2E7B-213E-4A86-A790-73D9A6AE3B98}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.Integration.Tests", "tests\TraderForge.Integration.Tests\TraderForge.Integration.Tests.csproj", "{387A2E7B-213E-4A86-A790-73D9A6AE3B98}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.API.E2ETests", "Tests\TraderForge.API.E2ETests\TraderForge.API.E2ETests.csproj", "{4A396101-C579-4043-A665-39DDEF52C434}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderForge.API.E2ETests", "tests\TraderForge.API.E2ETests\TraderForge.API.E2ETests.csproj", "{4A396101-C579-4043-A665-39DDEF52C434}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

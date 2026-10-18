@@ -489,6 +489,8 @@ $RECYCLE.BIN/
 [Oo]bj/
 # Ignore literal backslash folders
 *\\Debug/
-*\\Release/TraderForge.Frontend/dist/
-TraderForge.Frontend/.vite/
-TraderForge.Frontend/dist/
+*\\Release/
+**/TraderForge.Frontend/.vite/
+**/TraderForge.Frontend/dist/
+dist/
+.vite/

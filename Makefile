@@ -57,27 +57,27 @@ test:
 	dotnet test TradingForgeSystem.sln
 
 test-unit:
-	dotnet test Tests/TraderForge.Domain.Tests
-	dotnet test Tests/TraderForge.Application.Tests
+	dotnet test tests/TraderForge.Domain.Tests
+	dotnet test tests/TraderForge.Application.Tests
 
 test-api:
-	dotnet test Tests/TraderForge.API.Tests
+	dotnet test tests/TraderForge.API.Tests
 
 test-infra:
-	dotnet test Tests/TraderForge.Infrastructure.Tests
+	dotnet test tests/TraderForge.Infrastructure.Tests
 
 test-integration:
-	dotnet test Tests/TraderForge.Integration.Tests
+	dotnet test tests/TraderForge.Integration.Tests
 
 test-e2e:
-	dotnet test Tests/TraderForge.API.E2ETests
+	dotnet test tests/TraderForge.API.E2ETests
 
 # --- Run Apps ---
 run-api:
-	cd TraderForge.API && dotnet run
+	cd src/TraderForge.API && dotnet run
 
 run-web:
-	cd TraderForge.Frontend && npm run dev
+	cd src/TraderForge.Frontend && npm run dev
 
 # --- Database / Docker ---
 db-up:

@@ -12,7 +12,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
-    # 1. Add this healthcheck block
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d TraderForgeDb"]
       interval: 5s
@@ -22,7 +21,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: TraderForge.API/Dockerfile
+      dockerfile: src/TraderForge.API/Dockerfile
     container_name: traderforge_api
     depends_on:
       db:
