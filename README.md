@@ -1,9 +1,6 @@
-<div align="center">
-  <img src=".github/assets/logo.png" alt="Trading Forge Logo" width="260" />
+# Trading Forge System
 
-  # Trading Forge System
-
-  A full-stack simulated cryptocurrency trading and visual algorithmic bot platform built with **.NET 10**, and **React 19**.
+A full-stack simulated cryptocurrency trading and visual algorithmic bot platform built with **.NET 10**, and **React 19**.
 </div>
 
 ---
